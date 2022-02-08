@@ -1,5 +1,7 @@
 # a
 
+[![CI/CD](https://github.com/nootr/a/actions/workflows/main.yml/badge.svg)](https://github.com/nootr/a/actions)
+
 A programming language.
 
 * Stack-oriented like Forth
