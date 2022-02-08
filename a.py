@@ -10,18 +10,20 @@ def is_int(s):
     return all(c in "0123456789" for c in s)
 
 def get_tokens(program):
-    # TODO: increment line_no
     line_no = 1
 
     while program:
         # TODO: calculate indent
-        while program and program[0] in " \t\n":
+        while program and program[0] in " \t":
             program = program[1:]
 
         if not program:
             break
 
-        if program[0] == "#":
+        if program[0] == "\n":
+            line_no += 1
+            program = program[1:]
+        elif program[0] == "#":
             while program and program[0] != "\n":
                 program = program[1:]
         elif program[0] == "+":
@@ -62,7 +64,7 @@ def compile(program):
     output("", "pop", "rdi")
     output("", "syscall", "")
 
-compile("""
-2 3  # Push ints
-+    # Add them, expect 5
-""")
+compile(
+    "2 3  # Push ints\n"
+    "+ # Add them, expect 5\n"
+)
