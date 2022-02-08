@@ -1,0 +1,6 @@
+# Description:Duplicate
+# Exit code:8
+# Stdout:
+# Stderr:
+
+3 4 dup +

@@ -11,9 +11,10 @@ class TokenType:
     ARITHMETIC = "ARITHMETIC"
     BLOCK_START = "BLOCK_START"
     BLOCK_END = "BLOCK_END"
+    BOOL = "BOOL"
     COMPARISON = "COMPARISON"
     INT = "INT"
-    BOOL = "BOOL"
+    KEYWORD = "KEYWORD"
 
 
 def is_int(s):
@@ -85,6 +86,21 @@ def get_tokens(program):
         elif startswith("False", program):
             yield (TokenType.BOOL, 0, line_no)
             program = program[5:]
+        elif startswith("dup", program):
+            yield (TokenType.KEYWORD, "dup", line_no)
+            program = program[3:]
+        elif startswith("drop", program):
+            yield (TokenType.KEYWORD, "drop", line_no)
+            program = program[4:]
+        elif startswith("over", program):
+            yield (TokenType.KEYWORD, "over", line_no)
+            program = program[4:]
+        elif startswith("swap", program):
+            yield (TokenType.KEYWORD, "swap", line_no)
+            program = program[4:]
+        elif startswith("rot", program):
+            yield (TokenType.KEYWORD, "rot", line_no)
+            program = program[3:]
         else:
             raise ValueError(f"Syntax error at line {line_no}: `{program}`")
 
@@ -94,15 +110,20 @@ def get_tokens(program):
 
 class Opcode:
     ADD = "add"
-    MULTIPLY = "multiply"
-    PUSH_INT = "push int"
-    PUSH_BOOL = "push bool"
-    SUBTRACT = "subtract"
+    DROP = "drop"
+    DUP = "dup"
     IS_EQUAL = "is equal?"
     IS_GREATER = "is greater?"
     IS_GREATER_OR_EQUAL = "is greater or equal?"
     IS_LESS = "is less?"
     IS_LESS_OR_EQUAL = "is less or equal?"
+    MULTIPLY = "multiply"
+    OVER = "over"
+    PUSH_BOOL = "push bool"
+    PUSH_INT = "push int"
+    ROT = "rot"
+    SUBTRACT = "subtract"
+    SWAP = "swap"
 
 
 def parse(token_generator):
@@ -133,6 +154,17 @@ def parse(token_generator):
                 yield (Opcode.IS_LESS_OR_EQUAL, 0, line_no)
             else:
                 raise ValueError(f"Unknown value for comparison: {value}")
+        elif token_type == TokenType.KEYWORD:
+            if value == "dup":
+                yield (Opcode.DUP, 0, line_no)
+            elif value == "drop":
+                yield (Opcode.DROP, 0, line_no)
+            elif value == "rot":
+                yield (Opcode.ROT, 0, line_no)
+            elif value == "swap":
+                yield (Opcode.SWAP, 0, line_no)
+            elif value == "over":
+                yield (Opcode.OVER, 0, line_no)
         else:
             raise ValueError(f"Unknown token type: {token_type}")
 
@@ -211,6 +243,32 @@ def generate_code(ir):
             output("", "cmp", "rdx, rcx")
             output("", "cmovl", "rax, rbx")
             output("", "push", "rax")
+        elif opcode == Opcode.DUP:
+            output("", "pop", "rax")
+            output("", "push", "rax")
+            output("", "push", "rax")
+        elif opcode == Opcode.DROP:
+            output("", "pop", "rax")
+        elif opcode == Opcode.SWAP:
+            output("", "pop", "rax")
+            output("", "pop", "rbx")
+            output("", "push", "rax")
+            output("", "push", "rbx")
+        elif opcode == Opcode.OVER:
+            output("", "pop", "rax")
+            output("", "pop", "rbx")
+            output("", "push", "rbx")
+            output("", "push", "rax")
+            output("", "push", "rbx")
+        elif opcode == Opcode.ROT:
+            output("", "pop", "rax")
+            output("", "pop", "rbx")
+            output("", "pop", "rcx")
+            output("", "push", "rbx")
+            output("", "push", "rax")
+            output("", "push", "rcx")
+        else:
+            raise ValueError(f"Unknown opcode: {opcode}")
 
     output("exit:", "", "")
     output("", "mov", "rax, 60")
