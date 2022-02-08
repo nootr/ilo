@@ -30,7 +30,7 @@ for file in $(ls -rtd ./tests/*); do
   fi
 
   if [ "$STDERR" != "$EXPECTED_STDERR" ]; then
-    echo "[FAIL] $DESCRIPTION. Stdout: $STDERR (not $EXPECTED_STDERR)"
+    echo "[FAIL] $DESCRIPTION. Stderr: $STDERR (not $EXPECTED_STDERR)"
     SUCCESS=0
   fi
 
