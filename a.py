@@ -1,6 +1,18 @@
 #!/usr/bin/env python3
 
 
+"""
+                             :alert: DISCLAIMER :alert:
+
+This code is _ugly_. It's goal is to serve as an initial bootstrap compiler for the
+self-hosted compiler. This means that this code is not pythonic, object-oriented or
+clean in any way. It is meant to be easily portable to be self-hosted, that's it.
+
+As soon as the self-hosted compiler is ready, we'll get rid of this monster. Don't
+worry.
+"""
+
+
 import argparse
 
 
