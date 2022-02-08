@@ -20,17 +20,17 @@ for file in $(ls -rtd ./tests/*); do
 
   SUCCESS=1
   if [ "$EXIT_CODE" != "$EXPECTED_EXIT_CODE" ]; then
-    echo "[FAIL] $DESCRIPTION. Exit code: $EXIT_CODE (not $EXPECTED_EXIT_CODE)"
+    echo "[FAIL] Test: $DESCRIPTION. Exit code: $EXIT_CODE (not $EXPECTED_EXIT_CODE)"
     SUCCESS=0
   fi
 
   if [ "$STDOUT" != "$EXPECTED_STDOUT" ]; then
-    echo "[FAIL] $DESCRIPTION. Stdout: $STDOUT (not $EXPECTED_STDOUT)"
+    echo "[FAIL] Test: $DESCRIPTION. Stdout: $STDOUT (not $EXPECTED_STDOUT)"
     SUCCESS=0
   fi
 
   if [ "$STDERR" != "$EXPECTED_STDERR" ]; then
-    echo "[FAIL] $DESCRIPTION. Stderr: $STDERR (not $EXPECTED_STDERR)"
+    echo "[FAIL] Test: $DESCRIPTION. Stderr: $STDERR (not $EXPECTED_STDERR)"
     SUCCESS=0
   fi
 
@@ -40,4 +40,8 @@ for file in $(ls -rtd ./tests/*); do
 
   # Cleanup
   rm test test.o test.asm
+
+  if [[ "$SUCCESS" -eq 0 ]]; then
+    exit 1
+  fi
 done
