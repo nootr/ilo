@@ -14,3 +14,4 @@
 [ ] If-statements
 [ ] Function calls
 [ ] Basic `import` keyword
+[ ] Type checking
