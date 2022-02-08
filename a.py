@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 
 
+### Lexer ###
+
+
 class TokenType:
-    INT = "INT"
-    ADD = "ADD"
+    ARITHMETIC = "ARITHMETIC"
     BLOCK_START = "BLOCK_START"
     BLOCK_END = "BLOCK_END"
+    COMPARISON = "COMPARISON"
+    INT = "INT"
 
 
 def is_int(s):
     return all(c in "0123456789" for c in s)
+
 
 def get_tokens(program):
     line_no = 1
@@ -46,8 +51,20 @@ def get_tokens(program):
         elif program[0] == "#":
             while program and program[0] != "\n":
                 program = program[1:]
-        elif program[0] == "+":
-            yield (TokenType.ADD, "+", line_no)
+        elif len(program) > 1 and program[0] == "!" and program[1] == "=":
+            yield (TokenType.COMPARISON, "!=", line_no)
+            program = program[2:]
+        elif len(program) > 1 and program[0] == ">" and program[1] == "=":
+            yield (TokenType.COMPARISON, ">=", line_no)
+            program = program[2:]
+        elif len(program) > 1 and program[0] == "<" and program[1] == "=":
+            yield (TokenType.COMPARISON, "<=", line_no)
+            program = program[2:]
+        elif program[0] in "+-*/":
+            yield (TokenType.ARITHMETIC, program[0], line_no)
+            program = program[1:]
+        elif program[0] in "=<>":
+            yield (TokenType.COMPARISON, program[0], line_no)
             program = program[1:]
         elif is_int(program[0]):
             number = ''
@@ -59,32 +76,136 @@ def get_tokens(program):
             raise ValueError(f"Syntax error at line {line_no}: `{program}`")
 
 
+### Parser ###
+
+
+class Opcode:
+    ADD = "add"
+    MULTIPLY = "multiply"
+    PUSH_INT = "push int"
+    SUBTRACT = "subtract"
+    IS_EQUAL = "is equal?"
+    IS_GREATER = "is greater?"
+    IS_GREATER_OR_EQUAL = "is greater or equal?"
+    IS_LESS = "is less?"
+    IS_LESS_OR_EQUAL = "is less or equal?"
+
+
+def parse(token_generator):
+    for token_type, value, line_no in token_generator:
+        if token_type == TokenType.INT:
+            yield (Opcode.PUSH_INT, value, line_no)
+        elif token_type == TokenType.ARITHMETIC:
+            if value == "+":
+                yield (Opcode.ADD, 0, line_no)
+            elif value == "-":
+                yield (Opcode.SUBTRACT, 0, line_no)
+            elif value == "*":
+                yield (Opcode.MULTIPLY, 0, line_no)
+            else:
+                raise ValueError(f"Unknown value for arithmetic: {value}")
+        elif token_type == TokenType.COMPARISON:
+            if value == "=":
+                yield (Opcode.IS_EQUAL, 0, line_no)
+            elif value == ">":
+                yield (Opcode.IS_GREATER, 0, line_no)
+            elif value == ">=":
+                yield (Opcode.IS_GREATER_OR_EQUAL, 0, line_no)
+            elif value == "<":
+                yield (Opcode.IS_LESS, 0, line_no)
+            elif value == "<=":
+                yield (Opcode.IS_LESS_OR_EQUAL, 0, line_no)
+            else:
+                raise ValueError(f"Unknown value for comparison: {value}")
+        else:
+            raise ValueError(f"Unknown token type: {token_type}")
+
+
+### Code generator ###
+
+
 def output(a, b, c):
     print(f"{a:10} {b:10} {c:10}")
 
-def compile(program):
+def generate_code(ir):
     output("", "global", "_start")
     output("", "section", ".text")
     output("_start:", "", "")
 
-    for token_type, value, line_no in get_tokens(program):
-        if token_type == TokenType.INT:
-            output("", f"; {line_no}: push int", "")
-            output("", "mov", f"rax, {value}")
+    for opcode, operand, line_no in ir:
+        output("", f"; {line_no}: {opcode}", "")
+        if opcode == Opcode.PUSH_INT:
+            output("", "mov", f"rax, {operand}")
             output("", "push", "rax")
-        elif token_type == TokenType.ADD:
-            output("", f"; {line_no}: add", "")
+        elif opcode == Opcode.ADD:
             output("", "pop", "rax")
             output("", "pop", "rbx")
             output("", "add", "rbx, rax")
             output("", "push", "rbx")
+        elif opcode == Opcode.SUBTRACT:
+            output("", "pop", "rax")
+            output("", "pop", "rbx")
+            output("", "sub", "rbx, rax")
+            output("", "push", "rbx")
+        elif opcode == Opcode.MULTIPLY:
+            output("", "pop", "rax")
+            output("", "pop", "rbx")
+            output("", "imul", "rbx, rax")
+            output("", "push", "rbx")
+        elif opcode == Opcode.IS_EQUAL:
+            output("", "mov", "rax, 0")
+            output("", "mov", "rbx, 1")
+            output("", "pop", "rcx")
+            output("", "pop", "rdx")
+            output("", "cmp", "rdx, rcx")
+            output("", "cmove", "rax, rbx")
+            output("", "push", "rax")
+        elif opcode == Opcode.IS_GREATER_OR_EQUAL:
+            output("", "mov", "rax, 0")
+            output("", "mov", "rbx, 1")
+            output("", "pop", "rcx")
+            output("", "pop", "rdx")
+            output("", "cmp", "rdx, rcx")
+            output("", "cmovge", "rax, rbx")
+            output("", "push", "rax")
+        elif opcode == Opcode.IS_GREATER:
+            output("", "mov", "rax, 0")
+            output("", "mov", "rbx, 1")
+            output("", "pop", "rcx")
+            output("", "pop", "rdx")
+            output("", "cmp", "rdx, rcx")
+            output("", "cmovg", "rax, rbx")
+            output("", "push", "rax")
+        elif opcode == Opcode.IS_LESS_OR_EQUAL:
+            output("", "mov", "rax, 0")
+            output("", "mov", "rbx, 1")
+            output("", "pop", "rcx")
+            output("", "pop", "rdx")
+            output("", "cmp", "rdx, rcx")
+            output("", "cmovle", "rax, rbx")
+            output("", "push", "rax")
+        elif opcode == Opcode.IS_LESS:
+            output("", "mov", "rax, 0")
+            output("", "mov", "rbx, 1")
+            output("", "pop", "rcx")
+            output("", "pop", "rdx")
+            output("", "cmp", "rdx, rcx")
+            output("", "cmovl", "rax, rbx")
+            output("", "push", "rax")
 
     output("exit:", "", "")
     output("", "mov", "rax, 60")
     output("", "pop", "rdi")
     output("", "syscall", "")
 
-compile(
+
+PROGRAM = (
     "2 3  # Push ints\n"
-    "+ # Add them, expect 5\n"
+    "+    # Add them\n"
+    "1 -  # Subtract one to get 4\n"
+    "4 *  # Multiply by 4 to get 16\n"
 )
+
+token_generator = get_tokens(PROGRAM)
+ir = parse(token_generator)
+generate_code(ir)
