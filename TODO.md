@@ -1,5 +1,5 @@
 [x] Integers
-[ ] Booleans
+[x] Booleans
 [x] Arithmetic operators
 [x] Comparison operators
 [ ] Stack manipulation keywords

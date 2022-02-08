@@ -13,10 +13,14 @@ class TokenType:
     BLOCK_END = "BLOCK_END"
     COMPARISON = "COMPARISON"
     INT = "INT"
+    BOOL = "BOOL"
 
 
 def is_int(s):
     return all(c in "0123456789" for c in s)
+
+def startswith(q, s):
+    return len(q) <= len(s) and all(c == s[i] for i, c in enumerate(q))
 
 
 def get_tokens(program):
@@ -47,20 +51,20 @@ def get_tokens(program):
 
         at_start = False
 
-        if program[0] == "\n":
+        if startswith("\n", program):
             line_no += 1
             program = program[1:]
             at_start = True
-        elif program[0] == "#":
+        elif startswith("#", program):
             while program and program[0] != "\n":
                 program = program[1:]
-        elif len(program) > 1 and program[0] == "!" and program[1] == "=":
+        elif startswith("!=", program):
             yield (TokenType.COMPARISON, "!=", line_no)
             program = program[2:]
-        elif len(program) > 1 and program[0] == ">" and program[1] == "=":
+        elif startswith(">=", program):
             yield (TokenType.COMPARISON, ">=", line_no)
             program = program[2:]
-        elif len(program) > 1 and program[0] == "<" and program[1] == "=":
+        elif startswith("<=", program):
             yield (TokenType.COMPARISON, "<=", line_no)
             program = program[2:]
         elif program[0] in "+-*/":
@@ -75,6 +79,12 @@ def get_tokens(program):
                 number += program[0]
                 program = program[1:]
             yield (TokenType.INT, number, line_no)
+        elif startswith("True", program):
+            yield (TokenType.BOOL, 1, line_no)
+            program = program[4:]
+        elif startswith("False", program):
+            yield (TokenType.BOOL, 0, line_no)
+            program = program[5:]
         else:
             raise ValueError(f"Syntax error at line {line_no}: `{program}`")
 
@@ -86,6 +96,7 @@ class Opcode:
     ADD = "add"
     MULTIPLY = "multiply"
     PUSH_INT = "push int"
+    PUSH_BOOL = "push bool"
     SUBTRACT = "subtract"
     IS_EQUAL = "is equal?"
     IS_GREATER = "is greater?"
@@ -98,6 +109,8 @@ def parse(token_generator):
     for token_type, value, line_no in token_generator:
         if token_type == TokenType.INT:
             yield (Opcode.PUSH_INT, value, line_no)
+        elif token_type == TokenType.BOOL:
+            yield (Opcode.PUSH_BOOL, value, line_no)
         elif token_type == TokenType.ARITHMETIC:
             if value == "+":
                 yield (Opcode.ADD, 0, line_no)
@@ -138,6 +151,9 @@ def generate_code(ir):
     for opcode, operand, line_no in ir:
         output("", f"; {line_no}: {opcode}", "")
         if opcode == Opcode.PUSH_INT:
+            output("", "mov", f"rax, {operand}")
+            output("", "push", "rax")
+        elif opcode == Opcode.PUSH_BOOL:
             output("", "mov", f"rax, {operand}")
             output("", "push", "rax")
         elif opcode == Opcode.ADD:
