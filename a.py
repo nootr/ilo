@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
 
+import argparse
+
+
 ### Lexer ###
 
 
@@ -199,13 +202,31 @@ def generate_code(ir):
     output("", "syscall", "")
 
 
-PROGRAM = (
-    "2 3  # Push ints\n"
-    "+    # Add them\n"
-    "1 -  # Subtract one to get 4\n"
-    "4 *  # Multiply by 4 to get 16\n"
-)
+### Command-line interface ###
 
-token_generator = get_tokens(PROGRAM)
-ir = parse(token_generator)
-generate_code(ir)
+def read_file(filename):
+    with open(filename, "r") as f:
+        content = f.read()
+    return content
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("filename", action="store", type=str, default=None)
+    return parser.parse_args()
+
+
+def run(filename):
+    if not filename:
+        print("Please provide a filename to compile.")
+        exit(1)
+
+    program = read_file(filename)
+    token_generator = get_tokens(program)
+    ir = parse(token_generator)
+    generate_code(ir)
+
+
+if __name__ == "__main__":
+    args = parse_args()
+    run(**vars(args))
