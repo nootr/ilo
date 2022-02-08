@@ -4,6 +4,8 @@
 class TokenType:
     INT = "INT"
     ADD = "ADD"
+    BLOCK_START = "BLOCK_START"
+    BLOCK_END = "BLOCK_END"
 
 
 def is_int(s):
@@ -11,18 +13,36 @@ def is_int(s):
 
 def get_tokens(program):
     line_no = 1
+    indent_stack = [0]
+    at_start = True
 
     while program:
-        # TODO: calculate indent
+        indent = 0
         while program and program[0] in " \t":
+            if at_start:
+                indent += 1
             program = program[1:]
+
+        if at_start and indent > indent_stack[-1]:
+            indent_stack.append(indent)
+            yield (TokenType.BLOCK_START, indent, line_no)
+        elif at_start and indent < indent_stack[-1]:
+            if indent not in indent_stack:
+                raise ValueError(f"Syntax error: unexpected indent of {indent}")
+
+            while indent_stack[-1] != indent:
+                yield (TokenType.BLOCK_END, indent_stack[-1], line_no)
+                indent_stack.pop()
 
         if not program:
             break
 
+        at_start = False
+
         if program[0] == "\n":
             line_no += 1
             program = program[1:]
+            at_start = True
         elif program[0] == "#":
             while program and program[0] != "\n":
                 program = program[1:]
