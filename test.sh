@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+for file in $(ls -rtd ./tests/*); do
+  # Compile
+  echo "[COMP] ${file}"
+  python a.py $file > test.asm
+  nasm -felf64 test.asm -o test.o
+  ld -o test test.o
+
+  # Run test
+  EXIT_CODE="$(./test > /dev/null 2>&1; echo $?)"
+  STDOUT="$(./test 2>/dev/null)"
+  STDERR="$(./test 2>&1 1>/dev/null)"
+
+  # Verify results
+  DESCRIPTION="$(grep '^# Description:' $file | cut -d: -f2)"
+  EXPECTED_EXIT_CODE="$(grep '^# Exit code:' $file | cut -d: -f2)"
+  EXPECTED_STDOUT="$(grep '^# Stdout:' $file | cut -d: -f2)"
+  EXPECTED_STDERR="$(grep '^# Stderr:' $file | cut -d: -f2)"
+
+  SUCCESS=1
+  if [ "$EXIT_CODE" != "$EXPECTED_EXIT_CODE" ]; then
+    echo "[FAIL] $DESCRIPTION. Exit code: $EXIT_CODE (not $EXPECTED_EXIT_CODE)"
+    SUCCESS=0
+  fi
+
+  if [ "$STDOUT" != "$EXPECTED_STDOUT" ]; then
+    echo "[FAIL] $DESCRIPTION. Stdout: $STDOUT (not $EXPECTED_STDOUT)"
+    SUCCESS=0
+  fi
+
+  if [ "$STDERR" != "$EXPECTED_STDERR" ]; then
+    echo "[FAIL] $DESCRIPTION. Stdout: $STDERR (not $EXPECTED_STDERR)"
+    SUCCESS=0
+  fi
+
+  if [[ "$SUCCESS" -eq 1 ]]; then
+    echo "[ OK ] $DESCRIPTION"
+  fi
+
+  # Cleanup
+  rm test test.o test.asm
+done
