@@ -1,5 +1,5 @@
 # Description:Print "Hello, world!\n"
-# Exit code:42
+# Exit code:11
 # Stdout:Hello, world!\n
 # Stderr:
 
@@ -9,4 +9,8 @@
 1                   # Syscall no. (write)
 syscall 3
 
-42                  # Exit code
+11                  # Exit code
+60                  # Syscall no. (exit)
+syscall 1
+
+42                  # This exit code should be ignored

@@ -76,8 +76,12 @@ def get_tokens(program):
             program = program[1:]
             string = ''
             while program and program[0] != "\"":
-                string += program[0]
-                program = program[1:]
+                if startswith("\\\"", program):
+                    string += "\\\""
+                    program = program[2:]
+                else:
+                    string += program[0]
+                    program = program[1:]
             if program:
                 program = program[1:]
             yield (TokenType.STRING, string, line_no)
