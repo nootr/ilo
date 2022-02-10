@@ -27,6 +27,7 @@ class TokenType:
     COMPARISON = "COMPARISON"
     INT = "INT"
     KEYWORD = "KEYWORD"
+    STRING = "STRING"
 
 
 def is_int(s):
@@ -71,6 +72,15 @@ def get_tokens(program):
         elif startswith("#", program):
             while program and program[0] != "\n":
                 program = program[1:]
+        elif startswith("\"", program):
+            program = program[1:]
+            string = ''
+            while program and program[0] != "\"":
+                string += program[0]
+                program = program[1:]
+            if program:
+                program = program[1:]
+            yield (TokenType.STRING, string, line_no)
         elif startswith("!=", program):
             yield (TokenType.COMPARISON, "!=", line_no)
             program = program[2:]
@@ -113,6 +123,9 @@ def get_tokens(program):
         elif startswith("rot", program):
             yield (TokenType.KEYWORD, "rot", line_no)
             program = program[3:]
+        elif startswith("syscall", program):
+            yield (TokenType.KEYWORD, "syscall", line_no)
+            program = program[7:]
         else:
             raise ValueError(f"Syntax error at line {line_no}: `{program}`")
 
@@ -133,9 +146,11 @@ class Opcode:
     OVER = "over"
     PUSH_BOOL = "push bool"
     PUSH_INT = "push int"
+    PUSH_STRING = "push string"
     ROT = "rot"
     SUBTRACT = "subtract"
     SWAP = "swap"
+    SYSCALL = "syscall"
 
 
 def parse(token_generator):
@@ -144,6 +159,8 @@ def parse(token_generator):
             yield (Opcode.PUSH_INT, value, line_no)
         elif token_type == TokenType.BOOL:
             yield (Opcode.PUSH_BOOL, value, line_no)
+        elif token_type == TokenType.STRING:
+            yield (Opcode.PUSH_STRING, value, line_no)
         elif token_type == TokenType.ARITHMETIC:
             if value == "+":
                 yield (Opcode.ADD, 0, line_no)
@@ -177,6 +194,13 @@ def parse(token_generator):
                 yield (Opcode.SWAP, 0, line_no)
             elif value == "over":
                 yield (Opcode.OVER, 0, line_no)
+            elif value == "syscall":
+                operand_type, operand, line_no = next(token_generator)
+                if operand_type != TokenType.INT:
+                    raise ValueError(
+                        "Syntax error: expected integer after syscall"
+                    )
+                yield (Opcode.SYSCALL, int(operand), line_no)
         else:
             raise ValueError(f"Unknown token type: {token_type}")
 
@@ -184,10 +208,16 @@ def parse(token_generator):
 ### Code generator ###
 
 
-def output(a, b, c):
-    print(f"{a:10} {b:10} {c:10}")
+def output(a, b, c, to_string=False):
+    string = f"{a:10} {b:10} {c:10}"
+    if to_string:
+        return string + "\n"
+    else:
+        print(string)
 
 def generate_code(ir):
+    data = output("", "section", ".data", to_string=True)
+    string_index = 1
     output("", "global", "_start")
     output("", "section", ".text")
     output("_start:", "", "")
@@ -200,6 +230,17 @@ def generate_code(ir):
         elif opcode == Opcode.PUSH_BOOL:
             output("", "mov", f"rax, {operand}")
             output("", "push", "rax")
+        elif opcode == Opcode.PUSH_STRING:
+            string_label = f"s_{string_index}"
+            output("", "mov", f"rax, {string_label}")
+            output("", "push", "rax")
+            data += output(
+                f"{string_label}:",
+                "db",
+                f"`{operand}`, 0",
+                to_string=True,
+            )
+            string_index += 1
         elif opcode == Opcode.ADD:
             output("", "pop", "rax")
             output("", "pop", "rbx")
@@ -279,6 +320,22 @@ def generate_code(ir):
             output("", "push", "rbx")
             output("", "push", "rax")
             output("", "push", "rcx")
+        elif opcode == Opcode.SYSCALL:
+            output("",  "pop", "rax")
+            if operand > 6:
+                raise ValueError("Syscall should have 1-6 arguments")
+            if operand > 5:
+                output("",  "pop", "r9")
+            if operand > 4:
+                output("",  "pop", "r8")
+            if operand > 3:
+                output("",  "pop", "rcx")
+            if operand > 2:
+                output("",  "pop", "rdx")
+            if operand > 1:
+                output("",  "pop", "rsi")
+            output("",  "pop", "rdi")
+            output("",  "syscall", "")
         else:
             raise ValueError(f"Unknown opcode: {opcode}")
 
@@ -286,6 +343,7 @@ def generate_code(ir):
     output("", "mov", "rax, 60")
     output("", "pop", "rdi")
     output("", "syscall", "")
+    print(data)
 
 
 ### Command-line interface ###

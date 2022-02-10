@@ -1,0 +1,12 @@
+# Description:Print "Hello, world!\n"
+# Exit code:42
+# Stdout:Hello, world!\n
+# Stderr:
+
+1                   # File descriptor
+"Hello, world!\n"   # String
+14                  # String length
+1                   # Syscall no. (write)
+syscall 3
+
+42                  # Exit code

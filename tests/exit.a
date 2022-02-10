@@ -1,0 +1,10 @@
+# Description:Exit early
+# Exit code:1
+# Stdout:
+# Stderr:
+
+1          # Exit code
+60         # Syscall no. (exit)
+syscall 1
+
+2          # Exit code
