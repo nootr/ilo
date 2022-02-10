@@ -1,17 +1,17 @@
-[x] Integers
-[x] Booleans
-[x] Arithmetic operators
-[x] Comparison operators
-[x] Stack manipulation keywords
-[x] Functional tests
-[x] Indenting -> block start/end tokens
-[ ] `syscall` keyword
-[ ] String literals
-[ ] Hello world!
-[ ] Dynamic memory allocation
-[ ] Strings (dynamic)
-[ ] String manipulation functions
-[ ] If-statements
-[ ] Function calls
-[ ] Basic `import` keyword
-[ ] Type checking
+- [x] Integers
+- [x] Booleans
+- [x] Arithmetic operators
+- [x] Comparison operators
+- [x] Stack manipulation keywords
+- [x] Functional tests
+- [x] Indenting -> block start/end tokens
+- [x] `syscall` keyword
+- [x] String literals
+- [x] Hello world!
+- [ ] Dynamic memory allocation
+- [ ] Strings (dynamic)
+- [ ] String manipulation functions
+- [ ] If-statements
+- [ ] Function calls
+- [ ] Basic `import` keyword
+- [ ] Type checking
