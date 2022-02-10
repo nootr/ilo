@@ -14,9 +14,15 @@ for file in $(ls -rtd ./tests/*); do
 
   # Verify results
   DESCRIPTION="$(grep '^# Description:' $file | cut -d: -f2)"
-  EXPECTED_EXIT_CODE="$(grep '^# Exit code:' $file | cut -d: -f2)"
-  EXPECTED_STDOUT="$(grep '^# Stdout:' $file | cut -d: -f2)"
-  EXPECTED_STDERR="$(grep '^# Stderr:' $file | cut -d: -f2)"
+  EXPECTED_EXIT_CODE="$(
+    printf "%b" "$(grep '^# Exit code:' $file | cut -d: -f2)"
+  )"
+  EXPECTED_STDOUT="$(
+    printf "%b" "$(grep '^# Stdout:' $file | cut -d: -f2)"
+  )"
+  EXPECTED_STDERR="$(
+    printf "%b" "$(grep '^# Stderr:' $file | cut -d: -f2)"
+  )"
 
   SUCCESS=1
   if [ "$EXIT_CODE" != "$EXPECTED_EXIT_CODE" ]; then
