@@ -8,10 +8,10 @@
 - [x] `syscall` keyword
 - [x] String literals
 - [x] Hello world!
+- [x] Basic `import` keyword
+- [ ] If-statements
+- [ ] Function calls
 - [ ] Dynamic memory allocation
 - [ ] Strings (dynamic)
 - [ ] String manipulation functions
-- [ ] If-statements
-- [ ] Function calls
-- [ ] Basic `import` keyword
 - [ ] Type checking
