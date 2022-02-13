@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-for file in $(ls -rtd ./tests/*); do
+for file in $(find tests/ -maxdepth 1 -not -type d); do
   # Compile
   echo "[COMP] ${file}"
   python a.py $file > test.asm

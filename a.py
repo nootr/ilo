@@ -25,13 +25,17 @@ class TokenType:
     BLOCK_END = "BLOCK_END"
     BOOL = "BOOL"
     COMPARISON = "COMPARISON"
+    IDENTIFIER = "IDENTIFIER"
     INT = "INT"
     KEYWORD = "KEYWORD"
     STRING = "STRING"
 
 
-def is_int(s):
-    return all(c in "0123456789" for c in s)
+def is_int(c):
+    return "0" <= c <= "9"
+
+def is_alphabet(c):
+    return c in '-_.' or 'A' <= c <= 'Z' or 'a' <= c <= 'z'
 
 def startswith(q, s):
     return len(q) <= len(s) and all(c == s[i] for i, c in enumerate(q))
@@ -130,6 +134,15 @@ def get_tokens(program):
         elif startswith("syscall", program):
             yield (TokenType.KEYWORD, "syscall", line_no)
             program = program[7:]
+        elif startswith("import", program):
+            yield (TokenType.KEYWORD, "import", line_no)
+            program = program[6:]
+        elif is_alphabet(program[0]):
+            identifier = ''
+            while is_alphabet(program[0]) or is_int(program[0]):
+                identifier += program[0]
+                program = program[1:]
+            yield (TokenType.IDENTIFIER, identifier, line_no)
         else:
             raise ValueError(f"Syntax error at line {line_no}: `{program}`")
 
@@ -159,7 +172,15 @@ class Opcode:
 
 def parse(token_generator):
     for token_type, value, line_no in token_generator:
-        if token_type == TokenType.INT:
+        if token_type == TokenType.KEYWORD and value == "import":
+            import_type, import_value, _ = next(token_generator)
+            if import_type != TokenType.IDENTIFIER:
+                raise ValueError(
+                    f"Syntax Error: expected import identifier on line {line_no}"
+                )
+            filename = import_value.replace(".", "/") + ".a"
+            yield from parse_file(filename)
+        elif token_type == TokenType.INT:
             yield (Opcode.PUSH_INT, value, line_no)
         elif token_type == TokenType.BOOL:
             yield (Opcode.PUSH_BOOL, value, line_no)
@@ -352,10 +373,18 @@ def generate_code(ir):
 
 ### Command-line interface ###
 
+
 def read_file(filename):
     with open(filename, "r") as f:
         content = f.read()
     return content
+
+
+def parse_file(filename):
+    content = read_file(filename)
+    token_generator = get_tokens(content)
+    ir = parse(token_generator)
+    return ir
 
 
 def parse_args():
@@ -369,9 +398,7 @@ def run(filename):
         print("Please provide a filename to compile.")
         exit(1)
 
-    program = read_file(filename)
-    token_generator = get_tokens(program)
-    ir = parse(token_generator)
+    ir = parse_file(filename)
     generate_code(ir)
 
 

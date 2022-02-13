@@ -1,0 +1,8 @@
+# Description:Import file
+# Exit code:7
+# Stdout:
+# Stderr:
+
+import tests.fixtures.importee  # Contains `3 4`
+
++
