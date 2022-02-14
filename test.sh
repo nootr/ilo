@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-for file in $(ls -rtd ./tests/*); do
+for file in $(ls -rtd ./tests/*.a); do
   # Compile
   echo "[COMP] ${file}"
   python a.py $file > test.asm
@@ -48,6 +48,9 @@ for file in $(ls -rtd ./tests/*); do
   rm test test.o test.asm
 
   if [[ "$SUCCESS" -eq 0 ]]; then
+    echo "Test failed!"
     exit 1
   fi
 done
+
+echo "All tests OK!"
