@@ -9,7 +9,7 @@
 - [x] String literals
 - [x] Hello world!
 - [x] Basic `import` keyword
-- [ ] If-statements
+- [x] If-statements
 - [ ] Function calls
 - [ ] Dynamic memory allocation
 - [ ] Strings (dynamic)
