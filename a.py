@@ -41,7 +41,8 @@ def startswith(q, s):
     return len(q) <= len(s) and all(c == s[i] for i, c in enumerate(q))
 
 
-def get_tokens(program):
+def fetch_tokens(program):
+    tokens = []
     line_no = 1
     indent_stack = [0]
     at_start = True
@@ -55,13 +56,13 @@ def get_tokens(program):
 
         if at_start and indent > indent_stack[-1]:
             indent_stack.append(indent)
-            yield (TokenType.BLOCK_START, indent, line_no)
+            tokens.append((TokenType.BLOCK_START, indent, line_no))
         elif at_start and indent < indent_stack[-1]:
             if indent not in indent_stack:
                 raise ValueError(f"Syntax error: unexpected indent of {indent}")
 
             while indent_stack[-1] != indent:
-                yield (TokenType.BLOCK_END, indent_stack[-1], line_no)
+                tokens.append((TokenType.BLOCK_END, indent_stack[-1], line_no))
                 indent_stack.pop()
 
         if not program:
@@ -88,63 +89,71 @@ def get_tokens(program):
                     program = program[1:]
             if program:
                 program = program[1:]
-            yield (TokenType.STRING, string, line_no)
+            tokens.append((TokenType.STRING, string, line_no))
         elif startswith("!=", program):
-            yield (TokenType.COMPARISON, "!=", line_no)
+            tokens.append((TokenType.COMPARISON, "!=", line_no))
             program = program[2:]
         elif startswith(">=", program):
-            yield (TokenType.COMPARISON, ">=", line_no)
+            tokens.append((TokenType.COMPARISON, ">=", line_no))
             program = program[2:]
         elif startswith("<=", program):
-            yield (TokenType.COMPARISON, "<=", line_no)
+            tokens.append((TokenType.COMPARISON, "<=", line_no))
             program = program[2:]
         elif program[0] in "+-*/":
-            yield (TokenType.ARITHMETIC, program[0], line_no)
+            tokens.append((TokenType.ARITHMETIC, program[0], line_no))
             program = program[1:]
         elif program[0] in "=<>":
-            yield (TokenType.COMPARISON, program[0], line_no)
+            tokens.append((TokenType.COMPARISON, program[0], line_no))
             program = program[1:]
         elif is_int(program[0]):
             number = ''
             while program and is_int(program[0]):
                 number += program[0]
                 program = program[1:]
-            yield (TokenType.INT, number, line_no)
+            tokens.append((TokenType.INT, number, line_no))
         elif startswith("True", program):
-            yield (TokenType.BOOL, 1, line_no)
+            tokens.append((TokenType.BOOL, 1, line_no))
             program = program[4:]
         elif startswith("False", program):
-            yield (TokenType.BOOL, 0, line_no)
+            tokens.append((TokenType.BOOL, 0, line_no))
             program = program[5:]
         elif startswith("dup", program):
-            yield (TokenType.KEYWORD, "dup", line_no)
+            tokens.append((TokenType.KEYWORD, "dup", line_no))
             program = program[3:]
         elif startswith("drop", program):
-            yield (TokenType.KEYWORD, "drop", line_no)
+            tokens.append((TokenType.KEYWORD, "drop", line_no))
             program = program[4:]
         elif startswith("over", program):
-            yield (TokenType.KEYWORD, "over", line_no)
+            tokens.append((TokenType.KEYWORD, "over", line_no))
             program = program[4:]
         elif startswith("swap", program):
-            yield (TokenType.KEYWORD, "swap", line_no)
+            tokens.append((TokenType.KEYWORD, "swap", line_no))
             program = program[4:]
         elif startswith("rot", program):
-            yield (TokenType.KEYWORD, "rot", line_no)
+            tokens.append((TokenType.KEYWORD, "rot", line_no))
             program = program[3:]
         elif startswith("syscall", program):
-            yield (TokenType.KEYWORD, "syscall", line_no)
+            tokens.append((TokenType.KEYWORD, "syscall", line_no))
             program = program[7:]
         elif startswith("import", program):
-            yield (TokenType.KEYWORD, "import", line_no)
+            tokens.append((TokenType.KEYWORD, "import", line_no))
             program = program[6:]
+        elif startswith("if", program):
+            tokens.append((TokenType.KEYWORD, "if", line_no))
+            program = program[2:]
+        elif startswith("else", program):
+            tokens.append((TokenType.KEYWORD, "else", line_no))
+            program = program[4:]
         elif is_alphabet(program[0]):
             identifier = ''
             while is_alphabet(program[0]) or is_int(program[0]):
                 identifier += program[0]
                 program = program[1:]
-            yield (TokenType.IDENTIFIER, identifier, line_no)
+            tokens.append((TokenType.IDENTIFIER, identifier, line_no))
         else:
             raise ValueError(f"Syntax error at line {line_no}: `{program}`")
+
+    return tokens
 
 
 ### Parser ###
@@ -154,11 +163,14 @@ class Opcode:
     ADD = "add"
     DROP = "drop"
     DUP = "dup"
+    ELSE = "start of else-block"
+    IF = "start of if-block"
     IS_EQUAL = "is equal?"
     IS_GREATER = "is greater?"
     IS_GREATER_OR_EQUAL = "is greater or equal?"
     IS_LESS = "is less?"
     IS_LESS_OR_EQUAL = "is less or equal?"
+    LABEL = "label"
     MULTIPLY = "multiply"
     OVER = "over"
     PUSH_BOOL = "push bool"
@@ -170,64 +182,113 @@ class Opcode:
     SYSCALL = "syscall"
 
 
-def parse(token_generator):
-    for token_type, value, line_no in token_generator:
-        if token_type == TokenType.KEYWORD and value == "import":
-            import_type, import_value, _ = next(token_generator)
+def parse(tokens, token_index=0, return_on_if=False):
+    opcodes = []
+    if_index = 1
+    while token_index < len(tokens):
+        token_type, value, line_no = tokens[token_index]
+        token_index += 1
+
+        if token_type == TokenType.BLOCK_END:
+            break
+        elif token_type == TokenType.KEYWORD and value == "import":
+            import_type, import_value, line_no = tokens[token_index]
+            token_index += 1
             if import_type != TokenType.IDENTIFIER:
                 raise ValueError(
                     f"Syntax Error: expected import identifier on line {line_no}"
                 )
             filename = import_value.replace(".", "/") + ".a"
-            yield from parse_file(filename)
+            opcodes.extend(parse_file(filename))
         elif token_type == TokenType.INT:
-            yield (Opcode.PUSH_INT, value, line_no)
+            opcodes.append((Opcode.PUSH_INT, value, line_no))
         elif token_type == TokenType.BOOL:
-            yield (Opcode.PUSH_BOOL, value, line_no)
+            opcodes.append((Opcode.PUSH_BOOL, value, line_no))
         elif token_type == TokenType.STRING:
-            yield (Opcode.PUSH_STRING, value, line_no)
+            opcodes.append((Opcode.PUSH_STRING, value, line_no))
         elif token_type == TokenType.ARITHMETIC:
             if value == "+":
-                yield (Opcode.ADD, 0, line_no)
+                opcodes.append((Opcode.ADD, 0, line_no))
             elif value == "-":
-                yield (Opcode.SUBTRACT, 0, line_no)
+                opcodes.append((Opcode.SUBTRACT, 0, line_no))
             elif value == "*":
-                yield (Opcode.MULTIPLY, 0, line_no)
+                opcodes.append((Opcode.MULTIPLY, 0, line_no))
             else:
                 raise ValueError(f"Unknown value for arithmetic: {value}")
         elif token_type == TokenType.COMPARISON:
             if value == "=":
-                yield (Opcode.IS_EQUAL, 0, line_no)
+                opcodes.append((Opcode.IS_EQUAL, 0, line_no))
             elif value == ">":
-                yield (Opcode.IS_GREATER, 0, line_no)
+                opcodes.append((Opcode.IS_GREATER, 0, line_no))
             elif value == ">=":
-                yield (Opcode.IS_GREATER_OR_EQUAL, 0, line_no)
+                opcodes.append((Opcode.IS_GREATER_OR_EQUAL, 0, line_no))
             elif value == "<":
-                yield (Opcode.IS_LESS, 0, line_no)
+                opcodes.append((Opcode.IS_LESS, 0, line_no))
             elif value == "<=":
-                yield (Opcode.IS_LESS_OR_EQUAL, 0, line_no)
+                opcodes.append((Opcode.IS_LESS_OR_EQUAL, 0, line_no))
             else:
                 raise ValueError(f"Unknown value for comparison: {value}")
         elif token_type == TokenType.KEYWORD:
             if value == "dup":
-                yield (Opcode.DUP, 0, line_no)
+                opcodes.append((Opcode.DUP, 0, line_no))
             elif value == "drop":
-                yield (Opcode.DROP, 0, line_no)
+                opcodes.append((Opcode.DROP, 0, line_no))
             elif value == "rot":
-                yield (Opcode.ROT, 0, line_no)
+                opcodes.append((Opcode.ROT, 0, line_no))
             elif value == "swap":
-                yield (Opcode.SWAP, 0, line_no)
+                opcodes.append((Opcode.SWAP, 0, line_no))
             elif value == "over":
-                yield (Opcode.OVER, 0, line_no)
+                opcodes.append((Opcode.OVER, 0, line_no))
             elif value == "syscall":
-                operand_type, operand, line_no = next(token_generator)
+                operand_type, operand, line_no = tokens[token_index]
+                token_index += 1
                 if operand_type != TokenType.INT:
                     raise ValueError(
                         "Syntax error: expected integer after syscall"
                     )
-                yield (Opcode.SYSCALL, int(operand), line_no)
+                opcodes.append((Opcode.SYSCALL, int(operand), line_no))
+            elif value == "if":
+                if return_on_if:
+                    token_index += 1
+                    return opcodes, token_index
+
+                if_identifier = f"if_{if_index}"
+                else_identifier = f"else_{if_index}"
+                if_index += 1
+
+                opcodes.append((Opcode.IF, if_identifier, line_no))
+
+                block_start_type, _, line_no = tokens[token_index]
+                token_index += 1
+                if block_start_type != TokenType.BLOCK_START:
+                    raise SyntaxError(
+                        "Expected code block after `if` keyword"
+                    )
+                ir, token_index = parse(tokens, token_index + 1)
+                opcodes.extend(ir)
+
+                _, value, _ = tokens[token_index]
+                if value == "else":
+                    opcodes.append((Opcode.ELSE, else_identifier, line_no))
+                    opcodes.append((Opcode.LABEL, if_identifier, line_no))
+                    token_index += 1
+                    block_start_type, _, line_no = tokens[token_index]
+                    if block_start_type == TokenType.BLOCK_START:
+                        ir, token_index = parse(tokens, token_index + 1)
+                        opcodes.extend(ir)
+                        opcodes.append((Opcode.LABEL, else_identifier, line_no))
+                    else:
+                        raise NotImplementedError(
+                            "`else if` is not implemented yet"
+                        )
+                else:
+                    opcodes.append((Opcode.LABEL, if_identifier, line_no))
+        elif token_type == TokenType.BLOCK_START:
+            raise SyntaxError(f"Unexpected block start on line {line_no}")
         else:
             raise ValueError(f"Unknown token type: {token_type}")
+
+    return opcodes, token_index
 
 
 ### Code generator ###
@@ -361,6 +422,14 @@ def generate_code(ir):
                 output("",  "pop", "rsi")
             output("",  "pop", "rdi")
             output("",  "syscall", "")
+        elif opcode == Opcode.IF:
+            output("", "pop", "rax")
+            output("", "test", "rax, rax")
+            output("", "jz", operand)
+        elif opcode == Opcode.LABEL:
+            output(f"{operand}:", "", "")
+        elif opcode == Opcode.ELSE:
+            output("", "jmp", operand)
         else:
             raise ValueError(f"Unknown opcode: {opcode}")
 
@@ -382,8 +451,8 @@ def read_file(filename):
 
 def parse_file(filename):
     content = read_file(filename)
-    token_generator = get_tokens(content)
-    ir = parse(token_generator)
+    tokens = fetch_tokens(content)
+    ir, _ = parse(tokens, 0)
     return ir
 
 

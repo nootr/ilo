@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-for file in $(find tests/ -maxdepth 1 -not -type d); do
+for file in $(find tests/*.a -maxdepth 1 -not -type d); do
   # Compile
   echo "[COMP] ${file}"
   python a.py $file > test.asm
@@ -48,6 +48,9 @@ for file in $(find tests/ -maxdepth 1 -not -type d); do
   rm test test.o test.asm
 
   if [[ "$SUCCESS" -eq 0 ]]; then
+    echo "Test failed!"
     exit 1
   fi
 done
+
+echo "All tests OK!"

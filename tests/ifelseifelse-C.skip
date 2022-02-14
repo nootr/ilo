@@ -1,0 +1,13 @@
+# Description:If/elseif/else-statement C
+# Exit code:0
+# Stdout:C
+# Stderr:
+
+False if
+  1 "A" 14 1 syscall 3
+else False if
+  1 "B" 14 1 syscall 3
+else
+  1 "C" 14 1 syscall 3
+
+0
