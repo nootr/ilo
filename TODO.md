@@ -10,7 +10,7 @@
 - [x] Hello world!
 - [x] Basic `import` keyword
 - [x] If-statements
-- [ ] Function calls
+- [x] Function calls
 - [ ] Dynamic memory allocation
 - [ ] Strings (dynamic)
 - [ ] String manipulation functions
