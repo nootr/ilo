@@ -173,6 +173,18 @@ def fetch_tokens(program):
         elif startswith("char", program):
             tokens.append((TokenType.TYPE, "char", line_no))
             program = program[4:]
+        elif startswith("derefc", program):
+            tokens.append((TokenType.KEYWORD, "derefc", line_no))
+            program = program[6:]
+        elif startswith("derefi", program):
+            tokens.append((TokenType.KEYWORD, "derefi", line_no))
+            program = program[6:]
+        elif startswith("derefb", program):
+            tokens.append((TokenType.KEYWORD, "derefb", line_no))
+            program = program[6:]
+        elif startswith("derefp", program):
+            tokens.append((TokenType.KEYWORD, "derefp", line_no))
+            program = program[6:]
         elif is_alphabet(program[0]):
             identifier = ''
             while is_alphabet(program[0]) or is_int(program[0]):
@@ -192,6 +204,10 @@ class Opcode:
     ADD = "add"
     CALL = "call"
     CLEANUP = "cleanup"
+    DEREF_B = "dereference pointer to boolean"
+    DEREF_C = "dereference pointer to character"
+    DEREF_I = "dereference pointer to integer"
+    DEREF_P = "dereference pointer to pointer"
     DROP = "drop"
     DUP = "dup"
     ELSE = "start of else-block"
@@ -389,8 +405,18 @@ def parse(tokens, token_index=0, return_on_if=False, args={}):
                 ir, token_index = parse(tokens, token_index, args=fn_args)
                 opcodes.extend(ir)
                 opcodes.append((Opcode.RETURN, 0, line_no))
+            elif value == "derefb":
+                opcodes.append((Opcode.DEREF_B, 0, line_no))
+            elif value == "derefc":
+                opcodes.append((Opcode.DEREF_C, 0, line_no))
+            elif value == "derefi":
+                opcodes.append((Opcode.DEREF_I, 0, line_no))
+            elif value == "derefp":
+                opcodes.append((Opcode.DEREF_P, 0, line_no))
         elif token_type == TokenType.BLOCK_START:
             raise SyntaxError(f"Unexpected block start on line {line_no}")
+        elif token_type == TokenType.TYPE:
+            raise SyntaxError(f"Unexpected type on line {line_no}")
         elif token_type == TokenType.IDENTIFIER:
             if value in functions:
                 opcodes.append((Opcode.CALL, value, line_no))
@@ -560,6 +586,15 @@ def generate_code(ir):
         elif opcode == Opcode.GET_ARG:
             output("", "mov", "rax, rbp")
             output("", "add", f"rax, {operand*8}")
+            output("", "mov", "rbx, [rax]")
+            output("", "push", "rbx")
+        elif opcode in (
+            Opcode.DEREF_B,
+            Opcode.DEREF_C,
+            Opcode.DEREF_I,
+            Opcode.DEREF_P,
+        ):
+            output("", "pop", "rax")
             output("", "mov", "rbx, [rax]")
             output("", "push", "rbx")
         else:
