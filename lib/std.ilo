@@ -4,3 +4,11 @@ def strlen: ptr s -> int
         0
     else
         s 1 + strlen 1 +
+
+def puts: ptr s -> bool
+    # Prints a string and returns the write syscall exit-code
+    1         # File descriptor: STDOUT
+    s         # Pointer to string
+    s strlen  # String length
+    1         # Syscall no.: write
+    syscall 3
