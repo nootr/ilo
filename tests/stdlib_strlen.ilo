@@ -1,0 +1,9 @@
+# Description:Standard library - strlen
+# Exit code:9
+# Stdout:
+# Stderr:
+
+import lib.std
+
+def main: ptr argv, int argc -> int
+    "FooBarBaz" strlen

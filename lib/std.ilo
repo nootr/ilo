@@ -1,0 +1,6 @@
+def strlen: ptr s -> int
+    # Returns the length of a given string
+    s derefc 0 = if
+        0
+    else
+        s 1 + strlen 1 +
