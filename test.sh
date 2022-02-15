@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-for file in $(find tests/*.a -maxdepth 1 -not -type d); do
+for file in $(find tests/*.ilo -maxdepth 1 -not -type d); do
   # Compile
   echo "[COMP] ${file}"
-  python a.py $file > test.asm
+  python ilo.py $file > test.asm
   nasm -felf64 test.asm -o test.o
   ld -o test test.o
 

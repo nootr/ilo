@@ -1,6 +1,6 @@
-# a
+# Ilo
 
-[![CI/CD](https://github.com/nootr/a/actions/workflows/main.yml/badge.svg)](https://github.com/nootr/a/actions)
+[![CI/CD](https://github.com/nootr/ilo/actions/workflows/main.yml/badge.svg)](https://github.com/nootr/ilo/actions)
 
 A programming language.
 
