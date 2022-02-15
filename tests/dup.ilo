@@ -3,4 +3,5 @@
 # Stdout:
 # Stderr:
 
-3 4 dup +
+def main: ptr argv, int argc -> int
+    3 4 dup +

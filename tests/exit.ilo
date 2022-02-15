@@ -3,8 +3,9 @@
 # Stdout:
 # Stderr:
 
-1          # Exit code
-60         # Syscall no. (exit)
-syscall 1
+def main: ptr argv, int argc -> int
+    1          # Exit code
+    60         # Syscall no. (exit)
+    syscall 1
 
-2          # Exit code
+    2          # Exit code

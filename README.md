@@ -20,8 +20,11 @@ import std
 def add: int x, int y -> int
     x y +
 
-2 1 add 4 < if
-    "Yeah\n" puts
-else
-    "Huh?!\n" puts
+def main: ptr argv, int argc -> int
+    2 1 add 4 < if
+        "Yeah\n" puts
+    else
+        "Huh?!\n" puts
+
+    0  # Exit code
 ```

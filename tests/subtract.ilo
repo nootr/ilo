@@ -3,5 +3,6 @@
 # Stdout:
 # Stderr:
 
-8 2 -
-2 -
+def main: int argc, ptr argv -> int
+    8 2 -
+    2 -

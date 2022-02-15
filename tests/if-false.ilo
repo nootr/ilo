@@ -3,17 +3,18 @@
 # Stdout: Yay!
 # Stderr:
 
-False if
-  1             # File descriptor
-  "It works!"   # String
-  9             # String length
-  1             # Syscall no. (write)
-  syscall 3
+def main: int argc, ptr argv -> int
+    False if
+      1             # File descriptor
+      "It works!"   # String
+      9             # String length
+      1             # Syscall no. (write)
+      syscall 3
 
-1               # File descriptor
-" Yay!"         # String
-5               # String length
-1               # Syscall no. (write)
-syscall 3
+    1               # File descriptor
+    " Yay!"         # String
+    5               # String length
+    1               # Syscall no. (write)
+    syscall 3
 
-0               # Exit code
+    0               # Exit code

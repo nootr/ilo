@@ -21,14 +21,18 @@ import argparse
 
 class TokenType:
     ARITHMETIC = "ARITHMETIC"
+    ARROW = "ARROW"
     BLOCK_START = "BLOCK_START"
     BLOCK_END = "BLOCK_END"
     BOOL = "BOOL"
+    COLON = "COLON"
+    COMMA = "COMMA"
     COMPARISON = "COMPARISON"
     IDENTIFIER = "IDENTIFIER"
     INT = "INT"
     KEYWORD = "KEYWORD"
     STRING = "STRING"
+    TYPE = "TYPE"
 
 
 def is_int(c):
@@ -54,16 +58,17 @@ def fetch_tokens(program):
                 indent += 1
             program = program[1:]
 
-        if at_start and indent > indent_stack[-1]:
-            indent_stack.append(indent)
-            tokens.append((TokenType.BLOCK_START, indent, line_no))
-        elif at_start and indent < indent_stack[-1]:
-            if indent not in indent_stack:
-                raise ValueError(f"Syntax error: unexpected indent of {indent}")
+        if at_start and program[0] != "\n":
+            if indent > indent_stack[-1]:
+                indent_stack.append(indent)
+                tokens.append((TokenType.BLOCK_START, indent, line_no))
+            elif indent < indent_stack[-1]:
+                if indent not in indent_stack:
+                    raise ValueError(f"Syntax error: unexpected indent of {indent}")
 
-            while indent_stack[-1] != indent:
-                tokens.append((TokenType.BLOCK_END, indent_stack[-1], line_no))
-                indent_stack.pop()
+                while indent_stack[-1] != indent:
+                    tokens.append((TokenType.BLOCK_END, indent_stack[-1], line_no))
+                    indent_stack.pop()
 
         if not program:
             break
@@ -90,6 +95,15 @@ def fetch_tokens(program):
             if program:
                 program = program[1:]
             tokens.append((TokenType.STRING, string, line_no))
+        elif startswith("->", program):
+            tokens.append((TokenType.ARROW, "->", line_no))
+            program = program[2:]
+        elif startswith(",", program):
+            tokens.append((TokenType.COMMA, ",", line_no))
+            program = program[1:]
+        elif startswith(":", program):
+            tokens.append((TokenType.COLON, ":", line_no))
+            program = program[1:]
         elif startswith("!=", program):
             tokens.append((TokenType.COMPARISON, "!=", line_no))
             program = program[2:]
@@ -144,6 +158,21 @@ def fetch_tokens(program):
         elif startswith("else", program):
             tokens.append((TokenType.KEYWORD, "else", line_no))
             program = program[4:]
+        elif startswith("def", program):
+            tokens.append((TokenType.KEYWORD, "def", line_no))
+            program = program[3:]
+        elif startswith("int", program):
+            tokens.append((TokenType.TYPE, "int", line_no))
+            program = program[3:]
+        elif startswith("ptr", program):
+            tokens.append((TokenType.TYPE, "ptr", line_no))
+            program = program[3:]
+        elif startswith("bool", program):
+            tokens.append((TokenType.TYPE, "bool", line_no))
+            program = program[4:]
+        elif startswith("char", program):
+            tokens.append((TokenType.TYPE, "char", line_no))
+            program = program[4:]
         elif is_alphabet(program[0]):
             identifier = ''
             while is_alphabet(program[0]) or is_int(program[0]):
@@ -161,9 +190,13 @@ def fetch_tokens(program):
 
 class Opcode:
     ADD = "add"
+    CALL = "call"
+    CLEANUP = "cleanup"
     DROP = "drop"
     DUP = "dup"
     ELSE = "start of else-block"
+    FUNCTION = "function definition"
+    GET_ARG = "get argument"
     IF = "start of if-block"
     IS_EQUAL = "is equal?"
     IS_GREATER = "is greater?"
@@ -176,13 +209,17 @@ class Opcode:
     PUSH_BOOL = "push bool"
     PUSH_INT = "push int"
     PUSH_STRING = "push string"
+    RETURN = "return"
     ROT = "rot"
     SUBTRACT = "subtract"
     SWAP = "swap"
     SYSCALL = "syscall"
 
 
-def parse(tokens, token_index=0, return_on_if=False):
+functions = {}
+
+def parse(tokens, token_index=0, return_on_if=False, args={}):
+    global functions
     opcodes = []
     if_index = 1
     while token_index < len(tokens):
@@ -264,7 +301,7 @@ def parse(tokens, token_index=0, return_on_if=False):
                     raise SyntaxError(
                         "Expected code block after `if` keyword"
                     )
-                ir, token_index = parse(tokens, token_index + 1)
+                ir, token_index = parse(tokens, token_index, args=args)
                 opcodes.extend(ir)
 
                 _, value, _ = tokens[token_index]
@@ -274,7 +311,7 @@ def parse(tokens, token_index=0, return_on_if=False):
                     token_index += 1
                     block_start_type, _, line_no = tokens[token_index]
                     if block_start_type == TokenType.BLOCK_START:
-                        ir, token_index = parse(tokens, token_index + 1)
+                        ir, token_index = parse(tokens, token_index + 1, args=args)
                         opcodes.extend(ir)
                         opcodes.append((Opcode.LABEL, else_identifier, line_no))
                     else:
@@ -283,8 +320,85 @@ def parse(tokens, token_index=0, return_on_if=False):
                         )
                 else:
                     opcodes.append((Opcode.LABEL, if_identifier, line_no))
+            elif value == "def":
+                name_type, function_name, _ = tokens[token_index]
+                token_index += 1
+                if name_type != TokenType.IDENTIFIER:
+                    raise SyntaxError(
+                        f"Expected identifier after `def` keyword on line {line_no}"
+                    )
+                if function_name in functions:
+                    raise ValueError(
+                        f"Function {function_name} has already been defined"
+                    )
+
+                colon_type, _, _ = tokens[token_index]
+                token_index += 1
+                if colon_type != TokenType.COLON:
+                    raise SyntaxError(
+                        f"Expected colon after identifier on line {line_no}"
+                    )
+
+                opcodes.append((Opcode.FUNCTION, function_name, line_no))
+
+                next_type, _, line_no = tokens[token_index]
+                token_index += 1
+                fn_args = {}
+                while next_type != TokenType.ARROW:
+                    if next_type != TokenType.TYPE:
+                        raise SyntaxError(
+                            f"{line_no}: Expected type in function definition"
+                        )
+                    # TODO: Type checking
+
+                    next_type, arg_name, line_no = tokens[token_index]
+                    token_index += 1
+                    if next_type != TokenType.IDENTIFIER:
+                        raise SyntaxError(
+                            f"{line_no}: Expected identifier after type"
+                        )
+                    fn_args[arg_name] = len(fn_args)
+
+                    next_type, _, _ = tokens[token_index]
+                    if next_type == TokenType.COMMA:
+                        token_index += 1
+                    elif next_type != TokenType.ARROW:
+                        raise SyntaxError(
+                            f"{line_no}: Expected comma or arrow after types"
+                        )
+
+                    next_type, _, line_no = tokens[token_index]
+                    token_index += 1
+
+                functions[function_name] = len(fn_args)
+
+                next_type, return_type, _ = tokens[token_index]
+                token_index += 1
+                if next_type != TokenType.TYPE:
+                    raise SyntaxError(
+                        f"{line_no}: Expected return type in function definition"
+                    )
+                # TODO: Type checking
+
+                block_start_type, _, line_no = tokens[token_index]
+                token_index += 1
+                if block_start_type != TokenType.BLOCK_START:
+                    raise SyntaxError(
+                        "Expected code block after function declaration"
+                    )
+                ir, token_index = parse(tokens, token_index, args=fn_args)
+                opcodes.extend(ir)
+                opcodes.append((Opcode.RETURN, 0, line_no))
         elif token_type == TokenType.BLOCK_START:
             raise SyntaxError(f"Unexpected block start on line {line_no}")
+        elif token_type == TokenType.IDENTIFIER:
+            if value in functions:
+                opcodes.append((Opcode.CALL, value, line_no))
+            elif value in args:
+                index = len(args) - args[value] + 1
+                opcodes.append((Opcode.GET_ARG, index, line_no))
+            else:
+                raise SyntaxError(f"Unexpected identifier on line {line_no}")
         else:
             raise ValueError(f"Unknown token type: {token_type}")
 
@@ -306,7 +420,6 @@ def generate_code(ir):
     string_index = 1
     output("", "global", "_start")
     output("", "section", ".text")
-    output("_start:", "", "")
 
     for opcode, operand, line_no in ir:
         output("", f"; {line_no}: {opcode}", "")
@@ -430,9 +543,31 @@ def generate_code(ir):
             output(f"{operand}:", "", "")
         elif opcode == Opcode.ELSE:
             output("", "jmp", operand)
+        elif opcode == Opcode.FUNCTION:
+            output(f"{operand}:", "", "")
+            output("", "push", "rbp")
+            output("", "mov", "rbp, rsp")
+        elif opcode == Opcode.RETURN:
+            output("", "pop", "rax")
+            output("", "mov", "rsp, rbp")
+            output("", "pop", "rbp")
+            output("", "ret", "")
+        elif opcode == Opcode.CALL:
+            output("", "call", operand)
+            for _ in range(functions[operand]):
+                output("", "pop", "rbx")
+            output("", "push", "rax")
+        elif opcode == Opcode.GET_ARG:
+            output("", "mov", "rax, rbp")
+            output("", "add", f"rax, {operand*8}")
+            output("", "mov", "rbx, [rax]")
+            output("", "push", "rbx")
         else:
             raise ValueError(f"Unknown opcode: {opcode}")
 
+    output("_start:", "", "")
+    output("", "call", "main")
+    output("", "push", "rax")
     output("exit:", "", "")
     output("", "mov", "rax, 60")
     output("", "pop", "rdi")

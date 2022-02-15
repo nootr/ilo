@@ -3,4 +3,5 @@
 # Stdout:
 # Stderr:
 
-3 4 swap
+def main: int argc, ptr argv -> int
+    3 4 swap

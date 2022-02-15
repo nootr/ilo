@@ -3,4 +3,5 @@
 # Stdout:
 # Stderr:
 
-True
+def main: int argc, ptr argv -> int
+    True

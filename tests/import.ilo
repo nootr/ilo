@@ -3,6 +3,7 @@
 # Stdout:
 # Stderr:
 
-import tests.fixtures.importee  # Contains `3 4`
+import tests.fixtures.importee  # Contains `foo -> 3`
 
-+
+def main: int argc, ptr argv -> int
+    foo 4 +

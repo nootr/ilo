@@ -1,0 +1,13 @@
+# Description:Argument order
+# Exit code:1
+# Stdout:
+# Stderr:
+
+def first: int x, int y -> int
+    x
+
+def second: int x, int y -> int
+    y
+
+def main: int argc, ptr argv -> int
+    1 2 first

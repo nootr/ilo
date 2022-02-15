@@ -3,4 +3,5 @@
 # Stdout:
 # Stderr:
 
-1 2 3 rot +
+def main: int argc, ptr argv -> int
+    1 2 3 rot +
