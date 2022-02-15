@@ -1,10 +1,15 @@
 # Description:Standard library - puts
 # Exit code:0
-# Stdout:Hello world!\n
+# Stdout:Hello world!!!!\n
 # Stderr:
 
 import lib.std
 
 def main: ptr argv, int argc -> int
-    "Hello world!\n" puts
+    "H"     puts
+    "el"    puts
+    "lo "   puts
+    "worl"  puts
+    "d!!!!" puts
+    "\n"    puts
     0
