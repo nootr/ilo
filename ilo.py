@@ -588,12 +588,21 @@ def generate_code(ir):
             output("", "add", f"rax, {operand*8}")
             output("", "mov", "rbx, [rax]")
             output("", "push", "rbx")
-        elif opcode in (
-            Opcode.DEREF_B,
-            Opcode.DEREF_C,
-            Opcode.DEREF_I,
-            Opcode.DEREF_P,
-        ):
+        elif opcode == Opcode.DEREF_B:
+            output("", "pop", "rax")
+            output("", "xor", "rbx, rbx")
+            output("", "mov", "bl, [rax]")
+            output("", "push", "rbx")
+        elif opcode == Opcode.DEREF_C:
+            output("", "pop", "rax")
+            output("", "xor", "rbx, rbx")
+            output("", "mov", "bl, [rax]")
+            output("", "push", "rbx")
+        elif opcode == Opcode.DEREF_I:
+            output("", "pop", "rax")
+            output("", "mov", "rbx, [rax]")
+            output("", "push", "rbx")
+        elif opcode == Opcode.DEREF_P:
             output("", "pop", "rax")
             output("", "mov", "rbx, [rax]")
             output("", "push", "rbx")
