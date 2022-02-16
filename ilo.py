@@ -649,7 +649,7 @@ def generate_code(ir):
             if operand > 4:
                 output("",  "pop", "r8")
             if operand > 3:
-                output("",  "pop", "rcx")
+                output("",  "pop", "r10")
             if operand > 2:
                 output("",  "pop", "rdx")
             if operand > 1:
