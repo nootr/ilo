@@ -213,6 +213,9 @@ def fetch_tokens(program):
         elif startswith("const", program):
             tokens.append((TokenType.KEYWORD, "const", line_no))
             program = program[5:]
+        elif startswith("while", program):
+            tokens.append((TokenType.KEYWORD, "while", line_no))
+            program = program[5:]
         elif is_alphabet(program[0]):
             identifier = ''
             while is_alphabet(program[0]) or is_int(program[0]):
@@ -266,16 +269,20 @@ class Opcode:
     SUBTRACT = "subtract"
     SWAP = "swap"
     SYSCALL = "syscall"
+    WHILE_END = "end of while-loop"
+    WHILE_START = "start of while-loop"
 
 
 functions = {}
 buffers = []
 constants = {}
 if_index = 1
+while_index = 1
 
-def parse(tokens, token_index=0, return_on_if=False, args={}):
+def parse(tokens, token_index=0, return_on=None, args={}):
     global functions
     global if_index
+    global while_index
     opcodes = []
     while token_index < len(tokens):
         token_type, value, line_no = tokens[token_index]
@@ -343,11 +350,24 @@ def parse(tokens, token_index=0, return_on_if=False, args={}):
                         "Syntax error: expected integer after syscall"
                     )
                 opcodes.append((Opcode.SYSCALL, int(operand), line_no))
-            elif value == "if":
-                if return_on_if:
-                    token_index += 1
-                    return opcodes, token_index
+            elif value == "while":
+                while_label = f"while_{while_index}"
+                while_index += 1
+                opcodes.append((Opcode.LABEL, while_label, line_no))
 
+                ir, token_index = parse(
+                    tokens,
+                    token_index,
+                    return_on=TokenType.BLOCK_START,
+                    args=args,
+                )
+                opcodes.extend(ir)
+
+                opcodes.append((Opcode.WHILE_START, while_label, line_no))
+                ir, token_index = parse(tokens, token_index, args=args)
+                opcodes.extend(ir)
+                opcodes.append((Opcode.WHILE_END, while_label, line_no))
+            elif value == "if":
                 if_identifier = f"if_{if_index}"
                 else_identifier = f"else_{if_index}"
                 if_index += 1
@@ -494,6 +514,8 @@ def parse(tokens, token_index=0, return_on_if=False, args={}):
             elif value == "setp":
                 opcodes.append((Opcode.SET_P, 0, line_no))
         elif token_type == TokenType.BLOCK_START:
+            if return_on == TokenType.BLOCK_START:
+                return opcodes, token_index
             raise SyntaxError(f"Unexpected block start on line {line_no}")
         elif token_type == TokenType.TYPE:
             raise SyntaxError(f"Unexpected type on line {line_no}")
@@ -729,6 +751,13 @@ def generate_code(ir):
                 "",
                 to_string=True,
             )
+        elif opcode == Opcode.WHILE_START:
+            output("", "pop", "rax")
+            output("", "test", "rax, rax")
+            output("", "jz", f"{operand}_end")
+        elif opcode == Opcode.WHILE_END:
+            output("", "jmp", operand)
+            output(f"{operand}_end:", "", "")
         else:
             raise ValueError(f"Unknown opcode: {opcode}")
 
