@@ -13,15 +13,15 @@ for file in $(find tests/*.ilo -maxdepth 1 -not -type d); do
   STDERR="$(./test 2>&1 1>/dev/null)"
 
   # Verify results
-  DESCRIPTION="$(grep '^# Description:' $file | cut -d: -f2)"
+  DESCRIPTION="$(grep '^# Description:' $file | cut -d: -f2-)"
   EXPECTED_EXIT_CODE="$(
-    printf "%b" "$(grep '^# Exit code:' $file | cut -d: -f2)"
+    printf "%b" "$(grep '^# Exit code:' $file | cut -d: -f2-)"
   )"
   EXPECTED_STDOUT="$(
-    printf "%b" "$(grep '^# Stdout:' $file | cut -d: -f2)"
+    printf "%b" "$(grep '^# Stdout:' $file | cut -d: -f2-)"
   )"
   EXPECTED_STDERR="$(
-    printf "%b" "$(grep '^# Stderr:' $file | cut -d: -f2)"
+    printf "%b" "$(grep '^# Stderr:' $file | cut -d: -f2-)"
   )"
 
   SUCCESS=1

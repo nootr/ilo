@@ -1,0 +1,59 @@
+# Description:Data structure - Linked list
+# Exit code:4
+# Stdout:
+# Stderr:
+
+buffer list 96  # 4 items, 24 bytes per item
+
+const item.prev  0  # ptr
+const item.next  8  # ptr
+const item.value 16 # int
+
+const ITEM_SIZE  24
+
+const NULL 0
+
+
+def create: ptr root, int value -> ptr
+    NULL  root item.prev  + setp
+    NULL  root item.next  + setp
+    value root item.value + setp
+
+def append: ptr root, int value -> ptr
+    root item.next + derefp NULL = if
+        root  root ITEM_SIZE + item.prev  + setp
+        NULL  root ITEM_SIZE + item.next  + setp
+        value root ITEM_SIZE + item.value + seti
+        root ITEM_SIZE + root item.next + setp
+
+        root item.next +
+    else
+        root item.next + value append
+
+def delete: ptr root, int index -> ptr
+    index 0 = if
+        root item.next + derefp root item.prev + derefp item.next + setp
+        root item.prev + derefp root item.next + derefp item.prev + setp
+        root
+    else
+        root item.next + derefp index 1 - delete
+
+def main: int argc, ptr argv -> int
+    # Initialize list [1]
+    list 1 create
+
+    # Append items [1, 2, 3, 4]
+    list 2 append
+    list 3 append
+    list 4 append
+
+    # Delete item [1, 3, 4]
+    list 1 delete
+
+    # Walk through list
+    list                 # [1*, 3 , 4 ]
+    item.next  + derefp  # [1 , 3*, 4 ]
+    item.next  + derefp  # [1 , 3 , 4*]
+    item.prev  + derefp  # [1 , 3*, 4 ]
+    item.next  + derefp  # [1 , 3 , 4*]
+    item.value + derefi
