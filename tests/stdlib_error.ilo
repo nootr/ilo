@@ -1,0 +1,10 @@
+# Description:Standard library - error
+# Exit code:0
+# Stdout:
+# Stderr:foo
+
+import lib.std
+
+def main: ptr argv, int argc -> int
+    "foo" error
+    0

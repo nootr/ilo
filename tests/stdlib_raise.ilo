@@ -1,0 +1,9 @@
+# Description:Standard library - raise
+# Exit code:1
+# Stdout:
+# Stderr:Error: Foo bar baz\n
+
+import lib.std
+
+def main: ptr argv, int argc -> int
+    "Foo bar baz" raise

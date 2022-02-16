@@ -1,0 +1,10 @@
+# Description:Standard library - exit
+# Exit code:42
+# Stdout:
+# Stderr:
+
+import lib.std
+
+def main: ptr argv, int argc -> int
+    42 exit
+    "This should not happen" puts
