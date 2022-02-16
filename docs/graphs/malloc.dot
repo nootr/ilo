@@ -26,7 +26,7 @@ digraph malloc {
         first_block -> fits;
 
         # Walk blocks
-        fits [ label = "block.free and block.size > size_needed?" ];
+        fits [ label = "block.free and block.size >= size_needed?" ];
         fits -> next_block [ label = "False" ];
         next_block [ label = "block.next != NULL?" ];
         next_block -> next_page [ label = "False" ];
@@ -43,7 +43,7 @@ digraph malloc {
         perfect_fit [ label = "block.size == needed_size?"];
         perfect_fit -> return_block [ label = "True" ];
         perfect_fit -> init_block [ label = "False" ];
-        return_block [ label = "return block.ptr" ];
+        return_block [ label = "return block.data" ];
         init_block [ label = "Initialize block\n(metadata + next block)" ];
         init_block -> return_block;
     }
