@@ -1,0 +1,9 @@
+# Description:Constant
+# Exit code:42
+# Stdout:
+# Stderr:
+
+const foo 42
+
+def main: int argc, ptr argv -> int
+    foo

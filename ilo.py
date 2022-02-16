@@ -200,6 +200,9 @@ def fetch_tokens(program):
         elif startswith("buffer", program):
             tokens.append((TokenType.KEYWORD, "buffer", line_no))
             program = program[6:]
+        elif startswith("const", program):
+            tokens.append((TokenType.KEYWORD, "const", line_no))
+            program = program[5:]
         elif is_alphabet(program[0]):
             identifier = ''
             while is_alphabet(program[0]) or is_int(program[0]):
@@ -255,6 +258,7 @@ class Opcode:
 
 functions = {}
 buffers = []
+constants = {}
 
 def parse(tokens, token_index=0, return_on_if=False, args={}):
     global functions
@@ -442,6 +446,20 @@ def parse(tokens, token_index=0, return_on_if=False, args={}):
                     )
                 buffers.append(buffer_name)
                 opcodes.append((Opcode.CREATE_BUFFER, (buffer_name, buffer_size), line_no))
+            elif value == "const":
+                name_type, const_name, line_no = tokens[token_index]
+                token_index += 1
+                if name_type != TokenType.IDENTIFIER:
+                    raise SyntaxError(
+                        f"{line_no}: Expected identifier after `const` keyword"
+                    )
+                value_type, value, line_no = tokens[token_index]
+                token_index += 1
+                if value_type != TokenType.INT:
+                    raise SyntaxError(
+                        f"{line_no}: Non-integer constants are unsupported"
+                    )
+                constants[const_name] = value
             elif value == "derefb":
                 opcodes.append((Opcode.DEREF_B, 0, line_no))
             elif value == "derefc":
@@ -467,6 +485,8 @@ def parse(tokens, token_index=0, return_on_if=False, args={}):
                 opcodes.append((Opcode.CALL, value, line_no))
             elif value in buffers:
                 opcodes.append((Opcode.GET_BUFFER, value, line_no))
+            elif value in constants:
+                opcodes.append((Opcode.PUSH_INT, constants[value], line_no))
             elif value in args:
                 index = len(args) - args[value] + 1
                 opcodes.append((Opcode.GET_ARG, index, line_no))
