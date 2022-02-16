@@ -1,0 +1,10 @@
+# Description:Get/set character
+# Exit code:42
+# Stdout:
+# Stderr:
+
+buffer foo 1
+
+def main: int argc, ptr argv -> int
+    42 foo setc
+    foo derefc

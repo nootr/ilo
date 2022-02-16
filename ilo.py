@@ -185,6 +185,18 @@ def fetch_tokens(program):
         elif startswith("derefp", program):
             tokens.append((TokenType.KEYWORD, "derefp", line_no))
             program = program[6:]
+        elif startswith("setc", program):
+            tokens.append((TokenType.KEYWORD, "setc", line_no))
+            program = program[4:]
+        elif startswith("seti", program):
+            tokens.append((TokenType.KEYWORD, "seti", line_no))
+            program = program[4:]
+        elif startswith("setb", program):
+            tokens.append((TokenType.KEYWORD, "setb", line_no))
+            program = program[4:]
+        elif startswith("setp", program):
+            tokens.append((TokenType.KEYWORD, "setp", line_no))
+            program = program[4:]
         elif startswith("buffer", program):
             tokens.append((TokenType.KEYWORD, "buffer", line_no))
             program = program[6:]
@@ -232,6 +244,10 @@ class Opcode:
     PUSH_STRING = "push string"
     RETURN = "return"
     ROT = "rot"
+    SET_B = "set boolean value"
+    SET_C = "set character value"
+    SET_I = "set integer value"
+    SET_P = "set pointer value"
     SUBTRACT = "subtract"
     SWAP = "swap"
     SYSCALL = "syscall"
@@ -434,6 +450,14 @@ def parse(tokens, token_index=0, return_on_if=False, args={}):
                 opcodes.append((Opcode.DEREF_I, 0, line_no))
             elif value == "derefp":
                 opcodes.append((Opcode.DEREF_P, 0, line_no))
+            elif value == "setb":
+                opcodes.append((Opcode.SET_B, 0, line_no))
+            elif value == "setc":
+                opcodes.append((Opcode.SET_C, 0, line_no))
+            elif value == "seti":
+                opcodes.append((Opcode.SET_I, 0, line_no))
+            elif value == "setp":
+                opcodes.append((Opcode.SET_P, 0, line_no))
         elif token_type == TokenType.BLOCK_START:
             raise SyntaxError(f"Unexpected block start on line {line_no}")
         elif token_type == TokenType.TYPE:
@@ -447,10 +471,6 @@ def parse(tokens, token_index=0, return_on_if=False, args={}):
                 index = len(args) - args[value] + 1
                 opcodes.append((Opcode.GET_ARG, index, line_no))
             else:
-                import pprint
-                pprint.pprint(tokens)
-                print(token_index)
-                print(tokens[token_index])
                 raise SyntaxError(f"Unexpected identifier on line {line_no}")
         else:
             raise ValueError(f"Unknown token type: {token_type}")
@@ -634,6 +654,22 @@ def generate_code(ir):
             output("", "pop", "rax")
             output("", "mov", "rbx, [rax]")
             output("", "push", "rbx")
+        elif opcode == Opcode.SET_B:
+            output("", "pop", "rax")
+            output("", "pop", "rbx")
+            output("", "mov", "[rax], bl")
+        elif opcode == Opcode.SET_C:
+            output("", "pop", "rax")
+            output("", "pop", "rbx")
+            output("", "mov", "[rax], bl")
+        elif opcode == Opcode.SET_I:
+            output("", "pop", "rax")
+            output("", "pop", "rbx")
+            output("", "mov", "[rax], rbx")
+        elif opcode == Opcode.SET_P:
+            output("", "pop", "rax")
+            output("", "pop", "rbx")
+            output("", "mov", "[rax], rbx")
         elif opcode == Opcode.GET_BUFFER:
             output("", "mov", f"rax, {operand}")
             output("", "push", "rax")
