@@ -1,0 +1,36 @@
+digraph malloc {
+    # Check if page exists
+    next_page [ label = "page.next != NULL?" ];
+    next_page -> mmap [ label = "False" ];
+    next_page -> progress_page [ label = "True" ];
+
+    # Create new page
+    mmap [ label = "page.next := mmap()" ];
+    mmap -> init_page;
+    init_page [ label = "Initialize page\n(metadata + empty block)" ];
+    init_page -> progress_page;
+
+    # Search for suitable block
+    progress_page [ label = "page := page.next" ];
+    progress_page -> first_block;
+    first_block [ label = "block := page.blocks" ];
+    first_block -> fits;
+
+    # Walk blocks
+    fits [ label = "block.free and block.size > size_needed?" ];
+    fits -> next_block [ label = "False" ];
+    fits -> perfect_fit [ label = "True" ];
+    next_block [ label = "block.next != NULL?" ];
+    next_block -> next_page [ label = "False" ];
+    next_block -> progress_block [ label = "True" ];
+    progress_block [ label = "block := block.next" ];
+    progress_block -> fits;
+
+    # Occupy block
+    perfect_fit [ label = "block.size == needed_size?"];
+    perfect_fit -> return_block [ label = "True" ];
+    perfect_fit -> init_block [ label = "False" ];
+    return_block [ label = "return block.ptr" ];
+    init_block [ label = "Initialize block\n(metadata + next block)" ];
+    init_block -> return_block;
+}
