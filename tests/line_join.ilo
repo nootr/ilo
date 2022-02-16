@@ -1,0 +1,8 @@
+# Description:Explicit line joining
+# Exit code:12
+# Stdout:
+# Stderr:
+
+def main: int argc, ptr argv -> int
+    2 3 * \
+        2 *

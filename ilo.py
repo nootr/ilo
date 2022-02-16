@@ -58,7 +58,10 @@ def fetch_tokens(program):
                 indent += 1
             program = program[1:]
 
-        if at_start and program[0] != "\n":
+        if startswith("\\\n", program):
+            program = program[2:]
+            continue
+        elif at_start and program[0] != "\n":
             if indent > indent_stack[-1]:
                 indent_stack.append(indent)
                 tokens.append((TokenType.BLOCK_START, indent, line_no))
