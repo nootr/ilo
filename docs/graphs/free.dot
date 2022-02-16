@@ -1,0 +1,52 @@
+digraph free {
+    start -> block_offset;
+
+    subgraph cluster_free_block {
+        label = "free_block";
+
+        block_offset [ label = "block := block.ptr - offset"];
+        block_offset -> next_block_free;
+
+        next_block_free [ label = "block.next != NULL and block.next.free?" ];
+        next_block_free -> prev_block_free [ label = "False" ];
+        next_block_free -> merge_next [ label = "True" ];
+
+        merge_next [ label = "block.size += block.next.size\nblock.next := block.next.next" ];
+        merge_next -> prev_block_free;
+
+        prev_block_free [ label = "block.prev != NULL and block.prev.free?" ];
+        prev_block_free -> free_block [ label = "False" ];
+        prev_block_free -> merge_prev [ label = "True" ];
+
+        merge_prev [ label = "block.prev.size += block.size\nblock.prev.next := block.next" ];
+        merge_prev -> free_block;
+
+        free_block [ label = "block.free := True" ];
+    }
+
+    free_block -> page_offset;
+
+    subgraph cluster_free_page {
+        label = "free_page";
+
+        page_offset [ label = "page := block.page" ];
+        page_offset -> page_empty;
+        page_empty [ label = "page.blocks.free and page.blocks.next == NULL?"];
+        page_empty -> merge_prev_page [ label = "True" ];
+
+        merge_prev_page [ label = "page.prev.next := page.next\n*`next` field must be first field" ];
+        merge_prev_page -> next_page_exists;
+
+        next_page_exists [ label = "page.next != NULL" ];
+        next_page_exists -> merge_next_page [ label = "True" ];
+        next_page_exists -> munmap [ label = "False" ];
+
+        merge_next_page [ label = "page.next.prev = page.prev" ];
+        merge_next_page -> munmap;
+
+        munmap [ label = "munmap(page)" ];
+    }
+
+    munmap -> done;
+    page_empty -> done [ label = "False" ];
+}
