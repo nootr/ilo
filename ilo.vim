@@ -26,7 +26,7 @@ syntax region iloComment start="#" end="$"
 " Literals
 syntax region iloString start=/\v"/ skip=/\v\\./ end=/\v"/ contains=iloEscapes
 syntax region iloChar   start=/\v'/ skip=/\v\\./ end=/\v'/ contains=iloEscapes
-syntax region iloNumber start=/\s\d/ skip=/\d/ end=/\s/
+syntax region iloNumber start=/\s\d/ skip=/\d/ end=/[ \t\n]/
 syntax match iloEscapes display contained "\\[nr\"']"
 
 " Set highlights
