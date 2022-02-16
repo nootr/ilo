@@ -1,0 +1,12 @@
+# Description:Buffer
+# Exit code:1
+# Stdout:
+# Stderr:
+
+buffer foo 8
+
+def main: int argc, ptr argv -> int
+    foo 0 > if
+        1
+    else
+        2

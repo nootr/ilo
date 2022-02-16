@@ -185,6 +185,9 @@ def fetch_tokens(program):
         elif startswith("derefp", program):
             tokens.append((TokenType.KEYWORD, "derefp", line_no))
             program = program[6:]
+        elif startswith("buffer", program):
+            tokens.append((TokenType.KEYWORD, "buffer", line_no))
+            program = program[6:]
         elif is_alphabet(program[0]):
             identifier = ''
             while is_alphabet(program[0]) or is_int(program[0]):
@@ -204,6 +207,7 @@ class Opcode:
     ADD = "add"
     CALL = "call"
     CLEANUP = "cleanup"
+    CREATE_BUFFER = "push pointer to buffer"
     DEREF_B = "dereference pointer to boolean"
     DEREF_C = "dereference pointer to character"
     DEREF_I = "dereference pointer to integer"
@@ -213,6 +217,7 @@ class Opcode:
     ELSE = "start of else-block"
     FUNCTION = "function definition"
     GET_ARG = "get argument"
+    GET_BUFFER = "get pointer to buffer"
     IF = "start of if-block"
     IS_EQUAL = "is equal?"
     IS_GREATER = "is greater?"
@@ -233,6 +238,7 @@ class Opcode:
 
 
 functions = {}
+buffers = []
 
 def parse(tokens, token_index=0, return_on_if=False, args={}):
     global functions
@@ -400,11 +406,26 @@ def parse(tokens, token_index=0, return_on_if=False, args={}):
                 token_index += 1
                 if block_start_type != TokenType.BLOCK_START:
                     raise SyntaxError(
-                        "Expected code block after function declaration"
+                        f"{line_no}: Expected code block after function declaration"
                     )
                 ir, token_index = parse(tokens, token_index, args=fn_args)
                 opcodes.extend(ir)
                 opcodes.append((Opcode.RETURN, 0, line_no))
+            elif value == "buffer":
+                name_type, buffer_name, line_no = tokens[token_index]
+                token_index += 1
+                if name_type != TokenType.IDENTIFIER:
+                    raise SyntaxError(
+                        f"{line_no}: Expected identifier after `buffer` keyword"
+                    )
+                size_type, buffer_size, line_no = tokens[token_index]
+                token_index += 1
+                if size_type != TokenType.INT:
+                    raise SyntaxError(
+                        f"{line_no}: Expected integer after buffer identifier"
+                    )
+                buffers.append(buffer_name)
+                opcodes.append((Opcode.CREATE_BUFFER, (buffer_name, buffer_size), line_no))
             elif value == "derefb":
                 opcodes.append((Opcode.DEREF_B, 0, line_no))
             elif value == "derefc":
@@ -420,10 +441,16 @@ def parse(tokens, token_index=0, return_on_if=False, args={}):
         elif token_type == TokenType.IDENTIFIER:
             if value in functions:
                 opcodes.append((Opcode.CALL, value, line_no))
+            elif value in buffers:
+                opcodes.append((Opcode.GET_BUFFER, value, line_no))
             elif value in args:
                 index = len(args) - args[value] + 1
                 opcodes.append((Opcode.GET_ARG, index, line_no))
             else:
+                import pprint
+                pprint.pprint(tokens)
+                print(token_index)
+                print(tokens[token_index])
                 raise SyntaxError(f"Unexpected identifier on line {line_no}")
         else:
             raise ValueError(f"Unknown token type: {token_type}")
@@ -443,6 +470,7 @@ def output(a, b, c, to_string=False):
 
 def generate_code(ir):
     data = output("", "section", ".data", to_string=True)
+    bss = output("", "section", ".bss", to_string=True)
     string_index = 1
     output("", "global", "_start")
     output("", "section", ".text")
@@ -606,6 +634,19 @@ def generate_code(ir):
             output("", "pop", "rax")
             output("", "mov", "rbx, [rax]")
             output("", "push", "rbx")
+        elif opcode == Opcode.GET_BUFFER:
+            output("", "mov", f"rax, {operand}")
+            output("", "push", "rax")
+        elif opcode == Opcode.CREATE_BUFFER:
+            buffer_name, buffer_size = operand
+            output("", "mov", f"rax, {buffer_name}")
+            output("", "push", "rax")
+            bss += output(
+                f"{buffer_name}:",
+                f"resb {buffer_size}",
+                "",
+                to_string=True,
+            )
         else:
             raise ValueError(f"Unknown opcode: {opcode}")
 
@@ -617,6 +658,7 @@ def generate_code(ir):
     output("", "pop", "rdi")
     output("", "syscall", "")
     print(data)
+    print(bss)
 
 
 ### Command-line interface ###
