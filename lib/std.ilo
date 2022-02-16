@@ -1,3 +1,10 @@
+const STDIN  0
+const STDOUT 1
+const STDERR 2
+
+const SYS_WRITE 1
+
+
 def strlen: ptr s -> int
     # Returns the length of a given string
     s derefc 0 = if
@@ -5,10 +12,11 @@ def strlen: ptr s -> int
     else
         s 1 + strlen 1 +
 
+
 def puts: ptr s -> bool
     # Prints a string and returns the write syscall exit-code
-    1         # File descriptor: STDOUT
-    s         # Pointer to string
-    s strlen  # String length
-    1         # Syscall no.: write
+    STDOUT     # File descriptor
+    s          # Pointer to string
+    s strlen   # String length
+    SYS_WRITE  # Syscall number
     syscall 3
