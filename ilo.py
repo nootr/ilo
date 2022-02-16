@@ -113,6 +113,12 @@ def fetch_tokens(program):
         elif startswith("<=", program):
             tokens.append((TokenType.COMPARISON, "<=", line_no))
             program = program[2:]
+        elif startswith("or", program):
+            tokens.append((TokenType.ARITHMETIC, "or", line_no))
+            program = program[2:]
+        elif startswith("and", program):
+            tokens.append((TokenType.ARITHMETIC, "and", line_no))
+            program = program[3:]
         elif program[0] in "+-*/":
             tokens.append((TokenType.ARITHMETIC, program[0], line_no))
             program = program[1:]
@@ -220,6 +226,8 @@ def fetch_tokens(program):
 
 class Opcode:
     ADD = "add"
+    BITWISE_AND = "bitwise and"
+    BITWISE_OR = "bitwise or"
     CALL = "call"
     CLEANUP = "cleanup"
     CREATE_BUFFER = "push pointer to buffer"
@@ -292,6 +300,10 @@ def parse(tokens, token_index=0, return_on_if=False, args={}):
                 opcodes.append((Opcode.SUBTRACT, 0, line_no))
             elif value == "*":
                 opcodes.append((Opcode.MULTIPLY, 0, line_no))
+            elif value == "and":
+                opcodes.append((Opcode.BITWISE_AND, 0, line_no))
+            elif value == "or":
+                opcodes.append((Opcode.BITWISE_OR, 0, line_no))
             else:
                 raise ValueError(f"Unknown value for arithmetic: {value}")
         elif token_type == TokenType.COMPARISON:
@@ -548,6 +560,16 @@ def generate_code(ir):
             output("", "pop", "rax")
             output("", "pop", "rbx")
             output("", "imul", "rbx, rax")
+            output("", "push", "rbx")
+        elif opcode == Opcode.BITWISE_AND:
+            output("", "pop", "rax")
+            output("", "pop", "rbx")
+            output("", "and", "rbx, rax")
+            output("", "push", "rbx")
+        elif opcode == Opcode.BITWISE_OR:
+            output("", "pop", "rax")
+            output("", "pop", "rbx")
+            output("", "or", "rbx, rax")
             output("", "push", "rbx")
         elif opcode == Opcode.IS_EQUAL:
             output("", "mov", "rax, 0")

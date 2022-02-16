@@ -1,0 +1,7 @@
+# Description:Bitwise or
+# Exit code:44
+# Stdout:
+# Stderr:
+
+def main: int argc, ptr argv -> int
+    40 36 or
