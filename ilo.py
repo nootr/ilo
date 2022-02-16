@@ -267,11 +267,12 @@ class Opcode:
 functions = {}
 buffers = []
 constants = {}
+if_index = 1
 
 def parse(tokens, token_index=0, return_on_if=False, args={}):
     global functions
+    global if_index
     opcodes = []
-    if_index = 1
     while token_index < len(tokens):
         token_type, value, line_no = tokens[token_index]
         token_index += 1
@@ -717,8 +718,6 @@ def generate_code(ir):
             output("", "push", "rax")
         elif opcode == Opcode.CREATE_BUFFER:
             buffer_name, buffer_size = operand
-            output("", "mov", f"rax, {buffer_name}")
-            output("", "push", "rax")
             bss += output(
                 f"{buffer_name}:",
                 f"resb {buffer_size}",
