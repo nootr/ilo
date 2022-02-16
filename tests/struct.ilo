@@ -1,0 +1,56 @@
+# Description:Data structure - Linked list
+# Exit code:4
+# Stdout:
+# Stderr:
+
+buffer memory 96  # 4 nodes, 24 bytes per node
+
+const node.prev  0  # ptr
+const node.next  8  # ptr
+const node.value 16 # int
+
+const NODE_SIZE  24
+
+const NULL 0
+
+
+def append: ptr root, int value -> ptr
+    root node.next + derefp NULL = if
+        root  root NODE_SIZE + node.prev  + setp
+        NULL  root NODE_SIZE + node.next  + setp
+        value root NODE_SIZE + node.value + seti
+        root NODE_SIZE + root node.next + setp
+
+        root node.next +
+    else
+        root node.next + value append
+
+def delete: ptr root, int index -> ptr
+    index 0 = if
+        root node.next + derefp root node.prev + derefp node.next + setp
+        root node.prev + derefp root node.next + derefp node.prev + setp
+        root
+    else
+        root node.next + derefp index 1 - delete
+
+def main: int argc, ptr argv -> int
+    # Initialize memory {1}
+    NULL memory node.prev  + setp
+    NULL memory node.next  + setp
+    1    memory node.value + setp
+
+    # Create nodes {1, 2, 3, 4}
+    memory 2 append
+    memory 3 append
+    memory 4 append
+
+    # Delete node {1, 3, 4}
+    memory 1 delete
+
+    # Walk through nodes
+    memory              # {1*, 3 , 4 }
+    node.next + derefp  # {1 , 3*, 4 }
+    node.next + derefp  # {1 , 3 , 4*}
+    node.prev + derefp  # {1 , 3*, 4 }
+    node.next + derefp  # {1 , 3 , 4*}
+    node.value + derefi
