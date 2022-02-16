@@ -60,6 +60,7 @@ def fetch_tokens(program):
 
         if startswith("\\\n", program):
             program = program[2:]
+            line_no += 1
             continue
         elif at_start and program[0] != "\n":
             if indent > indent_stack[-1]:
@@ -67,7 +68,7 @@ def fetch_tokens(program):
                 tokens.append((TokenType.BLOCK_START, indent, line_no))
             elif indent < indent_stack[-1]:
                 if indent not in indent_stack:
-                    raise ValueError(f"Syntax error: unexpected indent of {indent}")
+                    raise SyntaxError(f"Unexpected indent of {indent}")
 
                 while indent_stack[-1] != indent:
                     tokens.append((TokenType.BLOCK_END, indent_stack[-1], line_no))
@@ -655,6 +656,7 @@ def generate_code(ir):
                 output("",  "pop", "rsi")
             output("",  "pop", "rdi")
             output("",  "syscall", "")
+            output("",  "push", "rax")
         elif opcode == Opcode.IF:
             output("", "pop", "rax")
             output("", "test", "rax, rax")
@@ -732,10 +734,8 @@ def generate_code(ir):
 
     output("_start:", "", "")
     output("", "call", "main")
-    output("", "push", "rax")
-    output("exit:", "", "")
+    output("", "mov", "rdi, rax")
     output("", "mov", "rax, 60")
-    output("", "pop", "rdi")
     output("", "syscall", "")
     print(data)
     print(bss)
