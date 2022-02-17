@@ -8,5 +8,6 @@ import lib.std
 buffer string 67
 
 def main: ptr argv, int argc -> int
-    17361641481138401520 string i64tos puts
+    17361641481138401520 string i64tos
+    string puts
     0

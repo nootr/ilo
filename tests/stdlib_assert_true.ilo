@@ -1,0 +1,11 @@
+# Description:Standard library - Assert True
+# Exit code:0
+# Stdout:OK
+# Stderr:
+
+import lib.std
+
+def main: ptr argv, int argc -> int
+    True "This should not be printed." assert
+    "OK" puts
+    0

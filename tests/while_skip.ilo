@@ -1,0 +1,11 @@
+# Description:While loop skip
+# Exit code:0
+# Stdout:
+# Stderr:
+
+import lib.std
+
+def main: int argc, ptr argv -> int
+    while False
+        "A" puts
+    0
