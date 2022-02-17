@@ -8,6 +8,6 @@ import lib.std
 def main: int argc, ptr argv -> int
     0 # Accumulator
     while dup 10 <
-        "A" puts drop
+        "A" puts
         1 +
     0

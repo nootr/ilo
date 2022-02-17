@@ -189,6 +189,9 @@ def fetch_tokens(program):
         elif startswith("char", program):
             tokens.append((TokenType.TYPE, "char", line_no))
             program = program[4:]
+        elif startswith("void", program):
+            tokens.append((TokenType.TYPE, "void", line_no))
+            program = program[4:]
         elif startswith("derefc", program):
             tokens.append((TokenType.KEYWORD, "derefc", line_no))
             program = program[6:]
@@ -464,14 +467,16 @@ def parse(tokens, token_index=0, return_on=None, args={}):
                     next_type, _, line_no = tokens[token_index]
                     token_index += 1
 
-                functions[function_name] = len(fn_args)
-
                 next_type, return_type, _ = tokens[token_index]
+                returns = return_type != "void"
                 token_index += 1
                 if next_type != TokenType.TYPE:
                     raise SyntaxError(
                         f"{line_no}: Expected return type in function definition"
                     )
+
+                functions[function_name] = (len(fn_args), returns)
+
                 # TODO: Type checking
 
                 block_start_type, _, line_no = tokens[token_index]
@@ -545,7 +550,9 @@ def parse(tokens, token_index=0, return_on=None, args={}):
                 index = len(args) - args[value] + 1
                 opcodes.append((Opcode.GET_ARG, index, line_no))
             else:
-                raise SyntaxError(f"Unexpected identifier on line {line_no}")
+                raise SyntaxError(
+                        f"Unexpected identifier on line {line_no}: {value}"
+                )
         else:
             raise ValueError(f"Unknown token type: {token_type}")
 
@@ -731,9 +738,11 @@ def generate_code(ir):
             output("", "ret", "")
         elif opcode == Opcode.CALL:
             output("", "call", operand)
-            for _ in range(functions[operand]):
+            argc, rets = functions[operand]
+            for _ in range(argc):
                 output("", "pop", "rbx")
-            output("", "push", "rax")
+            if rets:
+                output("", "push", "rax")
         elif opcode == Opcode.GET_ARG:
             output("", "mov", "rax, rbp")
             output("", "add", f"rax, {operand*8}")

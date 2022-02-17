@@ -1,0 +1,10 @@
+# Description:Return void
+# Exit code:2
+# Stdout:
+# Stderr:
+
+def foo: int n -> void
+    n
+
+def main: ptr argv, int argc -> int
+    1 2 3 foo
