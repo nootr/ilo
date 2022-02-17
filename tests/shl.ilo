@@ -1,0 +1,7 @@
+# Description:Shift left
+# Exit code:20
+# Stdout:
+# Stderr:
+
+def main: int argc, ptr argv -> int
+    5 2 shl
