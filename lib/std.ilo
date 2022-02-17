@@ -1,22 +1,229 @@
+const NULL 0
+
 const STDIN  0
 const STDOUT 1
 const STDERR 2
 
-const SYS_WRITE 1
+const SYS_WRITE  1
+const SYS_MMAP   9
+const SYS_MUNMAP 11
+const SYS_EXIT   60
+
+const PROT_READ     1
+const PROT_WRITE    2
+const MAP_PRIVATE   2
+const MAP_ANONYMOUS 32
+
+
+def i64tos: int x, ptr buf -> void
+    # Converts a given 64-bit integer to string
+    buf
+    dup 48 swap setc 1 +  # '0'
+    dup 98 swap setc 1 +  # 'b'
+
+    1 63 shl  # Sweeping bit
+    while dup 0 !=
+        swap dup rot dup
+        x and 0 != if
+            49 rot setc swap 1 + swap
+        else
+            48 rot setc swap 1 + swap
+        1 shr
+
+
+def i8tos: int x, ptr buf -> void
+    # Converts a given 8-bit integer to string
+    buf
+    dup 48 swap setc 1 +  # '0'
+    dup 98 swap setc 1 +  # 'b'
+
+    1 7 shl  # Sweeping bit
+    while dup 0 >
+        swap dup rot dup
+        x and 0 != if
+            49 rot setc swap 1 + swap
+        else
+            48 rot setc swap 1 + swap
+        1 shr
+
+
+def max: int x, int y -> int
+    # Returns the largest number
+    x y > if
+        x
+    else
+        y
 
 
 def strlen: ptr s -> int
-    # Returns the length of a given string
-    s derefc 0 = if
-        0
-    else
-        s 1 + strlen 1 +
+    # Returns the length of a given zero-terminated string
+    0  # Counter
+    while dup s + derefc 0 !=
+        1 +
 
 
-def puts: ptr s -> bool
+def puts: ptr s -> void
     # Prints a string and returns the write syscall exit-code
     STDOUT     # File descriptor
     s          # Pointer to string
     s strlen   # String length
-    SYS_WRITE  # Syscall number
+    SYS_WRITE
     syscall 3
+
+
+def error: ptr s -> void
+    # Prints an error and returns the write syscall exit-code
+    STDERR     # File descriptor
+    s          # Pointer to string
+    s strlen   # String length
+    SYS_WRITE
+    syscall 3
+
+
+def exit: int code -> void
+    # Exits using a given exit code
+    code SYS_EXIT syscall 1
+
+
+def raise: ptr message -> void
+    # Prints a given error message and exits with exitcode 1
+    "Error: " error
+    message   error
+    "\n"      error
+    1 exit
+
+
+def assert: bool assertion, ptr message -> void
+    # Raises when assertion is False
+    assertion False = if
+        message raise
+
+
+const page.next          0   # ptr
+const page.prev          8   # ptr
+const page.blocks        16  # ptr
+const PAGE_METADATA_SIZE 16
+
+const PAGE_SIZE          4096
+
+const block.next          0   # ptr
+const block.size          8   # integer
+const block.free          16  # boolean
+const block.data          17  # data
+const BLOCK_METADATA_SIZE 17
+
+buffer root_page 8
+
+
+def _malloc_get_next_page: ptr page, int size -> ptr
+    # Returns the next page, creates a new page if there are none
+    size PAGE_SIZE >= "Page size should be at least the default size" assert
+
+    page page.next + derefp NULL = if
+        NULL                          # addr; kernel chooses position in memory
+        size                          # length; (common page size is 4k)
+        PROT_READ PROT_WRITE or       # prot; allow read and write
+        MAP_PRIVATE MAP_ANONYMOUS or  # flags
+        0 1 -                         # fd; -1 is needed for MAP_ANONYMOUS
+        0                             # offset; should be 0 for MAP_ANONYMOUS
+        SYS_MMAP
+        syscall 6
+
+        dup 0 < if
+            "Unable to allocate memory page" raise
+
+        # Initialize page
+        dup page.next +                               NULL swap setp
+        dup page.prev +                               page swap setp
+
+        # Initialize block
+        dup page.blocks +
+        dup block.free +                              True swap setb
+        dup block.next +                              NULL swap setp
+        dup block.size + size PAGE_METADATA_SIZE - \
+                         BLOCK_METADATA_SIZE -             swap seti
+        drop
+
+        page page.next + setp
+
+    # Return next page
+    page page.next + derefp
+
+    dup NULL != "Next page should not be NULL" assert
+
+
+def _malloc_split_block: ptr block, int old_size, int size -> ptr
+    # Splits a free block into a taken and a free block and returns a pointer to the
+    # first, taken block.
+    block block.free + derefb "Splitted block should be free" assert
+
+    block block.next + derefp  # Save pointer to next block on the stack
+
+    False  block block.free + setb
+    size   block block.size + seti
+    NULL   block block.next + setp
+
+    # Calculate remaining size of free block
+    old_size BLOCK_METADATA_SIZE - size -
+
+    dup 0 > if
+        block BLOCK_METADATA_SIZE + size + block block.next + setp
+
+        True  block block.next + derefp block.free + setb \
+              block block.next + derefp block.size + seti \
+              block block.next + derefp block.next + setp
+
+    block
+
+
+def _malloc_block_is_available_or_NULL: ptr block, int size -> bool
+    # Returns True if given block is free and has enough space, or it's a NULL pointer
+    block NULL = if
+        True
+    else
+        block block.free + derefb
+        block block.size + derefi size >= and
+
+
+def malloc: int size -> ptr
+    # Allocates a memory block of given size and returns its address
+
+    root_page NULL != "Root page should exist" assert
+    size 0 = if
+        "Size should be greater than zero" raise
+
+    root_page   # var: current_page
+    NULL        # var: available_block
+
+    # Find the next available block
+    while dup NULL =
+        drop
+
+        # current_page = get_next_page()
+        size PAGE_METADATA_SIZE + BLOCK_METADATA_SIZE + \
+            PAGE_SIZE max _malloc_get_next_page
+
+        root_page page.next + derefp NULL != "First page should be set" assert
+        dup root_page != "Page should not be root page" assert
+        dup NULL != "Next page should be set" assert
+
+        # current_block = current_page.blocks[0]
+        dup page.blocks +
+
+        dup block.size + derefi 0 != "Block size should be greater than zero" assert
+
+        # Find next available block or NULL (no available blocks in this page)
+        while dup size _malloc_block_is_available_or_NULL False =
+            block.next + derefp
+
+    dup NULL != "Pointer to found block should be non-NULL" assert
+    dup block.free + derefb "Found block should be free" assert
+
+    dup block.size + derefi size = if
+        # The block is a perfect fit
+        dup block.free + False swap setb
+    else
+        # The block not is a perfect fit, split into a taken and a free block
+        dup block.size + derefi size _malloc_split_block
+
+    block.data +

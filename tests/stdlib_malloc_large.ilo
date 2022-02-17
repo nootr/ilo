@@ -1,0 +1,15 @@
+# Description:Standard library - malloc, single, large
+# Exit code:0
+# Stdout:Hi!
+# Stderr:
+
+import lib.std
+
+def main: ptr argv, int argc -> int
+    500000 malloc
+    dup     72  swap setc  # H
+    dup 1 + 105 swap setc  # i
+    dup 2 + 33  swap setc  # !
+    dup 3 + 0   swap setc  # \0
+    puts
+    0
