@@ -254,6 +254,7 @@ class Opcode:
     IS_GREATER_OR_EQUAL = "is greater or equal?"
     IS_LESS = "is less?"
     IS_LESS_OR_EQUAL = "is less or equal?"
+    IS_NOT_EQUAL = "is not equal?"
     LABEL = "label"
     MULTIPLY = "multiply"
     OVER = "over"
@@ -321,6 +322,8 @@ def parse(tokens, token_index=0, return_on=None, args={}):
         elif token_type == TokenType.COMPARISON:
             if value == "=":
                 opcodes.append((Opcode.IS_EQUAL, 0, line_no))
+            elif value == "!=":
+                opcodes.append((Opcode.IS_NOT_EQUAL, 0, line_no))
             elif value == ">":
                 opcodes.append((Opcode.IS_GREATER, 0, line_no))
             elif value == ">=":
@@ -605,6 +608,14 @@ def generate_code(ir):
             output("", "pop", "rdx")
             output("", "cmp", "rdx, rcx")
             output("", "cmove", "rax, rbx")
+            output("", "push", "rax")
+        elif opcode == Opcode.IS_NOT_EQUAL:
+            output("", "mov", "rax, 0")
+            output("", "mov", "rbx, 1")
+            output("", "pop", "rcx")
+            output("", "pop", "rdx")
+            output("", "cmp", "rdx, rcx")
+            output("", "cmovne", "rax, rbx")
             output("", "push", "rax")
         elif opcode == Opcode.IS_GREATER_OR_EQUAL:
             output("", "mov", "rax, 0")
