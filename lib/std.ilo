@@ -2,11 +2,15 @@ const STDIN  0
 const STDOUT 1
 const STDERR 2
 
+const SYS_READ   0
 const SYS_WRITE  1
+const SYS_OPEN   2
 const SYS_MMAP   9
 const SYS_MUNMAP 11
 const SYS_EXIT   60
 
+const O_RDONLY      0
+const O_WRONLY      1
 const PROT_READ     1
 const PROT_WRITE    2
 const MAP_PRIVATE   2
@@ -129,6 +133,31 @@ def assert: bool assertion, ptr message -> void
         message raise
 
 
+def open: ptr filename, char mode -> int
+    # Opens a given file in (r)ead or (w)rite mode and returns a file descriptor.
+    filename
+    0
+
+    mode 'r' = if
+        O_RDONLY or
+    mode 'w' = if
+        O_WRONLY or
+
+    0
+    SYS_OPEN
+    syscall 3
+
+    dup 0 < if
+        "Could not open file" raise
+
+
+def read: int fd, ptr buf, int count -> int
+    # Reads from a file descriptor and returns the number of bytes read or zero if EOF
+    fd buf count SYS_READ syscall 3
+    dup 0 < if
+        "Could not read file" raise
+
+
 const page.next          0   # ptr
 const page.prev          8   # ptr
 const page.size          16  # int
@@ -223,6 +252,8 @@ def _malloc_block_is_available_or_NULL: ptr block, int size -> bool
 
 def malloc: int size -> ptr
     # Allocates a memory block of given size and returns its address
+
+    # TODO: Test edge cases
 
     root_page NULL != "Root page should exist" assert
     size 0 = if
@@ -323,3 +354,22 @@ def concat: ptr a, ptr b -> ptr
     a swap strcpy
     dup a strlen + b swap strcpy drop
     dup a strlen + b strlen + 1 + 0 castc swap setc
+
+
+buffer _read_file_buffer 513
+
+def read_file: ptr filename -> ptr
+    # Returns the contents of a given file
+    1 malloc
+    dup 0 castc swap setc
+    filename 'r' open
+
+    1 while dup 0 >
+        drop
+        dup _read_file_buffer 512 read
+        dup _read_file_buffer + 0 castc swap setc
+        dup 0 > if
+            rot dup _read_file_buffer concat
+            swap free
+            rot rot
+    drop drop

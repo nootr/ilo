@@ -1,9 +1,11 @@
 # Description:Standard library - strlen
-# Exit code:9
+# Exit code:0
 # Stdout:
 # Stderr:
 
 import lib.std
 
 def main: ptr argv, int argc -> int
-    "FooBarBaz" strlen
+    "FooBarBaz" strlen 9 = "1" assert
+    ""          strlen 0 = "2" assert
+    0
