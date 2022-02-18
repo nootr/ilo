@@ -64,6 +64,16 @@ def strlen: ptr s -> int
         1 +
 
 
+def strcpy: ptr src, ptr dest -> ptr
+    # Copies a string from src to dest and returns a pointer to dest
+    0  # index
+    while dup src + derefc 0 !=
+        dup src + derefc over dest + setc
+        1 +
+    dest + 0 swap setc
+    dest
+
+
 def puts: ptr s -> void
     # Prints a string and returns the write syscall exit-code
     STDOUT     # File descriptor

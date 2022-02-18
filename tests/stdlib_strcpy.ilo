@@ -1,0 +1,17 @@
+# Description:Standard library - strcpy
+# Exit code:0
+# Stdout:Hello! world!Hello, world!
+# Stderr:
+
+import lib.std
+
+buffer a 20
+buffer b 20
+
+def main: ptr argv, int argc -> int
+    "Hello, world!" a strcpy
+    a b strcpy
+    33 a 5 + setc
+    a puts
+    b puts
+    0
