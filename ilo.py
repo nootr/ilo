@@ -234,6 +234,10 @@ def fetch_tokens(program):
         else:
             raise ValueError(f"Syntax error at line {line_no}: `{program}`")
 
+    while indent_stack:
+        indent = indent_stack.pop()
+        if indent:
+            tokens.append((TokenType.BLOCK_END, indent, 0))
     return tokens
 
 
