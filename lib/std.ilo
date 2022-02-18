@@ -295,3 +295,11 @@ def free: ptr block_data -> void
 
         dup 0 < if
             "Unable to free memory page" raise
+
+def concat: ptr a, ptr b -> ptr
+    # Takes two string and returns them after being concatenated.
+    # Note that this mallocs, so don't forget to free!
+    a strlen b strlen + 1 + malloc
+    a swap strcpy
+    dup a strlen + b swap strcpy drop
+    dup a strlen + b strlen + 1 + 0 swap setc
