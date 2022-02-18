@@ -1,7 +1,9 @@
 # Description:Over
-# Exit code:3
+# Exit code:232
 # Stdout:
 # Stderr:
 
 def main: int argc, ptr argv -> int
-    3 4 over
+    2 3 over
+    10 * +
+    10 * +

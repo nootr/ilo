@@ -76,6 +76,22 @@ def strcpy: ptr src, ptr dest -> ptr
     dest
 
 
+def startswith: ptr s, ptr q -> bool
+    # Returns True if str s starts with substring q
+    q strlen s strlen <= if
+        False # found_difference
+        0     # index
+        while dup q + derefc 0 castc !=
+            dup q + derefc
+            over s + derefc !=
+            rot or swap
+            1 +
+        drop
+        False =
+    else
+        False
+
+
 def puts: ptr s -> void
     # Prints a string and returns the write syscall exit-code
     STDOUT     # File descriptor
