@@ -3,5 +3,5 @@
 # Stdout:
 # Stderr:
 
-def main: ptr argv, int argc -> int
+def main: ptr argv, int argc -> bool
     False

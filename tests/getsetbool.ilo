@@ -7,7 +7,7 @@ buffer foo 1
 
 def main: int argc, ptr argv -> int
     True foo setb
-    foo derefc if
+    foo derefb if
         1
     else
         2
