@@ -35,6 +35,14 @@ class TokenType:
     TYPE = "TYPE"
 
 
+class Type:
+    BOOL = "bool"
+    CHAR = "char"
+    INT = "int"
+    PTR = "ptr"
+    VOID = "void"
+
+
 def is_int(c):
     return "0" <= c <= "9"
 
@@ -178,19 +186,19 @@ def fetch_tokens(program):
             tokens.append((TokenType.KEYWORD, "def", line_no))
             program = program[3:]
         elif startswith("int", program):
-            tokens.append((TokenType.TYPE, "int", line_no))
+            tokens.append((TokenType.TYPE, Type.INT, line_no))
             program = program[3:]
         elif startswith("ptr", program):
-            tokens.append((TokenType.TYPE, "ptr", line_no))
+            tokens.append((TokenType.TYPE, Type.PTR, line_no))
             program = program[3:]
         elif startswith("bool", program):
-            tokens.append((TokenType.TYPE, "bool", line_no))
+            tokens.append((TokenType.TYPE, Type.BOOL, line_no))
             program = program[4:]
         elif startswith("char", program):
-            tokens.append((TokenType.TYPE, "char", line_no))
+            tokens.append((TokenType.TYPE, Type.CHAR, line_no))
             program = program[4:]
         elif startswith("void", program):
-            tokens.append((TokenType.TYPE, "void", line_no))
+            tokens.append((TokenType.TYPE, Type.VOID, line_no))
             program = program[4:]
         elif startswith("derefc", program):
             tokens.append((TokenType.KEYWORD, "derefc", line_no))
@@ -294,12 +302,14 @@ buffers = []
 constants = {}
 if_index = 1
 while_index = 1
+opcodes = []
 
-def parse(tokens, token_index=0, return_on=None, args={}):
+def parse(tokens, token_index=0, return_on=None, args={}, stack=[]):
+    global opcodes
     global functions
     global if_index
     global while_index
-    opcodes = []
+
     while token_index < len(tokens):
         token_type, value, line_no = tokens[token_index]
         token_index += 1
@@ -314,7 +324,7 @@ def parse(tokens, token_index=0, return_on=None, args={}):
                     f"Syntax Error: expected import identifier on line {line_no}"
                 )
             filename = import_value.replace(".", "/") + ".ilo"
-            opcodes.extend(parse_file(filename))
+            parse_file(filename)
         elif token_type == TokenType.INT:
             opcodes.append((Opcode.PUSH_INT, value, line_no))
         elif token_type == TokenType.BOOL:
@@ -377,17 +387,17 @@ def parse(tokens, token_index=0, return_on=None, args={}):
                 while_index += 1
                 opcodes.append((Opcode.LABEL, while_label, line_no))
 
-                ir, token_index = parse(
+                wc_stack, token_index = parse(
                     tokens,
                     token_index,
                     return_on=TokenType.BLOCK_START,
                     args=args,
                 )
-                opcodes.extend(ir)
+                # TODO: Check wc_stack
 
                 opcodes.append((Opcode.WHILE_START, while_label, line_no))
-                ir, token_index = parse(tokens, token_index, args=args)
-                opcodes.extend(ir)
+                wb_stack, token_index = parse(tokens, token_index, args=args)
+                # TODO: Check wb_stack
                 opcodes.append((Opcode.WHILE_END, while_label, line_no))
             elif value == "if":
                 if_identifier = f"if_{if_index}"
@@ -402,8 +412,8 @@ def parse(tokens, token_index=0, return_on=None, args={}):
                     raise SyntaxError(
                         "Expected code block after `if` keyword"
                     )
-                ir, token_index = parse(tokens, token_index, args=args)
-                opcodes.extend(ir)
+                if_stack, token_index = parse(tokens, token_index, args=args)
+                # TODO: Check if_stack
 
                 _, value, _ = tokens[token_index]
                 if value == "else":
@@ -412,8 +422,8 @@ def parse(tokens, token_index=0, return_on=None, args={}):
                     token_index += 1
                     block_start_type, _, line_no = tokens[token_index]
                     if block_start_type == TokenType.BLOCK_START:
-                        ir, token_index = parse(tokens, token_index + 1, args=args)
-                        opcodes.extend(ir)
+                        else_stack, token_index = parse(tokens, token_index + 1, args=args)
+                        # TODO: Check else_stack
                         opcodes.append((Opcode.LABEL, else_identifier, line_no))
                     else:
                         raise NotImplementedError(
@@ -450,7 +460,6 @@ def parse(tokens, token_index=0, return_on=None, args={}):
                         raise SyntaxError(
                             f"{line_no}: Expected type in function definition"
                         )
-                    # TODO: Type checking
 
                     next_type, arg_name, line_no = tokens[token_index]
                     token_index += 1
@@ -479,7 +488,7 @@ def parse(tokens, token_index=0, return_on=None, args={}):
                         f"{line_no}: Expected return type in function definition"
                     )
 
-                functions[function_name] = (fn_args, returns)
+                functions[function_name] = (fn_args, return_type)
 
                 block_start_type, _, line_no = tokens[token_index]
                 token_index += 1
@@ -487,9 +496,9 @@ def parse(tokens, token_index=0, return_on=None, args={}):
                     raise SyntaxError(
                         f"{line_no}: Expected code block after function declaration"
                     )
-                ir, token_index = parse(tokens, token_index, args=fn_args)
-                opcodes.extend(ir)
+                fn_stack, token_index = parse(tokens, token_index, args=fn_args)
                 opcodes.append((Opcode.RETURN, 0, line_no))
+                # TODO: Check fn_stack
             elif value == "buffer":
                 name_type, buffer_name, line_no = tokens[token_index]
                 token_index += 1
@@ -537,7 +546,7 @@ def parse(tokens, token_index=0, return_on=None, args={}):
                 opcodes.append((Opcode.SET_P, 0, line_no))
         elif token_type == TokenType.BLOCK_START:
             if return_on == TokenType.BLOCK_START:
-                return opcodes, token_index
+                return stack, token_index
             raise SyntaxError(f"Unexpected block start on line {line_no}")
         elif token_type == TokenType.TYPE:
             raise SyntaxError(f"Unexpected type on line {line_no}")
@@ -558,7 +567,7 @@ def parse(tokens, token_index=0, return_on=None, args={}):
         else:
             raise ValueError(f"Unknown token type: {token_type}")
 
-    return opcodes, token_index
+    return stack, token_index
 
 
 ### Code generator ###
@@ -572,14 +581,15 @@ def output(a, b, c, to_string=False):
         print(string)
 
 
-def generate_code(ir):
+def generate_code():
+    global opcodes
     data = output("", "section", ".data", to_string=True)
     bss = output("", "section", ".bss", to_string=True)
     string_index = 1
     output("", "global", "_start")
     output("", "section", ".text")
 
-    for opcode, operand, line_no in ir:
+    for opcode, operand, line_no in opcodes:
         output("", f"; {line_no}: {opcode}", "")
         if opcode == Opcode.PUSH_INT:
             output("", "mov", f"rax, {operand}")
@@ -741,10 +751,10 @@ def generate_code(ir):
             output("", "ret", "")
         elif opcode == Opcode.CALL:
             output("", "call", operand)
-            args, rets = functions[operand]
+            args, ret = functions[operand]
             for _ in range(len(args)):
                 output("", "pop", "rbx")
-            if rets:
+            if ret != Type.VOID:
                 output("", "push", "rax")
         elif opcode == Opcode.GET_ARG:
             output("", "mov", "rax, rbp")
@@ -827,8 +837,7 @@ def read_file(filename):
 def parse_file(filename):
     content = read_file(filename)
     tokens = fetch_tokens(content)
-    ir, _ = parse(tokens, 0)
-    return ir
+    parse(tokens, 0)
 
 
 def parse_args():
@@ -843,7 +852,7 @@ def run(filename):
         exit(1)
 
     ir = parse_file(filename)
-    generate_code(ir)
+    generate_code()
 
 
 if __name__ == "__main__":
