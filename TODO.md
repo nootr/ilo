@@ -11,9 +11,9 @@
 - [x] Basic `import` keyword
 - [x] If-statements
 - [x] Function calls
-- [.] Dynamic memory allocation
+- [x] Dynamic memory allocation
   - [x] malloc()
-  - [ ] free()
+  - [x] free()
 - [ ] Strings (dynamic)
 - [ ] String manipulation functions
 - [ ] Type checking

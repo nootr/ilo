@@ -101,16 +101,18 @@ def assert: bool assertion, ptr message -> void
 
 const page.next          0   # ptr
 const page.prev          8   # ptr
-const page.blocks        16  # ptr
-const PAGE_METADATA_SIZE 16
+const page.size          16  # int
+const page.blocks        24  # ptr
+const PAGE_METADATA_SIZE 24
 
 const PAGE_SIZE          4096
 
 const block.next          0   # ptr
-const block.size          8   # integer
-const block.free          16  # boolean
-const block.data          17  # data
-const BLOCK_METADATA_SIZE 17
+const block.prev          8   # ptr
+const block.size          16  # integer
+const block.free          24  # boolean
+const block.data          25  # data
+const BLOCK_METADATA_SIZE 25
 
 buffer root_page 8
 
@@ -135,11 +137,13 @@ def _malloc_get_next_page: ptr page, int size -> ptr
         # Initialize page
         dup page.next +                               NULL swap setp
         dup page.prev +                               page swap setp
+        dup page.size +                               size swap setp
 
         # Initialize block
         dup page.blocks +
         dup block.free +                              True swap setb
         dup block.next +                              NULL swap setp
+        dup block.prev +                              NULL swap setp
         dup block.size + size PAGE_METADATA_SIZE - \
                          BLOCK_METADATA_SIZE -             swap seti
         drop
@@ -161,7 +165,6 @@ def _malloc_split_block: ptr block, int old_size, int size -> ptr
 
     False  block block.free + setb
     size   block block.size + seti
-    NULL   block block.next + setp
 
     # Calculate remaining size of free block
     old_size BLOCK_METADATA_SIZE - size -
@@ -170,6 +173,7 @@ def _malloc_split_block: ptr block, int old_size, int size -> ptr
         block BLOCK_METADATA_SIZE + size + block block.next + setp
 
         True  block block.next + derefp block.free + setb \
+        block block block.next + derefp block.prev + seti \
               block block.next + derefp block.size + seti \
               block block.next + derefp block.next + setp
 
@@ -227,3 +231,55 @@ def malloc: int size -> ptr
         dup block.size + derefi size _malloc_split_block
 
     block.data +
+
+
+def free: ptr block_data -> void
+    # Frees a given block
+    block_data block.data -
+
+    dup block.free + derefb if
+        "Trying to free already freed data" raise
+
+    dup block.free + True swap setb
+
+    dup block.next + derefp NULL != if
+        dup block.next + derefp block.free + derefb if
+            # Next block is free; merge
+            dup block.next + derefp block.size + derefi
+            swap dup rot swap block.size + derefi +
+            swap dup rot swap block.size + seti
+
+            dup block.next + derefp block.next + derefp
+            swap dup rot swap block.next + setp
+
+    dup block.prev + derefp NULL != if
+        dup block.prev + derefp block.free + derefb if
+            # Previous block is free; merge
+            dup block.prev + derefp block.size + derefi
+            swap dup rot swap block.size + derefi +
+            swap dup rot swap block.prev + derefp block.size + seti
+
+            dup block.next + derefp
+            swap dup rot swap block.prev + derefp block.next + setp
+
+    # Find the first block
+    while dup block.prev + derefp NULL !=
+        block.prev + derefp
+
+    dup block.next + derefp NULL = if
+        # This page only has one free block; free/munmap it
+        PAGE_METADATA_SIZE -
+        dup page.next + derefp
+        swap dup rot swap page.prev + derefp page.next + setp
+
+        dup page.next + derefp NULL != if
+            dup page.prev + derefp
+            swap dup rot swap page.next + derefp page.prev + setp
+
+        dup            # addr; kernel chooses position in memory
+        dup page.size  # length; (common page size is 4k)
+        SYS_MUNMAP
+        syscall 2
+
+        dup 0 < if
+            "Unable to free memory page" raise
