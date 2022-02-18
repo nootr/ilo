@@ -1,0 +1,9 @@
+# Description:Location
+# Exit code:0
+# Stdout:lib/std.ilo:9
+# Stderr:
+
+import lib.std
+
+def main: int argc, ptr argv -> int
+    location puts 0

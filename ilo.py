@@ -245,6 +245,9 @@ def fetch_tokens(program):
         elif startswith("castb", program):
             tokens.append((TokenType.KEYWORD, "castb", line_no))
             program = program[5:]
+        elif startswith("location", program):
+            tokens.append((TokenType.KEYWORD, "location", line_no))
+            program = program[8:]
         elif is_alphabet(program[0]):
             identifier = ''
             while is_alphabet(program[0]) or is_int(program[0]):
@@ -316,7 +319,7 @@ if_index = 1
 while_index = 1
 opcodes = []
 
-def parse(tokens, token_index=0, return_on=None, args=None, stack=None):
+def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None):
     stack = [x for x in stack] if stack else []
     args = {k: v for k, v in args.items()} if args else {}
 
@@ -434,7 +437,10 @@ def parse(tokens, token_index=0, return_on=None, args=None, stack=None):
                 raise TypeError(f"Comparison between different types on line {line_no}")
             stack.append(Type.BOOL)
         elif token_type == TokenType.KEYWORD:
-            if value == "castc":
+            if value == "location":
+                opcodes.append((Opcode.PUSH_STRING, f"{filename}:{line_no}", line_no))
+                stack.append(Type.PTR)
+            elif value == "castc":
                 pop(line_no)
                 stack.append(Type.CHAR)
             elif value == "casti":
@@ -492,6 +498,7 @@ def parse(tokens, token_index=0, return_on=None, args=None, stack=None):
                 opcodes.append((Opcode.LABEL, while_label, line_no))
 
                 wc_stack, token_index = parse(
+                    filename,
                     tokens,
                     token_index,
                     return_on=TokenType.BLOCK_START,
@@ -505,7 +512,7 @@ def parse(tokens, token_index=0, return_on=None, args=None, stack=None):
                     )
 
                 opcodes.append((Opcode.WHILE_START, while_label, line_no))
-                wb_stack, token_index = parse(tokens, token_index, args=args,
+                wb_stack, token_index = parse(filename, tokens, token_index, args=args,
                         stack=stack)
                 if stack != wb_stack:
                     raise TypeError(
@@ -530,7 +537,7 @@ def parse(tokens, token_index=0, return_on=None, args=None, stack=None):
                     raise SyntaxError(
                         "Expected code block after `if` keyword"
                     )
-                if_stack, token_index = parse(tokens, token_index, args=args,
+                if_stack, token_index = parse(filename, tokens, token_index, args=args,
                         stack=stack)
 
                 _, value, _ = tokens[token_index]
@@ -540,7 +547,7 @@ def parse(tokens, token_index=0, return_on=None, args=None, stack=None):
                     token_index += 1
                     block_start_type, _, line_no = tokens[token_index]
                     if block_start_type == TokenType.BLOCK_START:
-                        else_stack, token_index = parse(tokens, token_index + 1,
+                        else_stack, token_index = parse(filename, tokens, token_index + 1,
                                 args=args, stack=stack)
                         opcodes.append((Opcode.LABEL, else_identifier, line_no))
                         if else_stack != if_stack:
@@ -623,7 +630,7 @@ def parse(tokens, token_index=0, return_on=None, args=None, stack=None):
                     raise SyntaxError(
                         f"{line_no}: Expected code block after function declaration"
                     )
-                stack, token_index = parse(tokens, token_index, args=fn_args)
+                stack, token_index = parse(filename, tokens, token_index, args=fn_args)
                 opcodes.append((Opcode.RETURN, 0, line_no))
                 if return_type != "void":
                     # TODO: Fix line number
@@ -1030,7 +1037,7 @@ def read_file(filename):
 def parse_file(filename):
     content = read_file(filename)
     tokens = fetch_tokens(content)
-    parse(tokens, 0)
+    parse(filename, tokens, 0)
 
 
 def parse_args():
