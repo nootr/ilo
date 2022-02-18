@@ -14,6 +14,6 @@
 - [x] Dynamic memory allocation
   - [x] malloc()
   - [x] free()
-- [ ] Strings (dynamic)
-- [ ] String manipulation functions
+- [x] Strings (dynamic)
+- [x] String manipulation functions
 - [ ] Type checking
