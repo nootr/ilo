@@ -20,16 +20,16 @@ def NULL: -> ptr
 def i64tos: int x, ptr buf -> void
     # Converts a given 64-bit integer to string
     buf
-    dup 48 castc swap setc 1 +  # '0'
-    dup 98 castc swap setc 1 +  # 'b'
+    dup '0' swap setc 1 +
+    dup 'b' swap setc 1 +
 
     1 63 shl  # Sweeping bit
     while dup 0 !=
         swap dup rot dup
         x and 0 != if
-            49 castc rot setc swap 1 + swap
+            '1' rot setc swap 1 + swap
         else
-            48 castc rot setc swap 1 + swap
+            '0' rot setc swap 1 + swap
         1 shr
     drop 0 castc swap setc
 
@@ -37,16 +37,16 @@ def i64tos: int x, ptr buf -> void
 def i8tos: int x, ptr buf -> void
     # Converts a given 8-bit integer to string
     buf
-    dup 48 castc swap setc 1 +  # '0'
-    dup 98 castc swap setc 1 +  # 'b'
+    dup '0' swap setc 1 +
+    dup 'b' swap setc 1 +
 
     1 7 shl  # Sweeping bit
     while dup 0 >
         swap dup rot dup
         x and 0 != if
-            49 castc rot setc swap 1 + swap
+            '1' rot setc swap 1 + swap
         else
-            48 castc rot setc swap 1 + swap
+            '0' rot setc swap 1 + swap
         1 shr
     drop 0 castc swap setc
 

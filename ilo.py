@@ -25,6 +25,7 @@ class TokenType:
     BLOCK_START = "BLOCK_START"
     BLOCK_END = "BLOCK_END"
     BOOL = "BOOL"
+    CHAR = "CHAR"
     COLON = "COLON"
     COMMA = "COMMA"
     COMPARISON = "COMPARISON"
@@ -107,6 +108,17 @@ def fetch_tokens(program):
             if program:
                 program = program[1:]
             tokens.append((TokenType.STRING, string, line_no))
+        elif startswith("'", program):
+            program = program[1:]
+            if program[0] == "\\":
+                program = program[1:]
+            character = program[0]
+            if program[1] != "'":
+                raise SyntaxError(
+                    f"Character on line {line_no} should be a single character"
+                )
+            program = program[2:]
+            tokens.append((TokenType.CHAR, character, line_no))
         elif startswith("->", program):
             tokens.append((TokenType.ARROW, "->", line_no))
             program = program[2:]
@@ -295,6 +307,7 @@ class Opcode:
     MULTIPLY = "multiply"
     OVER = "over"
     PUSH_BOOL = "push bool"
+    PUSH_CHAR = "push char"
     PUSH_INT = "push int"
     PUSH_STRING = "push string"
     RETURN = "return"
@@ -357,6 +370,9 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
         elif token_type == TokenType.STRING:
             opcodes.append((Opcode.PUSH_STRING, value, line_no))
             stack.append(Type.PTR)
+        elif token_type == TokenType.CHAR:
+            opcodes.append((Opcode.PUSH_CHAR, value, line_no))
+            stack.append(Type.CHAR)
         elif token_type == TokenType.ARITHMETIC:
             if value == "+":
                 opcodes.append((Opcode.ADD, 0, line_no))
@@ -774,7 +790,7 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
 
 
 def output(a, b, c, to_string=False):
-    string = f"{a:10} {b:10} {c:10}"
+    string = f"{a:10} {b:10} {c}"
     if to_string:
         return string + "\n"
     else:
@@ -796,6 +812,9 @@ def generate_code():
             output("", "push", "rax")
         elif opcode == Opcode.PUSH_BOOL:
             output("", "mov", f"rax, {operand}")
+            output("", "push", "rax")
+        elif opcode == Opcode.PUSH_CHAR:
+            output("", "mov", f"rax, '{operand}'")
             output("", "push", "rax")
         elif opcode == Opcode.PUSH_STRING:
             string_label = f"s_{string_index}"

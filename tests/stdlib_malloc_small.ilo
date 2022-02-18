@@ -7,10 +7,10 @@ import lib.std
 
 def main: ptr argv, int argc -> int
     5 malloc
-    dup     72  castc swap setc  # H
-    dup 1 + 105 castc swap setc  # i
-    dup 2 + 33  castc swap setc  # !
-    dup 3 + 10  castc swap setc  # \n
-    dup 4 + 0   castc swap setc  # \0
+    dup     'H'      swap setc
+    dup 1 + 'i'      swap setc
+    dup 2 + '!'      swap setc
+    dup 3 + 10 castc swap setc
+    dup 4 + 0  castc swap setc
     puts
     0
