@@ -29,6 +29,7 @@ def i64tos: int x, ptr buf -> void
         else
             48 rot setc swap 1 + swap
         1 shr
+    drop 0 swap setc
 
 
 def i8tos: int x, ptr buf -> void
@@ -45,6 +46,7 @@ def i8tos: int x, ptr buf -> void
         else
             48 rot setc swap 1 + swap
         1 shr
+    drop 0 swap setc
 
 
 def max: int x, int y -> int
