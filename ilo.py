@@ -442,7 +442,7 @@ def parse(tokens, token_index=0, return_on=None, args={}):
 
                 opcodes.append((Opcode.FUNCTION, function_name, line_no))
 
-                next_type, _, line_no = tokens[token_index]
+                next_type, type_value, line_no = tokens[token_index]
                 token_index += 1
                 fn_args = {}
                 while next_type != TokenType.ARROW:
@@ -458,7 +458,7 @@ def parse(tokens, token_index=0, return_on=None, args={}):
                         raise SyntaxError(
                             f"{line_no}: Expected identifier after type"
                         )
-                    fn_args[arg_name] = len(fn_args)
+                    fn_args[arg_name] = (len(fn_args), type_value)
 
                     next_type, _, _ = tokens[token_index]
                     if next_type == TokenType.COMMA:
@@ -479,9 +479,7 @@ def parse(tokens, token_index=0, return_on=None, args={}):
                         f"{line_no}: Expected return type in function definition"
                     )
 
-                functions[function_name] = (len(fn_args), returns)
-
-                # TODO: Type checking
+                functions[function_name] = (fn_args, returns)
 
                 block_start_type, _, line_no = tokens[token_index]
                 token_index += 1
@@ -551,7 +549,7 @@ def parse(tokens, token_index=0, return_on=None, args={}):
             elif value in constants:
                 opcodes.append((Opcode.PUSH_INT, constants[value], line_no))
             elif value in args:
-                index = len(args) - args[value] + 1
+                index = len(args) - args[value][0] + 1
                 opcodes.append((Opcode.GET_ARG, index, line_no))
             else:
                 raise SyntaxError(
@@ -572,6 +570,7 @@ def output(a, b, c, to_string=False):
         return string + "\n"
     else:
         print(string)
+
 
 def generate_code(ir):
     data = output("", "section", ".data", to_string=True)
@@ -742,8 +741,8 @@ def generate_code(ir):
             output("", "ret", "")
         elif opcode == Opcode.CALL:
             output("", "call", operand)
-            argc, rets = functions[operand]
-            for _ in range(argc):
+            args, rets = functions[operand]
+            for _ in range(len(args)):
                 output("", "pop", "rbx")
             if rets:
                 output("", "push", "rax")
