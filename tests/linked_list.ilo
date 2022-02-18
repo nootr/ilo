@@ -11,22 +11,22 @@ const item.value 16 # int
 
 const ITEM_SIZE  24
 
-const NULL 0
+
+def NULL: -> ptr
+    0 castp
 
 
-def create: ptr root, int value -> ptr
+def create: ptr root, int value -> void
     NULL  root item.prev  + setp
     NULL  root item.next  + setp
-    value root item.value + setp
+    value root item.value + seti
 
-def append: ptr root, int value -> ptr
+def append: ptr root, int value -> void
     root item.next + derefp NULL = if
         root  root ITEM_SIZE + item.prev  + setp
         NULL  root ITEM_SIZE + item.next  + setp
         value root ITEM_SIZE + item.value + seti
         root ITEM_SIZE + root item.next + setp
-
-        root item.next +
     else
         root item.next + value append
 

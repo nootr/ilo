@@ -5,6 +5,6 @@
 
 buffer foo 1
 
-def main: int argc, ptr argv -> int
-    42 foo setc
+def main: int argc, ptr argv -> char
+    42 castc foo setc
     foo derefc

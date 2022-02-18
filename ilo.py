@@ -233,6 +233,18 @@ def fetch_tokens(program):
         elif startswith("while", program):
             tokens.append((TokenType.KEYWORD, "while", line_no))
             program = program[5:]
+        elif startswith("castc", program):
+            tokens.append((TokenType.KEYWORD, "castc", line_no))
+            program = program[5:]
+        elif startswith("casti", program):
+            tokens.append((TokenType.KEYWORD, "casti", line_no))
+            program = program[5:]
+        elif startswith("castp", program):
+            tokens.append((TokenType.KEYWORD, "castp", line_no))
+            program = program[5:]
+        elif startswith("castb", program):
+            tokens.append((TokenType.KEYWORD, "castb", line_no))
+            program = program[5:]
         elif is_alphabet(program[0]):
             identifier = ''
             while is_alphabet(program[0]) or is_int(program[0]):
@@ -304,7 +316,15 @@ if_index = 1
 while_index = 1
 opcodes = []
 
-def parse(tokens, token_index=0, return_on=None, args={}, stack=[]):
+def parse(tokens, token_index=0, return_on=None, args=None, stack=None):
+    stack = [x for x in stack] if stack else []
+    args = {k: v for k, v in args.items()} if args else {}
+
+    def pop(line_no):
+        if not stack:
+            raise TypeError(f"Insufficient elements on stack on line {line_no}")
+        return stack.pop()
+
     global opcodes
     global functions
     global if_index
@@ -327,25 +347,72 @@ def parse(tokens, token_index=0, return_on=None, args={}, stack=[]):
             parse_file(filename)
         elif token_type == TokenType.INT:
             opcodes.append((Opcode.PUSH_INT, value, line_no))
+            stack.append(Type.INT)
         elif token_type == TokenType.BOOL:
             opcodes.append((Opcode.PUSH_BOOL, value, line_no))
+            stack.append(Type.BOOL)
         elif token_type == TokenType.STRING:
             opcodes.append((Opcode.PUSH_STRING, value, line_no))
+            stack.append(Type.PTR)
         elif token_type == TokenType.ARITHMETIC:
             if value == "+":
                 opcodes.append((Opcode.ADD, 0, line_no))
+                a = pop(line_no)
+                if a not in {Type.INT, Type.PTR}:
+                    raise TypeError(
+                        f"Only integers and pointers can be added on line {line_no}"
+                    )
+                b = pop(line_no)
+                if b not in {Type.INT, Type.PTR}:
+                    raise TypeError(
+                        f"Only integers and pointers can be added on line {line_no}"
+                    )
+                stack.append(a if a == Type.PTR else b)
             elif value == "-":
                 opcodes.append((Opcode.SUBTRACT, 0, line_no))
+                if pop(line_no) != Type.INT:
+                    raise TypeError(
+                        f"Second type in subtract must be an integer on line {line_no}"
+                    )
+                a = pop(line_no)
+                if a not in {Type.INT, Type.PTR}:
+                    raise TypeError(
+                        f"Only integers and pointers can be subtracted on line {line_no}"
+                    )
+                stack.append(a)
             elif value == "*":
                 opcodes.append((Opcode.MULTIPLY, 0, line_no))
+                if pop(line_no) != Type.INT or pop(line_no) != Type.INT:
+                    raise TypeError(
+                        f"Non-integer multiplied on line {line_no}"
+                    )
+                stack.append(Type.INT)
             elif value == "and":
                 opcodes.append((Opcode.BITWISE_AND, 0, line_no))
+                a = pop(line_no)
+                if a not in {Type.INT, Type.BOOL} or pop(line_no) != a:
+                    raise TypeError(f"Incorrect types for 'and' on line {line_no}")
+                stack.append(a)
             elif value == "or":
                 opcodes.append((Opcode.BITWISE_OR, 0, line_no))
+                a = pop(line_no)
+                if a not in {Type.INT, Type.BOOL} or pop(line_no) != a:
+                    raise TypeError(f"Incorrect types for 'or' on line {line_no}")
+                stack.append(a)
             elif value == "shr":
                 opcodes.append((Opcode.SHIFT_RIGHT, 0, line_no))
+                if pop(line_no) != Type.INT or pop(line_no) != Type.INT:
+                    raise TypeError(
+                        f"Non-integer shift right on line {line_no}"
+                    )
+                stack.append(Type.INT)
             elif value == "shl":
                 opcodes.append((Opcode.SHIFT_LEFT, 0, line_no))
+                if pop(line_no) != Type.INT or pop(line_no) != Type.INT:
+                    raise TypeError(
+                        f"Non-integer shift left on line {line_no}"
+                    )
+                stack.append(Type.INT)
             else:
                 raise ValueError(f"Unknown value for arithmetic: {value}")
         elif token_type == TokenType.COMPARISON:
@@ -363,17 +430,51 @@ def parse(tokens, token_index=0, return_on=None, args={}, stack=[]):
                 opcodes.append((Opcode.IS_LESS_OR_EQUAL, 0, line_no))
             else:
                 raise ValueError(f"Unknown value for comparison: {value}")
+            if pop(line_no) != pop(line_no):
+                raise TypeError(f"Comparison between different types on line {line_no}")
+            stack.append(Type.BOOL)
         elif token_type == TokenType.KEYWORD:
-            if value == "dup":
+            if value == "castc":
+                pop(line_no)
+                stack.append(Type.CHAR)
+            elif value == "casti":
+                pop(line_no)
+                stack.append(Type.INT)
+            elif value == "castp":
+                pop(line_no)
+                stack.append(Type.PTR)
+            elif value == "castb":
+                pop(line_no)
+                stack.append(Type.BOOL)
+            elif value == "dup":
                 opcodes.append((Opcode.DUP, 0, line_no))
+                a = pop(line_no)
+                stack.append(a)
+                stack.append(a)
             elif value == "drop":
                 opcodes.append((Opcode.DROP, 0, line_no))
+                pop(line_no)
             elif value == "rot":
                 opcodes.append((Opcode.ROT, 0, line_no))
+                a = pop(line_no)
+                b = pop(line_no)
+                c = pop(line_no)
+                stack.append(b)
+                stack.append(a)
+                stack.append(c)
             elif value == "swap":
                 opcodes.append((Opcode.SWAP, 0, line_no))
+                a = pop(line_no)
+                b = pop(line_no)
+                stack.append(a)
+                stack.append(b)
             elif value == "over":
                 opcodes.append((Opcode.OVER, 0, line_no))
+                a = pop(line_no)
+                b = pop(line_no)
+                stack.append(b)
+                stack.append(a)
+                stack.append(b)
             elif value == "syscall":
                 operand_type, operand, line_no = tokens[token_index]
                 token_index += 1
@@ -382,6 +483,9 @@ def parse(tokens, token_index=0, return_on=None, args={}, stack=[]):
                         "Syntax error: expected integer after syscall"
                     )
                 opcodes.append((Opcode.SYSCALL, int(operand), line_no))
+                for _ in range(int(operand) + 1):
+                    pop(line_no)
+                stack.append(Type.INT)
             elif value == "while":
                 while_label = f"while_{while_index}"
                 while_index += 1
@@ -392,12 +496,21 @@ def parse(tokens, token_index=0, return_on=None, args={}, stack=[]):
                     token_index,
                     return_on=TokenType.BLOCK_START,
                     args=args,
+                    stack=stack,
                 )
-                # TODO: Check wc_stack
+                stack = wc_stack
+                if pop(line_no) != Type.BOOL:
+                    raise TypeError(
+                        f"Expected boolean result on line {line_no}"
+                    )
 
                 opcodes.append((Opcode.WHILE_START, while_label, line_no))
-                wb_stack, token_index = parse(tokens, token_index, args=args)
-                # TODO: Check wb_stack
+                wb_stack, token_index = parse(tokens, token_index, args=args,
+                        stack=stack)
+                if stack != wb_stack:
+                    raise TypeError(
+                        f"While body on line {line_no} should not change types"
+                    )
                 opcodes.append((Opcode.WHILE_END, while_label, line_no))
             elif value == "if":
                 if_identifier = f"if_{if_index}"
@@ -406,14 +519,19 @@ def parse(tokens, token_index=0, return_on=None, args={}, stack=[]):
 
                 opcodes.append((Opcode.IF, if_identifier, line_no))
 
+                if pop(line_no) != Type.BOOL:
+                    raise TypeError(
+                        f"Expected boolean result on line {line_no}"
+                    )
+
                 block_start_type, _, line_no = tokens[token_index]
                 token_index += 1
                 if block_start_type != TokenType.BLOCK_START:
                     raise SyntaxError(
                         "Expected code block after `if` keyword"
                     )
-                if_stack, token_index = parse(tokens, token_index, args=args)
-                # TODO: Check if_stack
+                if_stack, token_index = parse(tokens, token_index, args=args,
+                        stack=stack)
 
                 _, value, _ = tokens[token_index]
                 if value == "else":
@@ -422,15 +540,24 @@ def parse(tokens, token_index=0, return_on=None, args={}, stack=[]):
                     token_index += 1
                     block_start_type, _, line_no = tokens[token_index]
                     if block_start_type == TokenType.BLOCK_START:
-                        else_stack, token_index = parse(tokens, token_index + 1, args=args)
-                        # TODO: Check else_stack
+                        else_stack, token_index = parse(tokens, token_index + 1,
+                                args=args, stack=stack)
                         opcodes.append((Opcode.LABEL, else_identifier, line_no))
+                        if else_stack != if_stack:
+                            raise TypeError(
+                                f"If and else block should leave similar types on line {line_no}"
+                            )
                     else:
                         raise NotImplementedError(
                             "`else if` is not implemented yet"
                         )
                 else:
                     opcodes.append((Opcode.LABEL, if_identifier, line_no))
+                    if if_stack != stack:
+                        raise TypeError(
+                            f"If block without else should not alter types on line {line_no}"
+                        )
+                stack = if_stack
             elif value == "def":
                 name_type, function_name, _ = tokens[token_index]
                 token_index += 1
@@ -477,7 +604,7 @@ def parse(tokens, token_index=0, return_on=None, args={}, stack=[]):
                             f"{line_no}: Expected comma or arrow after types"
                         )
 
-                    next_type, _, line_no = tokens[token_index]
+                    next_type, type_value, line_no = tokens[token_index]
                     token_index += 1
 
                 next_type, return_type, _ = tokens[token_index]
@@ -496,9 +623,14 @@ def parse(tokens, token_index=0, return_on=None, args={}, stack=[]):
                     raise SyntaxError(
                         f"{line_no}: Expected code block after function declaration"
                     )
-                fn_stack, token_index = parse(tokens, token_index, args=fn_args)
+                stack, token_index = parse(tokens, token_index, args=fn_args)
                 opcodes.append((Opcode.RETURN, 0, line_no))
-                # TODO: Check fn_stack
+                if return_type != "void":
+                    # TODO: Fix line number
+                    if pop(line_no) != return_type:
+                        raise TypeError(
+                            f"Function {function_name} returned incorrect type"
+                        )
             elif value == "buffer":
                 name_type, buffer_name, line_no = tokens[token_index]
                 token_index += 1
@@ -530,20 +662,72 @@ def parse(tokens, token_index=0, return_on=None, args={}, stack=[]):
                 constants[const_name] = value
             elif value == "derefb":
                 opcodes.append((Opcode.DEREF_B, 0, line_no))
+                if pop(line_no) != Type.PTR:
+                    raise TypeError(
+                        f"Cannot dereference non-pointer on line {line_no}"
+                    )
+                stack.append(Type.BOOL)
             elif value == "derefc":
                 opcodes.append((Opcode.DEREF_C, 0, line_no))
+                if pop(line_no) != Type.PTR:
+                    raise TypeError(
+                        f"Cannot dereference non-pointer on line {line_no}"
+                    )
+                stack.append(Type.CHAR)
             elif value == "derefi":
                 opcodes.append((Opcode.DEREF_I, 0, line_no))
+                if pop(line_no) != Type.PTR:
+                    raise TypeError(
+                        f"Cannot dereference non-pointer on line {line_no}"
+                    )
+                stack.append(Type.INT)
             elif value == "derefp":
                 opcodes.append((Opcode.DEREF_P, 0, line_no))
+                if pop(line_no) != Type.PTR:
+                    raise TypeError(
+                        f"Cannot dereference non-pointer on line {line_no}"
+                    )
+                stack.append(Type.PTR)
             elif value == "setb":
                 opcodes.append((Opcode.SET_B, 0, line_no))
+                if pop(line_no) != Type.PTR:
+                    raise TypeError(
+                        f"Need pointer to set on line {line_no}"
+                    )
+                if pop(line_no) != Type.BOOL:
+                    raise TypeError(
+                        f"Need bool to set on line {line_no}"
+                    )
             elif value == "setc":
                 opcodes.append((Opcode.SET_C, 0, line_no))
+                if pop(line_no) != Type.PTR:
+                    raise TypeError(
+                        f"Need pointer to set on line {line_no}"
+                    )
+                if pop(line_no) != Type.CHAR:
+                    raise TypeError(
+                        f"Need character to set on line {line_no}"
+                    )
             elif value == "seti":
                 opcodes.append((Opcode.SET_I, 0, line_no))
+                if pop(line_no) != Type.PTR:
+                    raise TypeError(
+                        f"Need pointer to set on line {line_no}"
+                    )
+                if pop(line_no) != Type.INT:
+                    raise TypeError(
+                        f"Need integer to set on line {line_no}"
+                    )
             elif value == "setp":
                 opcodes.append((Opcode.SET_P, 0, line_no))
+                if pop(line_no) != Type.PTR:
+                    raise TypeError(
+                        f"Need pointer to set on line {line_no}"
+                    )
+                if pop(line_no) != Type.PTR:
+                    raise TypeError(
+                        f"Need pointer to set on line {line_no}"
+                    )
         elif token_type == TokenType.BLOCK_START:
             if return_on == TokenType.BLOCK_START:
                 return stack, token_index
@@ -553,16 +737,25 @@ def parse(tokens, token_index=0, return_on=None, args={}, stack=[]):
         elif token_type == TokenType.IDENTIFIER:
             if value in functions:
                 opcodes.append((Opcode.CALL, value, line_no))
+                fargs, return_type = functions[value]
+                for _ in range(len(fargs)):
+                    pop(line_no)
+                if return_type != Type.VOID:
+                    stack.append(return_type)
             elif value in buffers:
                 opcodes.append((Opcode.GET_BUFFER, value, line_no))
+                stack.append(Type.PTR)
             elif value in constants:
                 opcodes.append((Opcode.PUSH_INT, constants[value], line_no))
+                stack.append(Type.INT)
             elif value in args:
-                index = len(args) - args[value][0] + 1
+                raw_index, arg_type = args[value]
+                index = len(args) - raw_index + 1
                 opcodes.append((Opcode.GET_ARG, index, line_no))
+                stack.append(arg_type)
             else:
                 raise SyntaxError(
-                        f"Unexpected identifier on line {line_no}: {value}"
+                    f"Unexpected identifier on line {line_no}: {value}"
                 )
         else:
             raise ValueError(f"Unknown token type: {token_type}")

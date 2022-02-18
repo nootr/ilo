@@ -36,6 +36,6 @@ def fetch: ptr node, int n -> int
 def main: int argc, ptr argv -> int
     NULL  root item.prev  + setp
     NULL  root item.next  + setp
-    0     root item.value + setp
+    0     root item.value + seti
     root 1000 create
     root 420 fetch

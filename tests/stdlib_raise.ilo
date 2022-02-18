@@ -6,4 +6,4 @@
 import lib.std
 
 def main: ptr argv, int argc -> int
-    "Foo bar baz" raise
+    "Foo bar baz" raise 0

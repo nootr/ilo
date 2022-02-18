@@ -16,7 +16,7 @@ if exists("b:current_syntax")
 endif
 
 " Keywords
-syntax keyword iloKeywords import var def if else dup swap over rot drop syscall derefc derefi derefb derefp buffer setc seti setb setp const and or while
+syntax keyword iloKeywords import var def if else dup swap over rot drop syscall derefc derefi derefb derefp buffer setc seti setb setp const and or while castc casti castb castp
 syntax keyword iloTypes int ptr char bool void
 syntax keyword iloBoolean True False
 

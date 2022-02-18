@@ -6,7 +6,7 @@
 buffer foo 8
 
 def main: int argc, ptr argv -> int
-    foo 0 > if
+    foo casti 0 != if
         1
     else
         2

@@ -10,6 +10,7 @@ def main: int argc, ptr argv -> int
       9             # String length
       1             # Syscall no. (write)
       syscall 3
+      drop
 
     1               # File descriptor
     " Yay!"         # String

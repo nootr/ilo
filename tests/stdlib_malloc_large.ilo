@@ -7,9 +7,9 @@ import lib.std
 
 def main: ptr argv, int argc -> int
     500000 malloc
-    dup     72  swap setc  # H
-    dup 1 + 105 swap setc  # i
-    dup 2 + 33  swap setc  # !
-    dup 3 + 0   swap setc  # \0
+    dup     72  castc swap setc  # H
+    dup 1 + 105 castc swap setc  # i
+    dup 2 + 33  castc swap setc  # !
+    dup 3 + 0   castc swap setc  # \0
     puts
     0
