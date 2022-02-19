@@ -260,6 +260,9 @@ def fetch_tokens(program):
         elif startswith("location", program):
             tokens.append((TokenType.KEYWORD, "location", line_no))
             program = program[8:]
+        elif startswith("debug", program):
+            tokens.append((TokenType.KEYWORD, "debug", line_no))
+            program = program[5:]
         elif is_alphabet(program[0]):
             identifier = ''
             while is_alphabet(program[0]) or is_int(program[0]):
@@ -453,7 +456,10 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
                 raise TypeError(f"Comparison between different types on line {line_no}")
             stack.append(Type.BOOL)
         elif token_type == TokenType.KEYWORD:
-            if value == "location":
+            if value == "debug":
+                print(f"Stack: {stack}")
+                exit(1)
+            elif value == "location":
                 opcodes.append((Opcode.PUSH_STRING, f"{filename}:{line_no}", line_no))
                 stack.append(Type.PTR)
             elif value == "castc":
@@ -761,8 +767,18 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
             if value in functions:
                 opcodes.append((Opcode.CALL, value, line_no))
                 fargs, return_type = functions[value]
-                for _ in range(len(fargs)):
-                    pop(line_no)
+                fargs_sorted = sorted(
+                    [v for v in fargs.values()], key=lambda x: x[1]
+                )
+                for i, t in reversed(fargs_sorted):
+                    a = pop(line_no)
+                    print(f"Popped: {a}")
+                    print(f"Expec.: {t}")
+                    print()
+                    if a != t:
+                        raise TypeError(
+                            f"Expected {t} as argument for {value} on line {line_no}"
+                        )
                 if return_type != Type.VOID:
                     stack.append(return_type)
             elif value in buffers:
