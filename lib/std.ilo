@@ -22,6 +22,15 @@ def NULL: -> ptr
     0 castp
 
 
+def memcpy: ptr src, ptr dest, int num -> void
+    # Copies a given amount of bytes from src to dest
+    0
+    while dup num <
+        dup src + derefc
+        over dest + setc
+        1 +
+
+
 def i64tos: int x, ptr buf -> void
     # Converts a given 64-bit integer to string
     buf
