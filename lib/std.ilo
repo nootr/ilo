@@ -18,6 +18,7 @@ const MAP_ANONYMOUS 32
 
 
 def NULL: -> ptr
+    # Returns a null-pointer
     0 castp
 
 
@@ -382,3 +383,39 @@ def get_argument: ptr argv, int n -> ptr
         swap dup strlen + 1 + swap
         1 +
     drop
+
+
+def _r13: ptr s -> ptr
+    # Applies rot13 to all characters of string s and returns the same pointer.
+    s
+    dup
+    while dup derefc 0 castc !=
+        dup derefc ' ' != if
+            dup derefc casti 13 +
+            dup 'z' casti > if
+                26 -
+            castc over setc
+        1 +
+    drop
+
+
+def zen: -> void
+    # Prints the Zen of Ilo, inspired by Python's `import this`
+    "anfva cban vyb gna wna ahgh"                                    _r13 puts "\n" puts
+    ""                                                               _r13 puts "\n" puts
+    "sha vf gur tbny"                                                _r13 puts "\n" puts
+    ""                                                               _r13 puts "\n" puts
+    "yrneavat vf sha"                                                _r13 puts "\n" puts
+    "ohg arrqf zbgvingvba"                                           _r13 puts "\n" puts
+    "na vzcerffvir ernpunoyr tbny vf n zbgvingvba"                   _r13 puts "\n" puts
+    "jevgvat n cebtenzzvat ynathntr pbhyq or vzcerffvir"             _r13 puts "\n" puts
+    "jevgvat n frys ubfgrq pbzcvyre vf vzcerffvir"                   _r13 puts "\n" puts
+    ""                                                               _r13 puts "\n" puts
+    "orvat sbeprq gb gnpxyr ceboyrzf va n arj jnl vf sha"            _r13 puts "\n" puts
+    "vs vgf cenpgvpny rabhtu gb or ghearq vagb fbzrguvat hfrshy"     _r13 puts "\n" puts
+    ""                                                               _r13 puts "\n" puts
+    "jrveq flagnk vf sha"                                            _r13 puts "\n" puts
+    "haernqnoyr pbqr vfag sha"                                       _r13 puts "\n" puts
+    ""                                                               _r13 puts "\n" puts
+    "bcgvzvmngvbaf nerag sha"                                        _r13 puts "\n" puts
+    "nhgbzvmvat bcgvzvmngvbaf pbhyq or sha"                          _r13 puts "\n" puts
