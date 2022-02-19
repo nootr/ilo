@@ -347,6 +347,7 @@ def free: ptr block_data -> void
         0 < if
             "Unable to free memory page" raise
 
+
 def concat: ptr a, ptr b -> ptr
     # Takes two string and returns them after being concatenated.
     # Note that this mallocs, so don't forget to free!
@@ -373,3 +374,11 @@ def read_file: ptr filename -> ptr
             swap free
             rot rot
     drop drop
+
+
+def get_argument: ptr argv, int n -> ptr
+    # Takes a list of arguments argv and returns the n'th argument
+    argv 0 while dup n <
+        swap dup strlen + 1 + swap
+        1 +
+    drop

@@ -7,13 +7,9 @@ for file in $(find tests/*.ilo -maxdepth 1 -not -type d); do
   nasm -felf64 test.asm -o test.o
   ld -o test test.o
 
-  # Run test
-  EXIT_CODE="$(./test > /dev/null 2>&1; echo $?)"
-  STDOUT="$(./test 2>/dev/null)"
-  STDERR="$(./test 2>&1 1>/dev/null)"
-
-  # Verify results
+  # Get metadata
   DESCRIPTION="$(grep '^# Description:' $file | cut -d: -f2-)"
+  ARGS="$(grep '^# Args:' $file | cut -d: -f2-)"
   EXPECTED_EXIT_CODE="$(
     printf "%b" "$(grep '^# Exit code:' $file | cut -d: -f2-)"
   )"
@@ -24,6 +20,12 @@ for file in $(find tests/*.ilo -maxdepth 1 -not -type d); do
     printf "%b" "$(grep '^# Stderr:' $file | cut -d: -f2-)"
   )"
 
+  # Run test
+  EXIT_CODE="$(./test $ARGS > /dev/null 2>&1; echo $?)"
+  STDOUT="$(./test $ARGS 2>/dev/null)"
+  STDERR="$(./test $ARGS 2>&1 1>/dev/null)"
+
+  # Verify results
   SUCCESS=1
   if [ "$EXIT_CODE" != "$EXPECTED_EXIT_CODE" ]; then
     echo "[FAIL] Test: $DESCRIPTION. Exit code: $EXIT_CODE (not $EXPECTED_EXIT_CODE)"

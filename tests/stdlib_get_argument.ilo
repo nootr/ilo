@@ -1,0 +1,11 @@
+# Description:Standard library - get_argument
+# Exit code:4
+# Args:foo bar baz
+# Stdout:bar
+# Stderr:
+
+import lib.std
+
+def main: ptr argv, int argc -> int
+    argv 2 get_argument puts
+    argc
