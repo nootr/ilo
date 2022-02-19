@@ -768,14 +768,10 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
                 opcodes.append((Opcode.CALL, value, line_no))
                 fargs, return_type = functions[value]
                 fargs_sorted = sorted(
-                    [v for v in fargs.values()], key=lambda x: x[1]
+                    [v for v in fargs.values()], key=lambda x: -x[0]
                 )
-                for i, t in reversed(fargs_sorted):
-                    a = pop(line_no)
-                    print(f"Popped: {a}")
-                    print(f"Expec.: {t}")
-                    print()
-                    if a != t:
+                for i, t in fargs_sorted:
+                    if pop(line_no) != t:
                         raise TypeError(
                             f"Expected {t} as argument for {value} on line {line_no}"
                         )

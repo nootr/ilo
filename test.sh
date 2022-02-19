@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
+ILO="./ilo0"
+
 for file in $(find tests/*.ilo -maxdepth 1 -not -type d); do
   # Compile
   echo "[COMP] ${file}"
-  python ilo.py $file > test.asm
+  $ILO $file > test.asm
   nasm -felf64 test.asm -o test.o
   ld -o test test.o
 
