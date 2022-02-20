@@ -1,5 +1,7 @@
 import lib.std
-import lib.tokens
+
+import lib.ilo.tokens
+import lib.ilo.types
 
 
 ## Helper functions

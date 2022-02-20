@@ -1,10 +1,10 @@
-# Description:Expanding tokenlist
+# Description:ilo.tokens - Expanding tokenlist
 # Exit code:0
 # Stdout:
 # Stderr:
 
 import lib.std
-import lib.tokens
+import lib.ilo.tokens
 
 
 def main: int argc, ptr argv -> int
@@ -12,11 +12,11 @@ def main: int argc, ptr argv -> int
     tokenlist derefp tokenlist.max_tokens + derefi 1 = "Tokenlist should have limit 1" assert
     tokenlist derefp tokenlist.num_tokens + derefi 0 = "Tokenlist should have 0 tokens" assert
 
-    TOKEN_NOOP 0 0 create_token
+    0 TOKEN_NOOP 0 create_token
     tokenlist derefp tokenlist.num_tokens + derefi 1 = "Tokenlist should have 1 token" assert
 
-    TOKEN_NOOP 0 0 create_token
-    TOKEN_NOOP 0 0 create_token
+    0 TOKEN_NOOP 0 create_token
+    0 TOKEN_NOOP 0 create_token
     tokenlist derefp tokenlist.max_tokens + derefi 4 = "Tokenlist should have limit 4" assert
     tokenlist derefp tokenlist.num_tokens + derefi 3 = "Tokenlist should have 3 tokens" assert
     0
