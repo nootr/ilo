@@ -95,7 +95,7 @@ def fetch_tokens(program):
         elif startswith("#", program):
             while program and program[0] != "\n":
                 program = program[1:]
-        elif startswith("\"", program):
+        elif startswith("\"", program):  # DONE
             program = program[1:]
             string = ''
             while program and program[0] != "\"":
@@ -108,7 +108,7 @@ def fetch_tokens(program):
             if program:
                 program = program[1:]
             tokens.append((TokenType.STRING, string, line_no))
-        elif startswith("'", program):
+        elif startswith("'", program):  # DONE
             program = program[1:]
             if program[0] == "\\":
                 program = program[1:]
@@ -827,7 +827,13 @@ def generate_code():
             output("", "mov", f"rax, {operand}")
             output("", "push", "rax")
         elif opcode == Opcode.PUSH_CHAR:
-            output("", "mov", f"rax, '{operand}'")
+            if operand == "'":
+                operand = 39
+            elif operand == "\\":
+                operand = 92
+            else:
+                operand = f"'{operand}'"
+            output("", "mov", f"rax, {operand}")
             output("", "push", "rax")
         elif opcode == Opcode.PUSH_STRING:
             string_label = f"s_{string_index}"
