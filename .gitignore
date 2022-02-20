@@ -1,4 +1,5 @@
-./ilo
+ilo
+!lib/ilo
 *.o
 *.asm
 *.pyc
