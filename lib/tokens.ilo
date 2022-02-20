@@ -1,0 +1,99 @@
+import lib.std
+
+
+## Constants
+
+const TOKEN_NOOP        0
+const TOKEN_ARITHMETIC  1
+const TOKEN_ARROW       2
+const TOKEN_BLOCK_START 3
+const TOKEN_BLOCK_END   4
+const TOKEN_BOOL        5
+const TOKEN_CHAR        6
+const TOKEN_COLON       7
+const TOKEN_COMMA       8
+const TOKEN_COMPARISON  9
+const TOKEN_IDENTIFIER  10
+const TOKEN_INT         11
+const TOKEN_KEYWORD     12
+const TOKEN_STRING      13
+const TOKEN_TYPE        14
+
+const TYPE_BOOL 1
+const TYPE_CHAR 2
+const TYPE_INT  3
+const TYPE_PTR  4
+const TYPE_VOID 5
+
+
+## Structs
+
+# TOKEN
+# A token is a string with an identified type. It also carries its line number for
+# debugging purposes.
+const token.type  0  # int
+const token.value 8  # ptr
+const token.line  16 # int
+const TOKEN_SIZE  24
+
+
+# TOKENLIST
+# A tokenlist is a data structure containing some metadata in its leading bytes and
+# token structs in the remaining bytes. It's meant to be dynamically growing in the
+# following way:
+#
+# * The tokenlist has space for 2^N tokens (starting at 2^0=1)
+# * When a token needs to be appended to a full tokenlist, a new tokenlist with double
+#   the capacity is created, the data is copied over and the old tokenlist is freed.
+#
+# This algorithm has a time complexity of O(n)[1], while being more space- and (in this
+# case) time-efficient than a linked list.
+#
+# [1] The Simple and Elegant Idea behind Efficient Dynamic Arrays
+#     https://youtu.be/Ij7NQ-0mIVA
+const tokenlist.max_tokens     0  # int
+const tokenlist.num_tokens     8  # int
+const tokenlist.tokens         16 # ptr
+const TOKENLIST_METADATA_SIZE  16
+
+buffer tokenlist 8  # Global pointer to the tokenlist
+
+
+def create_tokenlist: int max_tokens -> ptr
+    # Initializes a tokenlist and returns its pointer
+    max_tokens TOKEN_SIZE * TOKENLIST_METADATA_SIZE + malloc
+    dup tokenlist.max_tokens + max_tokens swap seti
+    dup tokenlist.num_tokens + 0          swap seti
+
+
+def create_token: int type, int value, int line -> void
+    # Appends a token to the tokenlist
+    tokenlist derefp tokenlist.num_tokens + derefi
+    tokenlist derefp tokenlist.max_tokens + derefi = if
+        # Create a tokenlist with double the capacity
+        tokenlist derefp tokenlist.max_tokens + derefi 2 * create_tokenlist
+        # Copy tokens
+        tokenlist derefp tokenlist.tokens +
+        over             tokenlist.tokens +
+        tokenlist derefp tokenlist.num_tokens + derefi TOKEN_SIZE *
+        memcpy
+        # Update metadata
+        tokenlist derefp tokenlist.max_tokens + derefi 2 *
+        over             tokenlist.max_tokens + seti
+        tokenlist derefp tokenlist.num_tokens + derefi
+        over             tokenlist.num_tokens + seti
+        # Free old tokenlist and replace by new
+        tokenlist derefp free
+        tokenlist setp
+
+    # Calculate memory offset
+    tokenlist derefp tokenlist.num_tokens + derefi
+    dup
+    TOKEN_SIZE * TOKENLIST_METADATA_SIZE +
+    tokenlist derefp +
+
+    dup token.type  + type  swap seti
+    dup token.value + value swap seti
+    dup token.line  + line  swap seti
+    drop
+    1 + tokenlist derefp tokenlist.num_tokens + seti
