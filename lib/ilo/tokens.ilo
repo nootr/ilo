@@ -86,8 +86,8 @@ def create_token: int line, int type, ptr value -> void
     TOKEN_SIZE * TOKENLIST_METADATA_SIZE +
     tokenlist derefp +
 
+    dup token.line  + line  swap seti
     dup token.type  + type  swap seti
     dup token.value + value swap setp
-    dup token.line  + line  swap seti
     drop
     1 + tokenlist derefp tokenlist.num_tokens + seti

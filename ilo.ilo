@@ -7,6 +7,7 @@ import lib.ilo.types
 ## Helper functions
 
 def is_int: char c -> bool
+    # Returns True if given character is a number
     '0' c <= c '9' <= and
 
 
@@ -18,10 +19,46 @@ def is_alphabet: char c -> bool
     c '.' =               or
 
 
+def count_indent: ptr s -> int
+    # Takes a string and returns the number of leading spaces
+    0
+    s
+    while dup derefc ' ' =
+        1 + swap
+        1 + swap
+    drop
+
+
 def tokenize: ptr source -> void
     # Tokenizes a given source code
     1 create_tokenlist tokenlist setp
-    "Tokenizing is not implemented yet" raise
+    0      # line
+    source # current_char
+    while dup derefc 0 castc !=
+        dup count_indent
+        100 malloc
+        # TODO: Create token for indent changes
+        over over i64tos
+        "Indent: " puts dup puts "\n" puts
+        free
+        +
+
+        dup derefc is_int if
+            dup
+            # Count length of integer
+            0 swap
+            while dup derefc is_int
+                1 + swap 1 + swap
+            drop
+            # Get token value
+            over swap substring
+            # Create token
+            rot dup rot dup strlen rot rot TOKEN_INT swap create_token
+            # Shift source
+            rot + 1 -
+        dup derefc '+' = if
+            over TOKEN_ARITHMETIC "+" create_token
+        1 +
 
 
 def main: ptr argv, int argc -> int
@@ -34,4 +71,20 @@ def main: ptr argv, int argc -> int
     argv 1 get_argument
     read_file
     tokenize
+
+    100 malloc dup
+    tokenlist derefp tokenlist.num_tokens + derefi
+    swap i64tos
+    "Number of tokens: " puts dup puts "\n" puts
+    free
+
+    "Tokens:\n" puts
+    0
+    while dup tokenlist derefp tokenlist.num_tokens + derefi <
+        dup TOKEN_SIZE *
+        tokenlist derefp tokenlist.tokens + +
+        token.value + derefp puts "\n" puts
+        1 +
+    drop
+
     0
