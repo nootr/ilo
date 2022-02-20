@@ -334,6 +334,7 @@ constants = {}
 if_index = 1
 while_index = 1
 opcodes = []
+files = []
 
 def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None):
     stack = [x for x in stack] if stack else []
@@ -1066,9 +1067,13 @@ def read_file(filename):
 
 
 def parse_file(filename):
-    content = read_file(filename)
-    tokens = fetch_tokens(content)
-    parse(filename, tokens, 0)
+    global files
+
+    if filename not in files:
+        files.append(filename)
+        content = read_file(filename)
+        tokens = fetch_tokens(content)
+        parse(filename, tokens, 0)
 
 
 def parse_args():
