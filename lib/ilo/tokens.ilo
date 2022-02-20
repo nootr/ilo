@@ -60,7 +60,7 @@ def create_tokenlist: int max_tokens -> ptr
     dup tokenlist.num_tokens + 0          swap seti
 
 
-def create_token: int line, int type, int value -> void
+def create_token: int line, int type, ptr value -> void
     # Appends a token to the tokenlist
     tokenlist derefp tokenlist.num_tokens + derefi
     tokenlist derefp tokenlist.max_tokens + derefi = if
@@ -87,7 +87,7 @@ def create_token: int line, int type, int value -> void
     tokenlist derefp +
 
     dup token.type  + type  swap seti
-    dup token.value + value swap seti
+    dup token.value + value swap setp
     dup token.line  + line  swap seti
     drop
     1 + tokenlist derefp tokenlist.num_tokens + seti
