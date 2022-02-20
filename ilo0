@@ -119,148 +119,148 @@ def fetch_tokens(program):
                 )
             program = program[2:]
             tokens.append((TokenType.CHAR, character, line_no))
-        elif startswith("->", program):
+        elif startswith("->", program):  # DONE
             tokens.append((TokenType.ARROW, "->", line_no))
             program = program[2:]
-        elif startswith(",", program):
+        elif startswith(",", program):  # DONE
             tokens.append((TokenType.COMMA, ",", line_no))
             program = program[1:]
-        elif startswith(":", program):
+        elif startswith(":", program):  # DONE
             tokens.append((TokenType.COLON, ":", line_no))
             program = program[1:]
-        elif startswith("!=", program):
+        elif startswith("!=", program):  # DONE
             tokens.append((TokenType.COMPARISON, "!=", line_no))
             program = program[2:]
-        elif startswith(">=", program):
+        elif startswith(">=", program):  # DONE
             tokens.append((TokenType.COMPARISON, ">=", line_no))
             program = program[2:]
-        elif startswith("<=", program):
+        elif startswith("<=", program):  # DONE
             tokens.append((TokenType.COMPARISON, "<=", line_no))
             program = program[2:]
-        elif startswith("or", program):
+        elif startswith("or", program):  # DONE
             tokens.append((TokenType.ARITHMETIC, "or", line_no))
             program = program[2:]
-        elif startswith("and", program):
+        elif startswith("and", program):  # DONE
             tokens.append((TokenType.ARITHMETIC, "and", line_no))
             program = program[3:]
-        elif startswith("shr", program):
+        elif startswith("shr", program):  # DONE
             tokens.append((TokenType.ARITHMETIC, "shr", line_no))
             program = program[3:]
-        elif startswith("shl", program):
+        elif startswith("shl", program):  # DONE
             tokens.append((TokenType.ARITHMETIC, "shl", line_no))
             program = program[3:]
-        elif program[0] in "+-*/":
+        elif program[0] in "+-*/":  # DONE
             tokens.append((TokenType.ARITHMETIC, program[0], line_no))
             program = program[1:]
-        elif program[0] in "=<>":
+        elif program[0] in "=<>":  # DONE
             tokens.append((TokenType.COMPARISON, program[0], line_no))
             program = program[1:]
-        elif is_int(program[0]):
+        elif is_int(program[0]):  # DONE
             number = ''
             while program and is_int(program[0]):
                 number += program[0]
                 program = program[1:]
             tokens.append((TokenType.INT, number, line_no))
-        elif startswith("True", program):
+        elif startswith("True", program):  # DONE
             tokens.append((TokenType.BOOL, 1, line_no))
             program = program[4:]
-        elif startswith("False", program):
+        elif startswith("False", program):  # DONE
             tokens.append((TokenType.BOOL, 0, line_no))
             program = program[5:]
-        elif startswith("dup", program):
+        elif startswith("dup", program):  # DONE
             tokens.append((TokenType.KEYWORD, "dup", line_no))
             program = program[3:]
-        elif startswith("drop", program):
+        elif startswith("drop", program):  # DONE
             tokens.append((TokenType.KEYWORD, "drop", line_no))
             program = program[4:]
-        elif startswith("over", program):
+        elif startswith("over", program):  # DONE
             tokens.append((TokenType.KEYWORD, "over", line_no))
             program = program[4:]
-        elif startswith("swap", program):
+        elif startswith("swap", program):  # DONE
             tokens.append((TokenType.KEYWORD, "swap", line_no))
             program = program[4:]
-        elif startswith("rot", program):
+        elif startswith("rot", program):  # DONE
             tokens.append((TokenType.KEYWORD, "rot", line_no))
             program = program[3:]
-        elif startswith("syscall", program):
+        elif startswith("syscall", program):  # DONE
             tokens.append((TokenType.KEYWORD, "syscall", line_no))
             program = program[7:]
-        elif startswith("import", program):
+        elif startswith("import", program):  # DONE
             tokens.append((TokenType.KEYWORD, "import", line_no))
             program = program[6:]
-        elif startswith("if", program):
+        elif startswith("if", program):  # DONE
             tokens.append((TokenType.KEYWORD, "if", line_no))
             program = program[2:]
-        elif startswith("else", program):
+        elif startswith("else", program):  # DONE
             tokens.append((TokenType.KEYWORD, "else", line_no))
             program = program[4:]
-        elif startswith("def", program):
+        elif startswith("def", program):  # DONE
             tokens.append((TokenType.KEYWORD, "def", line_no))
             program = program[3:]
-        elif startswith("int", program):
+        elif startswith("int", program):  # DONE
             tokens.append((TokenType.TYPE, Type.INT, line_no))
             program = program[3:]
-        elif startswith("ptr", program):
+        elif startswith("ptr", program):  # DONE
             tokens.append((TokenType.TYPE, Type.PTR, line_no))
             program = program[3:]
-        elif startswith("bool", program):
+        elif startswith("bool", program):  # DONE
             tokens.append((TokenType.TYPE, Type.BOOL, line_no))
             program = program[4:]
-        elif startswith("char", program):
+        elif startswith("char", program):  # DONE
             tokens.append((TokenType.TYPE, Type.CHAR, line_no))
             program = program[4:]
-        elif startswith("void", program):
+        elif startswith("void", program):  # DONE
             tokens.append((TokenType.TYPE, Type.VOID, line_no))
             program = program[4:]
-        elif startswith("derefc", program):
+        elif startswith("derefc", program):  # DONE
             tokens.append((TokenType.KEYWORD, "derefc", line_no))
             program = program[6:]
-        elif startswith("derefi", program):
+        elif startswith("derefi", program):  # DONE
             tokens.append((TokenType.KEYWORD, "derefi", line_no))
             program = program[6:]
-        elif startswith("derefb", program):
+        elif startswith("derefb", program):  # DONE
             tokens.append((TokenType.KEYWORD, "derefb", line_no))
             program = program[6:]
-        elif startswith("derefp", program):
+        elif startswith("derefp", program):  # DONE
             tokens.append((TokenType.KEYWORD, "derefp", line_no))
             program = program[6:]
-        elif startswith("setc", program):
+        elif startswith("setc", program):  # DONE
             tokens.append((TokenType.KEYWORD, "setc", line_no))
             program = program[4:]
-        elif startswith("seti", program):
+        elif startswith("seti", program):  # DONE
             tokens.append((TokenType.KEYWORD, "seti", line_no))
             program = program[4:]
-        elif startswith("setb", program):
+        elif startswith("setb", program):  # DONE
             tokens.append((TokenType.KEYWORD, "setb", line_no))
             program = program[4:]
-        elif startswith("setp", program):
+        elif startswith("setp", program):  # DONE
             tokens.append((TokenType.KEYWORD, "setp", line_no))
             program = program[4:]
-        elif startswith("buffer", program):
+        elif startswith("buffer", program):  # DONE
             tokens.append((TokenType.KEYWORD, "buffer", line_no))
             program = program[6:]
-        elif startswith("const", program):
+        elif startswith("const", program):  # DONE
             tokens.append((TokenType.KEYWORD, "const", line_no))
             program = program[5:]
-        elif startswith("while", program):
+        elif startswith("while", program):  # DONE
             tokens.append((TokenType.KEYWORD, "while", line_no))
             program = program[5:]
-        elif startswith("castc", program):
+        elif startswith("castc", program):  # DONE
             tokens.append((TokenType.KEYWORD, "castc", line_no))
             program = program[5:]
-        elif startswith("casti", program):
+        elif startswith("casti", program):  # DONE
             tokens.append((TokenType.KEYWORD, "casti", line_no))
             program = program[5:]
-        elif startswith("castp", program):
+        elif startswith("castp", program):  # DONE
             tokens.append((TokenType.KEYWORD, "castp", line_no))
             program = program[5:]
-        elif startswith("castb", program):
+        elif startswith("castb", program):  # DONE
             tokens.append((TokenType.KEYWORD, "castb", line_no))
             program = program[5:]
-        elif startswith("location", program):
+        elif startswith("location", program):  # DONE
             tokens.append((TokenType.KEYWORD, "location", line_no))
             program = program[8:]
-        elif startswith("debug", program):
+        elif startswith("debug", program):  # DONE
             tokens.append((TokenType.KEYWORD, "debug", line_no))
             program = program[5:]
         elif is_alphabet(program[0]):

@@ -20,6 +20,57 @@ const TOKEN_STRING      13
 const TOKEN_TYPE        14
 
 
+def token_to_str: int token -> ptr
+    # Returns the string representation of a given token
+    # TODO: Implement else-if
+    token TOKEN_NOOP = if
+        "NOOP"
+    else
+     token TOKEN_ARITHMETIC = if
+         "ARITHMETIC"
+     else
+      token TOKEN_ARROW = if
+          "ARROW"
+      else
+       token TOKEN_BLOCK_START = if
+           "BLOCK_START"
+       else
+        token TOKEN_BLOCK_END = if
+            "BLOCK_END"
+        else
+         token TOKEN_BOOL = if
+             "BOOL"
+         else
+          token TOKEN_CHAR = if
+              "CHAR"
+          else
+           token TOKEN_COLON = if
+               "COLON"
+           else
+            token TOKEN_COMMA = if
+                "COMMA"
+            else
+             token TOKEN_COMPARISON = if
+                 "COMPARISON"
+             else
+              token TOKEN_IDENTIFIER = if
+                  "IDENTIFIER"
+              else
+               token TOKEN_INT = if
+                   "INT"
+               else
+                token TOKEN_KEYWORD = if
+                    "KEYWORD"
+                else
+                 token TOKEN_STRING = if
+                     "STRING"
+                 else
+                  token TOKEN_TYPE = if
+                      "TYPE"
+                  else
+                      "Unknown token type" raise "UNKNOWN"
+
+
 ## Structs
 
 # TOKEN

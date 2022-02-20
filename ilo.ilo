@@ -58,6 +58,149 @@ def tokenize: ptr source -> void
             rot + 1 -
         dup derefc '+' = if
             over TOKEN_ARITHMETIC "+" create_token
+        dup derefc '-' = if
+            over TOKEN_ARITHMETIC "-" create_token
+        dup derefc '*' = if
+            over TOKEN_ARITHMETIC "*" create_token
+        dup derefc '/' = if
+            over TOKEN_ARITHMETIC "/" create_token
+        dup "and" startswith if
+            over TOKEN_ARITHMETIC "and" create_token
+            2 +
+        dup "or" startswith if
+            over TOKEN_ARITHMETIC "or" create_token
+            1 +
+        dup "shl" startswith if
+            over TOKEN_ARITHMETIC "shl" create_token
+            2 +
+        dup "shr" startswith if
+            over TOKEN_ARITHMETIC "shr" create_token
+            2 +
+        dup "->" startswith if
+            over TOKEN_ARROW NULL create_token
+            2 +
+        dup "True" startswith if
+            over TOKEN_BOOL "1" create_token
+            3 +
+        dup "False" startswith if
+            over TOKEN_BOOL "0" create_token
+            4 +
+        dup derefc ':' = if
+            over TOKEN_COLON NULL create_token
+        dup derefc ',' = if
+            over TOKEN_COMMA NULL create_token
+        dup "!=" startswith if
+            over TOKEN_COMPARISON "!=" create_token
+            1 +
+        dup ">=" startswith if
+            over TOKEN_COMPARISON ">=" create_token
+            1 +
+        dup "<=" startswith if
+            over TOKEN_COMPARISON "<=" create_token
+            1 +
+        dup derefc '=' = if
+            over TOKEN_COMPARISON "=" create_token
+        dup derefc '<' = if
+            over TOKEN_COMPARISON "<" create_token
+        dup derefc '>' = if
+            over TOKEN_COMPARISON ">" create_token
+        dup "buffer" startswith if
+            over TOKEN_KEYWORD "buffer" create_token
+            5 +
+        dup "castb" startswith if
+            over TOKEN_KEYWORD "castb" create_token
+            4 +
+        dup "castc" startswith if
+            over TOKEN_KEYWORD "castc" create_token
+            4 +
+        dup "casti" startswith if
+            over TOKEN_KEYWORD "casti" create_token
+            4 +
+        dup "castp" startswith if
+            over TOKEN_KEYWORD "castp" create_token
+            4 +
+        dup "const" startswith if
+            over TOKEN_KEYWORD "const" create_token
+            4 +
+        dup "debug" startswith if
+            over TOKEN_KEYWORD "debug" create_token
+            4 +
+        dup "def" startswith if
+            over TOKEN_KEYWORD "def" create_token
+            2 +
+        dup "derefb" startswith if
+            over TOKEN_KEYWORD "derefb" create_token
+            5 +
+        dup "derefc" startswith if
+            over TOKEN_KEYWORD "derefc" create_token
+            5 +
+        dup "derefi" startswith if
+            over TOKEN_KEYWORD "derefi" create_token
+            5 +
+        dup "derefp" startswith if
+            over TOKEN_KEYWORD "derefp" create_token
+            5 +
+        dup "drop" startswith if
+            over TOKEN_KEYWORD "drop" create_token
+            3 +
+        dup "dup" startswith if
+            over TOKEN_KEYWORD "dup" create_token
+            2 +
+        dup "else" startswith if
+            over TOKEN_KEYWORD "else" create_token
+            3 +
+        dup "if" startswith if
+            over TOKEN_KEYWORD "if" create_token
+            1 +
+        dup "import" startswith if
+            over TOKEN_KEYWORD "import" create_token
+            5 +
+        dup "location" startswith if
+            over TOKEN_KEYWORD "location" create_token
+            7 +
+        dup "over" startswith if
+            over TOKEN_KEYWORD "over" create_token
+            3 +
+        dup "rot" startswith if
+            over TOKEN_KEYWORD "rot" create_token
+            2 +
+        dup "setb" startswith if
+            over TOKEN_KEYWORD "setb" create_token
+            3 +
+        dup "setc" startswith if
+            over TOKEN_KEYWORD "setc" create_token
+            3 +
+        dup "seti" startswith if
+            over TOKEN_KEYWORD "seti" create_token
+            3 +
+        dup "setp" startswith if
+            over TOKEN_KEYWORD "setp" create_token
+            3 +
+        dup "swap" startswith if
+            over TOKEN_KEYWORD "swap" create_token
+            3 +
+        dup "syscall" startswith if
+            over TOKEN_KEYWORD "syscall" create_token
+            6 +
+        dup "bool" startswith if
+            over TOKEN_TYPE "bool" create_token
+            3 +
+        dup "char" startswith if
+            over TOKEN_TYPE "char" create_token
+            3 +
+        dup "int" startswith if
+            over TOKEN_TYPE "int" create_token
+            2 +
+        dup "ptr" startswith if
+            over TOKEN_TYPE "ptr" create_token
+            2 +
+        dup "void" startswith if
+            over TOKEN_TYPE "void" create_token
+            3 +
+        dup "while" startswith if
+            over TOKEN_TYPE "while" create_token
+            4 +
+
         1 +
 
 
@@ -83,7 +226,7 @@ def main: ptr argv, int argc -> int
     while dup tokenlist derefp tokenlist.num_tokens + derefi <
         dup TOKEN_SIZE *
         tokenlist derefp tokenlist.tokens + +
-        token.value + derefp puts "\n" puts
+        token.type + derefi token_to_str puts "\n" puts
         1 +
     drop
 
