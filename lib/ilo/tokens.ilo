@@ -117,18 +117,24 @@ def create_token: int line, int type, ptr value -> void
     tokenlist derefp tokenlist.max_tokens + derefi = if
         # Create a tokenlist with double the capacity
         tokenlist derefp tokenlist.max_tokens + derefi 2 * create_tokenlist
+
         # Copy tokens
         tokenlist derefp tokenlist.tokens +
         over             tokenlist.tokens +
         tokenlist derefp tokenlist.num_tokens + derefi TOKEN_SIZE *
         memcpy
+
         # Update metadata
         tokenlist derefp tokenlist.max_tokens + derefi 2 *
         over             tokenlist.max_tokens + seti
         tokenlist derefp tokenlist.num_tokens + derefi
         over             tokenlist.num_tokens + seti
+
         # Free old tokenlist and replace by new
-        tokenlist derefp free
+        # TODO: When starting with a tokenlist of 1 and doubling, freeing a list with
+        # capacity 8 after building one with a capacity of 16 fails here.
+        # THIS IS A MEMORY LEAK (and a severe fundamental memory allocation problem)
+        #tokenlist derefp free
         tokenlist setp
 
     # Calculate memory offset

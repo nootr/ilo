@@ -6,6 +6,15 @@ import lib.ilo.types
 
 ## Helper functions
 
+def syntax_error: int line_no, ptr message -> void
+    # Raises a syntax error and exits with 1
+    # TODO: print line (convert int to str)
+    "Syntax error: " error
+    message          error
+    "\n"             error
+    1 exit
+
+
 def is_int: char c -> bool
     # Returns True if given character is a number
     '0' c <= c '9' <= and
@@ -20,10 +29,10 @@ def is_alphabet: char c -> bool
 
 
 def count_indent: ptr s -> int
-    # Takes a string and returns the number of leading spaces
+    # Takes a string and returns the number of leading spaces and/or tabs
     0
     s
-    while dup derefc ' ' =
+    while dup derefc ' ' = over derefc 9 castc = or
         1 + swap
         1 + swap
     drop
@@ -31,10 +40,19 @@ def count_indent: ptr s -> int
 
 def tokenize: ptr source -> void
     # Tokenizes a given source code
-    1 create_tokenlist tokenlist setp
-    0      # line
-    source # current_char
+
+    # Initialize tokenlist if needed
+    tokenlist derefp NULL = if
+        1 create_tokenlist tokenlist setp
+
+    tokenlist derefp NULL != "Tokenlist should be created" assert
+
+    # Tokenize source code
+    0       # line
+    source  # current_char
+
     while dup derefc 0 castc !=
+        # Count indenting and create block begin/end tokens if necessary
         dup count_indent
         100 malloc
         # TODO: Create token for indent changes
@@ -45,17 +63,44 @@ def tokenize: ptr source -> void
 
         dup derefc is_int if
             dup
+
             # Count length of integer
             0 swap
             while dup derefc is_int
                 1 + swap 1 + swap
             drop
+
             # Get token value
             over swap substring
+
             # Create token
             rot dup rot dup strlen rot rot TOKEN_INT swap create_token
+
             # Shift source
             rot + 1 -
+        dup derefc '\'' = if
+            1 +
+            dup derefc '\\' = if
+                1 +
+            dup 1 + derefc '\'' != if
+                swap "Character should be a single character" syntax_error 0 swap
+            dup 1 substring rot dup rot TOKEN_CHAR swap create_token
+            swap 1 +
+        dup derefc '"' = if
+            1 +
+
+            # Find length of string
+            0
+            over
+            while dup derefc '"' = over 1 - derefc '\\' != and False =
+                1 + swap 1 + swap
+
+            # Separate string
+            rot rot substring
+
+            # Create token
+            rot dup rot TOKEN_STRING swap create_token
+            swap
         dup derefc '+' = if
             over TOKEN_ARITHMETIC "+" create_token
         dup derefc '-' = if
@@ -226,7 +271,15 @@ def main: ptr argv, int argc -> int
     while dup tokenlist derefp tokenlist.num_tokens + derefi <
         dup TOKEN_SIZE *
         tokenlist derefp tokenlist.tokens + +
-        token.type + derefi token_to_str puts "\n" puts
+        token.type + derefi token_to_str puts " " puts
+        dup TOKEN_SIZE *
+        tokenlist derefp tokenlist.tokens + +
+        token.value + derefp
+        dup NULL != if
+            puts
+        else
+            drop
+        "\n" puts
         1 +
     drop
 

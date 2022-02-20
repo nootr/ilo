@@ -337,6 +337,11 @@ def free: ptr block_data -> void
 
     # Find the first block
     while dup block.prev + derefp NULL !=
+        dup block.prev + derefp over < "Previous block should be earlier" assert
+        # TODO: When starting with a tokenlist of 1 and doubling, freeing a list with
+        # capacity 8 after building one with a capacity of 16 fails here.
+        # THIS IS A MEMORY LEAK (and a severe fundamental memory allocation problem)
+        # Maybe block.prev was overwritten?
         block.prev + derefp
 
     dup block.next + derefp NULL = if
