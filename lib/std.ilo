@@ -428,3 +428,11 @@ def zen: -> void
     ""                                                               _r13 puts "\n" puts
     "bcgvzvmngvbaf nerag sha"                                        _r13 puts "\n" puts
     "nhgbzvmvat bcgvzvmngvbaf pbhyq or sha"                          _r13 puts "\n" puts
+
+
+def substring: ptr s, int n -> ptr
+    # Creates a null-terminated substring of the first n bytes of s.
+    # Note that this function mallocs, so don't forget to free the result.
+    n 1 + malloc
+    s over n memcpy
+    dup n + 0 castc swap setc
