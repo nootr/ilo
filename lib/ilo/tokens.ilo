@@ -22,53 +22,38 @@ const TOKEN_TYPE        14
 
 def token_to_str: int token -> ptr
     # Returns the string representation of a given token
-    # TODO: Implement else-if
     token TOKEN_NOOP = if
         "NOOP"
+    elif token TOKEN_ARITHMETIC =
+        "ARITHMETIC"
+    elif token TOKEN_ARROW =
+        "ARROW"
+    elif token TOKEN_BLOCK_START =
+        "BLOCK_START"
+    elif token TOKEN_BLOCK_END =
+        "BLOCK_END"
+    elif token TOKEN_BOOL =
+        "BOOL"
+    elif token TOKEN_CHAR =
+        "CHAR"
+    elif token TOKEN_COLON =
+        "COLON"
+    elif token TOKEN_COMMA =
+        "COMMA"
+    elif token TOKEN_COMPARISON =
+        "COMPARISON"
+    elif token TOKEN_IDENTIFIER =
+        "IDENTIFIER"
+    elif token TOKEN_INT =
+        "INT"
+    elif token TOKEN_KEYWORD =
+        "KEYWORD"
+    elif token TOKEN_STRING =
+        "STRING"
+    elif token TOKEN_TYPE =
+        "TYPE"
     else
-     token TOKEN_ARITHMETIC = if
-         "ARITHMETIC"
-     else
-      token TOKEN_ARROW = if
-          "ARROW"
-      else
-       token TOKEN_BLOCK_START = if
-           "BLOCK_START"
-       else
-        token TOKEN_BLOCK_END = if
-            "BLOCK_END"
-        else
-         token TOKEN_BOOL = if
-             "BOOL"
-         else
-          token TOKEN_CHAR = if
-              "CHAR"
-          else
-           token TOKEN_COLON = if
-               "COLON"
-           else
-            token TOKEN_COMMA = if
-                "COMMA"
-            else
-             token TOKEN_COMPARISON = if
-                 "COMPARISON"
-             else
-              token TOKEN_IDENTIFIER = if
-                  "IDENTIFIER"
-              else
-               token TOKEN_INT = if
-                   "INT"
-               else
-                token TOKEN_KEYWORD = if
-                    "KEYWORD"
-                else
-                 token TOKEN_STRING = if
-                     "STRING"
-                 else
-                  token TOKEN_TYPE = if
-                      "TYPE"
-                  else
-                      "Unknown token type" raise "UNKNOWN"
+        "Unknown token type" raise NULL
 
 
 ## Structs
