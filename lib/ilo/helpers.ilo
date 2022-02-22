@@ -1,0 +1,35 @@
+import lib.std
+
+
+def syntax_error: int line_no, ptr message -> void
+    # Raises a syntax error and exits with 1
+    "Syntax error at line " error
+    line_no                 errori
+    message NULL != if
+        ": "                error
+        message             error
+    "\n"                    error
+    1 exit
+
+
+def is_int: char c -> bool
+    # Returns True if given character is a number
+    '0' c <= c '9' <= and
+
+
+def is_alphabet: char c -> bool
+    'A' c <= c 'Z' <= and
+    'a' c <= c 'z' <= and or
+    c '-' =               or
+    c '_' =               or
+    c '.' =               or
+
+
+def count_indent: ptr s -> int
+    # Takes a string and returns the number of leading spaces and/or tabs
+    0
+    s
+    while dup derefc ' ' = over derefc 9 castc = or
+        1 + swap
+        1 + swap
+    drop
