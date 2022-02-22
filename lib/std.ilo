@@ -31,6 +31,55 @@ def memcpy: ptr src, ptr dest, int num -> void
         1 +
 
 
+def i64tohex: int x, ptr buf -> void
+    # Converts a given 64-bit integer to its hexadecimal representation
+    buf
+    dup '0' swap setc 1 +
+    dup 'x' swap setc 1 +
+
+    60  # offset
+    while dup 0 >=
+        dup
+        15 swap shl
+        x and
+        swap dup rot swap shr
+
+        dup 0 = if
+            rot dup '0' swap setc rot rot
+        dup 1 = if
+            rot dup '1' swap setc rot rot
+        dup 2 = if
+            rot dup '2' swap setc rot rot
+        dup 3 = if
+            rot dup '3' swap setc rot rot
+        dup 4 = if
+            rot dup '4' swap setc rot rot
+        dup 5 = if
+            rot dup '5' swap setc rot rot
+        dup 6 = if
+            rot dup '6' swap setc rot rot
+        dup 7 = if
+            rot dup '7' swap setc rot rot
+        dup 8 = if
+            rot dup '8' swap setc rot rot
+        dup 9 = if
+            rot dup '9' swap setc rot rot
+        dup 10 = if
+            rot dup 'a' swap setc rot rot
+        dup 11 = if
+            rot dup 'b' swap setc rot rot
+        dup 12 = if
+            rot dup 'c' swap setc rot rot
+        dup 13 = if
+            rot dup 'd' swap setc rot rot
+        dup 14 = if
+            rot dup 'e' swap setc rot rot
+        dup 15 = if
+            rot dup 'f' swap setc rot rot
+        drop 4 - swap 1 + swap
+    drop 0 castc swap setc
+
+
 def i64tos: int x, ptr buf -> void
     # Converts a given 64-bit integer to string
     buf
@@ -186,6 +235,90 @@ const BLOCK_METADATA_SIZE 25
 buffer root_page 8
 
 
+buffer VERIFY_MEMORY 1  # Set to True to verify memory
+buffer DUMP_MEMORY   1  # Set to True to dump dynamically allocated memory
+
+buffer _vm_buf 19
+
+def verify_memory: -> void
+    # Checks all the dynamically allocated memory for invalid metadata
+    VERIFY_MEMORY derefb if
+        DUMP_MEMORY derefb if
+            "Verifying memory..\n" puts
+
+        root_page
+        while dup page.next + derefp NULL !=
+            dup page.next + derefp
+
+            DUMP_MEMORY derefb if
+                "* Page: "                          puts
+                dup casti _vm_buf i64tohex _vm_buf  puts
+                "\n"                                puts
+
+                "  * prev: "                                    puts
+                dup page.prev + derefi _vm_buf i64tohex _vm_buf puts
+                "\n"                                            puts
+
+                "  * next: "                                    puts
+                dup page.next + derefi _vm_buf i64tohex _vm_buf puts
+                "\n"                                            puts
+
+                "  * size: "                                    puts
+                dup page.size + derefi _vm_buf i64tohex _vm_buf puts
+                "\n"                                            puts
+
+            swap over page.prev + derefp = \
+                "Pointer to previous page should be valid" assert
+            dup page.size + derefi PAGE_SIZE >= \
+                "Page size should be at least the default value" assert
+
+            dup page.size + derefi PAGE_METADATA_SIZE -  # Save page size to stack
+            over page.blocks +
+            while dup NULL !=
+                DUMP_MEMORY derefb if
+                    "  * block: "                       puts
+                    dup casti _vm_buf i64tohex _vm_buf  puts
+                    "\n"                                puts
+
+                    "    * size: "                                   puts
+                    dup block.size + derefi _vm_buf i64tohex _vm_buf puts
+                    "\n"                                             puts
+
+                    "    * next: "                                   puts
+                    dup block.next + derefi _vm_buf i64tohex _vm_buf puts
+                    "\n"                                             puts
+
+                    "    * prev: "                                   puts
+                    dup block.prev + derefi _vm_buf i64tohex _vm_buf puts
+                    "\n"                                             puts
+
+                    "    * free: " puts
+                    dup block.free + derefb if
+                        "True\n" puts
+                    else
+                        "False\n" puts
+
+                dup block.size + derefi BLOCK_METADATA_SIZE +
+                rot swap -
+                dup 0 >= "Blocks should not overflow page memory" assert
+                swap
+
+                block.next + derefp
+            drop
+
+            dup 0 > if
+                DUMP_MEMORY derefb if
+                    "  * unused bytes: "          puts
+                    dup _vm_buf i64tohex _vm_buf  puts
+                    "\n"                          puts
+                False "Block sizes should sum up to page size" assert
+            drop
+
+        drop
+        DUMP_MEMORY derefb if
+            "Memory OK\n" puts
+
+
 def _malloc_get_next_page: ptr page, int size -> ptr
     # Returns the next page, creates a new page if there are none
     size PAGE_SIZE >= "Page size should be at least the default size" assert
@@ -235,12 +368,14 @@ def _malloc_split_block: ptr block, int old_size, int size -> ptr
     block block.next + derefp  # Save pointer to next block on the stack
 
     False  block block.free + setb
-    size   block block.size + seti
 
     # Calculate remaining size of free block
     old_size BLOCK_METADATA_SIZE - size -
 
     dup 0 > if
+        # Only set block size if split actually occurs
+        size block block.size + seti
+
         block BLOCK_METADATA_SIZE + size + block block.next + setp
 
         True     block block.next + derefp block.free + setb
@@ -304,10 +439,12 @@ def malloc: int size -> ptr
         dup block.size + derefi size _malloc_split_block
 
     block.data +
+    verify_memory
 
 
 def free: ptr block_data -> void
     # Frees a given block
+
     block_data block.data -
 
     dup block.free + derefb if
@@ -318,30 +455,38 @@ def free: ptr block_data -> void
     dup block.next + derefp NULL != if
         dup block.next + derefp block.free + derefb if
             # Next block is free; merge
-            dup block.next + derefp block.size + derefi
+            dup block.next + derefp block.size + derefi BLOCK_METADATA_SIZE +
             swap dup rot swap block.size + derefi +
             swap dup rot swap block.size + seti
 
             dup block.next + derefp block.next + derefp
             swap dup rot swap block.next + setp
 
+            dup block.prev + derefp NULL !=
+            over block.next + derefp NULL != and if
+                dup
+                dup block.next + derefp block.prev + setp # <--
+
     dup block.prev + derefp NULL != if
         dup block.prev + derefp block.free + derefb if
             # Previous block is free; merge
             dup block.prev + derefp block.size + derefi
-            swap dup rot swap block.size + derefi +
+            swap dup rot swap block.size + derefi + BLOCK_METADATA_SIZE +
             swap dup rot swap block.prev + derefp block.size + seti
 
             dup block.next + derefp
             swap dup rot swap block.prev + derefp block.next + setp
 
+            dup block.next + derefp NULL != if
+                dup block.prev + derefp
+                swap dup rot swap block.next + derefp block.prev + setp
+
     # Find the first block
     while dup block.prev + derefp NULL !=
         dup block.prev + derefp over < "Previous block should be earlier" assert
-        # TODO: When starting with a tokenlist of 1 and doubling, freeing a list with
-        # capacity 8 after building one with a capacity of 16 fails here.
-        # THIS IS A MEMORY LEAK (and a severe fundamental memory allocation problem)
-        # Maybe block.prev was overwritten?
+        dup dup block.prev + derefi - PAGE_SIZE castp < \
+            "Previous block should be within the same page" assert
+
         block.prev + derefp
 
     dup block.next + derefp NULL = if
@@ -361,6 +506,8 @@ def free: ptr block_data -> void
 
         0 < if
             "Unable to free memory page" raise
+
+    verify_memory
 
 
 def concat: ptr a, ptr b -> ptr

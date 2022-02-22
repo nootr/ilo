@@ -1,0 +1,20 @@
+# Description:Standard library - free, many
+# Exit code:0
+# Stdout:
+# Stderr:
+
+import lib.std
+
+const N 10000
+
+def main: int argc, ptr argv -> int
+    True DUMP_MEMORY setb
+    0
+    while dup N <
+        1000 malloc
+        1000 malloc
+        1000 malloc
+        1000 malloc
+        free swap free free free
+        1 +
+    0
