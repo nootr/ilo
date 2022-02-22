@@ -588,3 +588,82 @@ def substring: ptr s, int n -> ptr
     n 1 + malloc
     s over n memcpy
     dup n + 0 castc swap setc
+
+
+# LIST
+# A dynamic list of 64-bit integers, with O(n) time complexity[1].
+#
+# [1] The Simple and Elegant Idea behind Efficient Dynamic Arrays
+#     https://youtu.be/Ij7NQ-0mIVA
+
+const list.capacity  0  # int
+const list.len       8  # int
+const list.items     16 # ptr
+
+const LIST_METADATA_SIZE  16
+const LIST_ITEM_SIZE      8
+
+
+def list_create: int capacity -> ptr
+    # Initializes an empty list with a given capacity and returns its pointer
+    capacity LIST_ITEM_SIZE * LIST_METADATA_SIZE + malloc
+    dup list.capacity + capacity swap seti
+    dup list.len      + 0        swap seti
+
+
+def new_list: -> ptr
+    # Returns a pointer to an empty list
+    1 list_create
+
+
+def list_fetch: int index, ptr list -> int
+    # Returns the value of a certain index in a given list
+    list LIST_METADATA_SIZE + index LIST_ITEM_SIZE * + derefi
+
+
+def list_pop: ptr list -> int
+    # Removes and returns the last value of a given list
+    list list.len + derefi 0 = if
+        "Can't pop from an empty list" raise
+
+    list list.len + derefi 1 -
+    dup list list.len + seti
+    LIST_ITEM_SIZE * list + LIST_METADATA_SIZE + derefi
+
+
+def list_peek: ptr list -> int
+    # Returns the last value of a given list
+    list list.len + derefi 0 = if
+        "Can't peek in an empty list" raise
+
+    list list.len + derefi 1 - LIST_ITEM_SIZE * list + LIST_METADATA_SIZE + derefi
+
+
+def list_append: int item, ptr list -> ptr
+    # Appends an item to a given list and return a pointer to the list
+    list list.len + derefi
+    list list.capacity + derefi = if
+        # Create a list with double the capacity
+        list list.capacity + derefi 2 * list_create
+
+        # Copy items
+        list list.items +
+        over list.items +
+        list list.len + derefi LIST_ITEM_SIZE *
+        memcpy
+
+        # Update metadata
+        list list.capacity + derefi 2 *
+        over list.capacity + seti
+        list list.len + derefi
+        over list.len + seti
+
+        # Free old list
+        list free
+    else
+        list
+
+    # Append item to list
+    dup list.len + derefi
+    dup 1 + rot dup rot swap list.len + seti swap
+    LIST_ITEM_SIZE * LIST_METADATA_SIZE + over + item swap seti
