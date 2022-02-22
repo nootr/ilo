@@ -1,0 +1,10 @@
+# Description:Standard library - errori, large
+# Exit code:0
+# Stdout:
+# Stderr:0xdeadbeefdeadbeef
+
+import lib.std
+
+def main: ptr argv, int argc -> int
+    16045690984833335023 errori
+    0
