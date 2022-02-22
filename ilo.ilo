@@ -228,6 +228,9 @@ def tokenize: ptr source -> void
         elif dup "dup" startswith
             over TOKEN_KEYWORD "dup" create_token
             3 +
+        elif dup "elif" startswith
+            over TOKEN_KEYWORD "elif" create_token
+            4 +
         elif dup "else" startswith
             over TOKEN_KEYWORD "else" create_token
             4 +
