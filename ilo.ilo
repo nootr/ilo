@@ -57,6 +57,9 @@ def tokenize: ptr source -> void
         # TODO: Create token for indent changes
         +
 
+        dup derefc '#' = if
+            while dup derefc '\n' !=
+                1 +
         dup derefc is_int if
             dup
 

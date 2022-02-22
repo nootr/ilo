@@ -92,7 +92,7 @@ def fetch_tokens(program):
             line_no += 1
             program = program[1:]
             at_start = True
-        elif startswith("#", program):
+        elif startswith("#", program):  # DONE
             while program and program[0] != "\n":
                 program = program[1:]
         elif startswith("\"", program):  # DONE
