@@ -191,6 +191,9 @@ def fetch_tokens(program):
         elif startswith("if", program):  # DONE
             tokens.append((TokenType.KEYWORD, "if", line_no))
             program = program[2:]
+        elif startswith("elif", program):
+            tokens.append((TokenType.KEYWORD, "elif", line_no))
+            program = program[4:]
         elif startswith("else", program):  # DONE
             tokens.append((TokenType.KEYWORD, "else", line_no))
             program = program[4:]
@@ -295,7 +298,6 @@ class Opcode:
     DEREF_P = "dereference pointer to pointer"
     DROP = "drop"
     DUP = "dup"
-    ELSE = "start of else-block"
     FUNCTION = "function definition"
     GET_ARG = "get argument"
     GET_BUFFER = "get pointer to buffer"
@@ -306,6 +308,7 @@ class Opcode:
     IS_LESS = "is less?"
     IS_LESS_OR_EQUAL = "is less or equal?"
     IS_NOT_EQUAL = "is not equal?"
+    JUMP = "jump"
     LABEL = "label"
     MULTIPLY = "multiply"
     OVER = "over"
@@ -544,7 +547,7 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
                 opcodes.append((Opcode.WHILE_END, while_label, line_no))
             elif value == "if":
                 if_identifier = f"if_{if_index}"
-                else_identifier = f"else_{if_index}"
+                end_identifier = f"end_{if_index}"
                 if_index += 1
 
                 opcodes.append((Opcode.IF, if_identifier, line_no))
@@ -563,23 +566,51 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
                 if_stack, token_index = parse(filename, tokens, token_index, args=args,
                         stack=stack)
 
-                _, value, _ = tokens[token_index]
+                opcodes.append((Opcode.JUMP, end_identifier, line_no))
+                opcodes.append((Opcode.LABEL, if_identifier, line_no))
+
+                _, value, line_no = tokens[token_index]
+                while value == "elif":
+                    elif_identifier = f"elif_{if_index}"
+                    if_index += 1
+
+                    stack, token_index = parse(
+                        filename,
+                        tokens,
+                        token_index,
+                        return_on=TokenType.BLOCK_START,
+                        args=args,
+                        stack=stack,
+                    )
+                    if pop(line_no) != Type.BOOL:
+                        raise TypeError(
+                            f"Expected boolean result on line {line_no}"
+                        )
+
+                    opcodes.append((Opcode.IF, elif_identifier, line_no))
+                    elifb_stack, token_index = parse(filename, tokens, token_index, args=args,
+                            stack=stack)
+                    if if_stack != elifb_stack:
+                        raise TypeError(
+                            f"elif body on line {line_no} has different stack than if"
+                        )
+
+                    _, value, line_no = tokens[token_index]
+
+                    opcodes.append((Opcode.JUMP, end_identifier, line_no))
+                    opcodes.append((Opcode.LABEL, elif_identifier, line_no))
                 if value == "else":
-                    opcodes.append((Opcode.ELSE, else_identifier, line_no))
-                    opcodes.append((Opcode.LABEL, if_identifier, line_no))
                     token_index += 1
                     block_start_type, _, line_no = tokens[token_index]
-                    if block_start_type == TokenType.BLOCK_START:
-                        else_stack, token_index = parse(filename, tokens, token_index + 1,
-                                args=args, stack=stack)
-                        opcodes.append((Opcode.LABEL, else_identifier, line_no))
-                        if else_stack != if_stack:
-                            raise TypeError(
-                                f"If and else block should leave similar types on line {line_no}"
-                            )
-                    else:
-                        raise NotImplementedError(
-                            "`else if` is not implemented yet"
+                    if block_start_type != TokenType.BLOCK_START:
+                        raise SyntaxError(
+                            f"Expected code block after else on line {line_no}"
+                        )
+                    else_stack, token_index = parse(filename, tokens, token_index + 1,
+                            args=args, stack=stack)
+                    if else_stack != if_stack:
+                        raise TypeError(
+                            f"If and else block should leave similar types on line {line_no}"
                         )
                 else:
                     opcodes.append((Opcode.LABEL, if_identifier, line_no))
@@ -587,6 +618,7 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
                         raise TypeError(
                             f"If block without else should not alter types on line {line_no}"
                         )
+                opcodes.append((Opcode.LABEL, end_identifier, line_no))
                 stack = if_stack
             elif value == "def":
                 name_type, function_name, _ = tokens[token_index]
@@ -976,7 +1008,7 @@ def generate_code():
             output("", "jz", operand)
         elif opcode == Opcode.LABEL:
             output(f"{operand}:", "", "")
-        elif opcode == Opcode.ELSE:
+        elif opcode == Opcode.JUMP:
             output("", "jmp", operand)
         elif opcode == Opcode.FUNCTION:
             output(f"{operand}:", "", "")
