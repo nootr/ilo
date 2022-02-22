@@ -56,7 +56,7 @@ def tokenize: ptr source -> void
 
     # Tokenize source code
 
-    0       # line
+    1       # line
     source  # current_char
 
     while dup derefc 0 castc !=
@@ -84,6 +84,7 @@ def tokenize: ptr source -> void
                 1 +
         dup derefc 10 castc = if
             True at_start setb
+            swap 1 + swap
         dup derefc is_int if
             dup
 
@@ -312,9 +313,12 @@ def main: ptr argv, int argc -> int
         tokenlist derefp tokenlist.tokens + +
         token.value + derefp
         dup NULL != if
-            puts
+            puts " " puts
         else
             drop
+        dup TOKEN_SIZE *
+        tokenlist derefp tokenlist.tokens + +
+        token.line + derefi puti " " puts
         "\n" puts
         1 +
     drop
