@@ -84,6 +84,10 @@ def tokenize: ptr source -> void
         dup derefc '#' = if
             while dup derefc 10 castc != over derefc 0 castc != and
                 1 +
+        elif dup derefc '\\' =
+            while dup derefc 10 castc != over derefc 0 castc != and
+                1 +
+            1 + swap 1 + swap
         elif dup derefc is_int
             dup
 
@@ -296,8 +300,9 @@ def tokenize: ptr source -> void
             # Shift source
             rot +
         elif dup derefc 10 castc =
+            while dup derefc 10 castc =
+                swap 1 + swap 1 +
             True at_start setb
-            swap 1 + swap 1 +
         else
             over NULL syntax_error
 
