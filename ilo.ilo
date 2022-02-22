@@ -38,28 +38,52 @@ def count_indent: ptr s -> int
     drop
 
 
+
+buffer indent_stack 8  # ptr
+buffer at_start     1  # bool
+
 def tokenize: ptr source -> void
     # Tokenizes a given source code
 
-    # Initialize tokenlist if needed
+    # Initialize values
     tokenlist derefp NULL = if
         1 create_tokenlist tokenlist setp
 
-    tokenlist derefp NULL != "Tokenlist should be created" assert
+    indent_stack derefp NULL = if
+        0 new_list list_append indent_stack setp
+
+    True at_start setb
 
     # Tokenize source code
+
     0       # line
     source  # current_char
 
     while dup derefc 0 castc !=
         # Count indenting and create block begin/end tokens if necessary
+        indent_stack derefp list.len + derefi 0 > \
+            "Indent stack should have items" assert
+
         dup count_indent
-        # TODO: Create token for indent changes
+        at_start derefb if
+            False at_start setb
+
+            dup indent_stack derefp list_peek > if
+                dup indent_stack derefp list_append indent_stack setp
+                rot dup TOKEN_BLOCK_START NULL create_token rot rot
+            dup indent_stack derefp list_peek < if
+                while dup indent_stack derefp list_pop !=
+                    indent_stack derefp list.len + derefi 0 = if
+                        rot dup "Unexpexted indenting" syntax_error rot rot
+                    rot dup TOKEN_BLOCK_END NULL create_token rot rot
+                dup indent_stack derefp list_append indent_stack setp
         +
 
         dup derefc '#' = if
-            while dup derefc '\n' !=
+            while dup derefc 10 castc !=
                 1 +
+        dup derefc 10 castc = if
+            True at_start setb
         dup derefc is_int if
             dup
 
@@ -159,102 +183,107 @@ def tokenize: ptr source -> void
             1 +
         dup "buffer" startswith if
             over TOKEN_KEYWORD "buffer" create_token
-            6 +
+            5 +
         dup "castb" startswith if
             over TOKEN_KEYWORD "castb" create_token
-            5 +
+            4 +
         dup "castc" startswith if
             over TOKEN_KEYWORD "castc" create_token
-            5 +
+            4 +
         dup "casti" startswith if
             over TOKEN_KEYWORD "casti" create_token
-            5 +
+            4 +
         dup "castp" startswith if
             over TOKEN_KEYWORD "castp" create_token
-            5 +
+            4 +
         dup "const" startswith if
             over TOKEN_KEYWORD "const" create_token
-            5 +
+            4 +
         dup "debug" startswith if
             over TOKEN_KEYWORD "debug" create_token
-            5 +
+            4 +
         dup "def" startswith if
             over TOKEN_KEYWORD "def" create_token
-            3 +
+            2 +
         dup "derefb" startswith if
             over TOKEN_KEYWORD "derefb" create_token
-            6 +
+            5 +
         dup "derefc" startswith if
             over TOKEN_KEYWORD "derefc" create_token
-            6 +
+            5 +
         dup "derefi" startswith if
             over TOKEN_KEYWORD "derefi" create_token
-            6 +
+            5 +
         dup "derefp" startswith if
             over TOKEN_KEYWORD "derefp" create_token
-            6 +
+            5 +
         dup "drop" startswith if
             over TOKEN_KEYWORD "drop" create_token
-            4 +
+            3 +
         dup "dup" startswith if
             over TOKEN_KEYWORD "dup" create_token
-            3 +
+            2 +
         dup "else" startswith if
             over TOKEN_KEYWORD "else" create_token
-            4 +
+            3 +
         dup "if" startswith if
             over TOKEN_KEYWORD "if" create_token
-            2 +
+            1 +
         dup "import" startswith if
             over TOKEN_KEYWORD "import" create_token
-            6 +
+            5 +
         dup "location" startswith if
             over TOKEN_KEYWORD "location" create_token
-            8 +
+            7 +
         dup "over" startswith if
             over TOKEN_KEYWORD "over" create_token
-            4 +
+            3 +
         dup "rot" startswith if
             over TOKEN_KEYWORD "rot" create_token
-            3 +
+            2 +
         dup "setb" startswith if
             over TOKEN_KEYWORD "setb" create_token
-            4 +
+            3 +
         dup "setc" startswith if
             over TOKEN_KEYWORD "setc" create_token
-            4 +
+            3 +
         dup "seti" startswith if
             over TOKEN_KEYWORD "seti" create_token
-            4 +
+            3 +
         dup "setp" startswith if
             over TOKEN_KEYWORD "setp" create_token
-            4 +
+            3 +
         dup "swap" startswith if
             over TOKEN_KEYWORD "swap" create_token
-            4 +
+            3 +
         dup "syscall" startswith if
             over TOKEN_KEYWORD "syscall" create_token
-            7 +
+            6 +
         dup "bool" startswith if
             over TOKEN_TYPE "bool" create_token
-            4 +
+            3 +
         dup "char" startswith if
             over TOKEN_TYPE "char" create_token
-            4 +
+            3 +
         dup "int" startswith if
             over TOKEN_TYPE "int" create_token
-            3 +
+            2 +
         dup "ptr" startswith if
             over TOKEN_TYPE "ptr" create_token
-            3 +
+            2 +
         dup "void" startswith if
             over TOKEN_TYPE "void" create_token
-            4 +
+            3 +
         dup "while" startswith if
             over TOKEN_TYPE "while" create_token
-            5 +
+            4 +
 
         1 +
+
+    drop
+    while indent_stack derefp list_peek 0 !=
+        indent_stack derefp list_pop drop
+        dup TOKEN_BLOCK_END NULL create_token
 
 
 def main: ptr argv, int argc -> int
@@ -268,11 +297,9 @@ def main: ptr argv, int argc -> int
     read_file
     tokenize
 
-    19 malloc dup
-    tokenlist derefp tokenlist.num_tokens + derefi
-    swap i64tohex
-    "Number of tokens: " puts dup puts "\n" puts
-    free
+    "Number of tokens: "                            puts
+    tokenlist derefp tokenlist.num_tokens + derefi  puti
+    "\n"                                            puts
 
     "Tokens:\n" puts
     0
