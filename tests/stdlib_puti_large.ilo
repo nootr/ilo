@@ -1,0 +1,10 @@
+# Description:Standard library - puti, large
+# Exit code:0
+# Stdout:0xdeadbeefdeadbeef
+# Stderr:
+
+import lib.std
+
+def main: ptr argv, int argc -> int
+    16045690984833335023 puti
+    0

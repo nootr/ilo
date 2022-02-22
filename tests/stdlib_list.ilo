@@ -7,10 +7,10 @@ import lib.std
 
 def main: ptr argv, int argc -> int
     new_list
-    dup 1 swap list_append
-    dup 3 swap list_append
-    dup 3 swap list_append
-    dup 7 swap list_append
+    1 swap list_append
+    3 swap list_append
+    3 swap list_append
+    7 swap list_append
 
     dup 3 swap list_fetch 7 = "Fourth element should be 7" assert
     dup 2 swap list_fetch 3 = "Third element should be 3" assert

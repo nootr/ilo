@@ -80,6 +80,55 @@ def i64tohex: int x, ptr buf -> void
     drop 0 castc swap setc
 
 
+def i8tohex: int x, ptr buf -> void
+    # Converts a given 8-bit integer to its hexadecimal representation
+    buf
+    dup '0' swap setc 1 +
+    dup 'x' swap setc 1 +
+
+    4  # offset
+    while dup 0 >=
+        dup
+        15 swap shl
+        x and
+        swap dup rot swap shr
+
+        dup 0 = if
+            rot dup '0' swap setc rot rot
+        dup 1 = if
+            rot dup '1' swap setc rot rot
+        dup 2 = if
+            rot dup '2' swap setc rot rot
+        dup 3 = if
+            rot dup '3' swap setc rot rot
+        dup 4 = if
+            rot dup '4' swap setc rot rot
+        dup 5 = if
+            rot dup '5' swap setc rot rot
+        dup 6 = if
+            rot dup '6' swap setc rot rot
+        dup 7 = if
+            rot dup '7' swap setc rot rot
+        dup 8 = if
+            rot dup '8' swap setc rot rot
+        dup 9 = if
+            rot dup '9' swap setc rot rot
+        dup 10 = if
+            rot dup 'a' swap setc rot rot
+        dup 11 = if
+            rot dup 'b' swap setc rot rot
+        dup 12 = if
+            rot dup 'c' swap setc rot rot
+        dup 13 = if
+            rot dup 'd' swap setc rot rot
+        dup 14 = if
+            rot dup 'e' swap setc rot rot
+        dup 15 = if
+            rot dup 'f' swap setc rot rot
+        drop 4 - swap 1 + swap
+    drop 0 castc swap setc
+
+
 def i64tos: int x, ptr buf -> void
     # Converts a given 64-bit integer to string
     buf
@@ -667,3 +716,16 @@ def list_append: int item, ptr list -> ptr
     dup list.len + derefi
     dup 1 + rot dup rot swap list.len + seti swap
     LIST_ITEM_SIZE * LIST_METADATA_SIZE + over + item swap seti
+
+def puti: int i -> void
+    # Prints a number
+    i 255 < i 0 >= and if
+        5 malloc
+        dup i swap i8tohex
+        dup puts
+        free
+    else
+        19 malloc
+        dup i swap i64tohex
+        dup puts
+        free
