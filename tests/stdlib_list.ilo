@@ -6,7 +6,7 @@
 import lib.std
 
 def main: ptr argv, int argc -> int
-    new_list
+    INT_SIZE new_list
     1 swap list_append
     3 swap list_append
     3 swap list_append

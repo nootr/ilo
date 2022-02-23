@@ -650,29 +650,29 @@ def substring: ptr s, int n -> ptr
 # [1] The Simple and Elegant Idea behind Efficient Dynamic Arrays
 #     https://youtu.be/Ij7NQ-0mIVA
 
-const list.capacity  0  # int
-const list.len       8  # int
-const list.items     16 # ptr
+const list.capacity       0  # int
+const list.len            8  # int
+const list.item_size      16 # int
+const list.items          24 # ptr
+const LIST_METADATA_SIZE  24
 
-const LIST_METADATA_SIZE  16
-const LIST_ITEM_SIZE      8
 
-
-def list_create: int capacity -> ptr
+def list_create: int capacity, int item_size -> ptr
     # Initializes an empty list with a given capacity and returns its pointer
-    capacity LIST_ITEM_SIZE * LIST_METADATA_SIZE + malloc
-    dup list.capacity + capacity swap seti
-    dup list.len      + 0        swap seti
+    capacity item_size * LIST_METADATA_SIZE + malloc
+    dup list.capacity  + capacity  swap seti
+    dup list.item_size + item_size swap seti
+    dup list.len       + 0         swap seti
 
 
-def new_list: -> ptr
+def new_list: int item_size -> ptr
     # Returns a pointer to an empty list
-    1 list_create
+    1 item_size list_create
 
 
 def list_fetch: int index, ptr list -> int
     # Returns the value of a certain index in a given list
-    list LIST_METADATA_SIZE + index LIST_ITEM_SIZE * + derefi
+    list LIST_METADATA_SIZE + index list list.item_size + derefi * + derefi
 
 
 def list_pop: ptr list -> int
@@ -682,7 +682,7 @@ def list_pop: ptr list -> int
 
     list list.len + derefi 1 -
     dup list list.len + seti
-    LIST_ITEM_SIZE * list + LIST_METADATA_SIZE + derefi
+    list list.item_size + derefi * list + LIST_METADATA_SIZE + derefi
 
 
 def list_peek: ptr list -> int
@@ -690,7 +690,9 @@ def list_peek: ptr list -> int
     list list.len + derefi 0 = if
         "Can't peek in an empty list" raise
 
-    list list.len + derefi 1 - LIST_ITEM_SIZE * list + LIST_METADATA_SIZE + derefi
+    list list.len + derefi 1 -
+    list list.item_size + derefi *
+    list + LIST_METADATA_SIZE + derefi
 
 
 def list_append: int item, ptr list -> ptr
@@ -698,12 +700,12 @@ def list_append: int item, ptr list -> ptr
     list list.len + derefi
     list list.capacity + derefi = if
         # Create a list with double the capacity
-        list list.capacity + derefi 2 * list_create
+        list list.capacity + derefi 2 * list list.item_size + derefi list_create
 
         # Copy items
         list list.items +
         over list.items +
-        list list.len + derefi LIST_ITEM_SIZE *
+        list list.len + derefi list list.item_size + derefi *
         memcpy
 
         # Update metadata
@@ -720,7 +722,7 @@ def list_append: int item, ptr list -> ptr
     # Append item to list
     dup list.len + derefi
     dup 1 + rot dup rot swap list.len + seti swap
-    LIST_ITEM_SIZE * LIST_METADATA_SIZE + over + item swap seti
+    list list.item_size + derefi * LIST_METADATA_SIZE + over + item swap seti
 
 def puti: int i -> void
     # Prints a number to STDOUT

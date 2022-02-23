@@ -16,7 +16,7 @@ def tokenize: ptr source -> ptr
         1 create_tokenlist tokenlist setp
 
     _indent_stack derefp NULL = if
-        0 new_list list_append _indent_stack setp
+        0 INT_SIZE new_list list_append _indent_stack setp
 
     True _at_start setb
 
