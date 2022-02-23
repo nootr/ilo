@@ -1,4 +1,4 @@
-# Description:ilo.tokens - Expanding tokenlist
+# Description:ilo.lexer - Tokenizing source code
 # Exit code:0
 # Stdout:
 # Stderr:
