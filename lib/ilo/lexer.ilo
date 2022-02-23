@@ -16,7 +16,7 @@ def tokenize: ptr source -> ptr
         1 create_tokenlist tokenlist setp
 
     _indent_stack derefp NULL = if
-        0 INT_SIZE new_list list_append _indent_stack setp
+        0 INT_SIZE new_list list_append_int _indent_stack setp
 
     True _at_start setb
 
@@ -33,15 +33,15 @@ def tokenize: ptr source -> ptr
         _at_start derefb if
             False _at_start setb
 
-            dup _indent_stack derefp list_peek > if
-                dup _indent_stack derefp list_append _indent_stack setp
+            dup _indent_stack derefp list_peek_int > if
+                dup _indent_stack derefp list_append_int _indent_stack setp
                 rot dup TOKEN_BLOCK_START NULL create_token rot rot
-            dup _indent_stack derefp list_peek < if
-                while dup _indent_stack derefp list_pop !=
+            dup _indent_stack derefp list_peek_int < if
+                while dup _indent_stack derefp list_pop_int !=
                     _indent_stack derefp list.len + derefi 0 = if
                         rot dup "Unexpexted indenting" syntax_error rot rot
                     rot dup TOKEN_BLOCK_END NULL create_token rot rot
-                dup _indent_stack derefp list_append _indent_stack setp
+                dup _indent_stack derefp list_append_int _indent_stack setp
         +
 
         dup derefc '#' = if
@@ -273,8 +273,8 @@ def tokenize: ptr source -> ptr
             over NULL syntax_error
 
     drop
-    while _indent_stack derefp list_peek 0 !=
-        _indent_stack derefp list_pop drop
+    while _indent_stack derefp list_peek_int 0 !=
+        _indent_stack derefp list_pop_int drop
         dup TOKEN_BLOCK_END NULL create_token
 
     # Return a pointer to the tokenlist

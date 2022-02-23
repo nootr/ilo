@@ -670,12 +670,12 @@ def new_list: int item_size -> ptr
     1 item_size list_create
 
 
-def list_fetch: int index, ptr list -> int
+def list_fetch_int: int index, ptr list -> int
     # Returns the value of a certain index in a given list
     list LIST_METADATA_SIZE + index list list.item_size + derefi * + derefi
 
 
-def list_pop: ptr list -> int
+def list_pop_int: ptr list -> int
     # Removes and returns the last value of a given list
     list list.len + derefi 0 = if
         "Can't pop from an empty list" raise
@@ -685,7 +685,7 @@ def list_pop: ptr list -> int
     list list.item_size + derefi * list + LIST_METADATA_SIZE + derefi
 
 
-def list_peek: ptr list -> int
+def list_peek_int: ptr list -> int
     # Returns the last value of a given list
     list list.len + derefi 0 = if
         "Can't peek in an empty list" raise
@@ -695,7 +695,7 @@ def list_peek: ptr list -> int
     list + LIST_METADATA_SIZE + derefi
 
 
-def list_append: int item, ptr list -> ptr
+def list_append_int: int item, ptr list -> ptr
     # Appends an item to a given list and return a pointer to the list
     list list.len + derefi
     list list.capacity + derefi = if
