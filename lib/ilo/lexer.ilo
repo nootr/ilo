@@ -12,7 +12,7 @@ buffer _tokens       8  # ptr
 def tokenize: ptr source -> ptr
     # Tokenizes a given source code and returns a pointer to the list of tokens
 
-    # Initialize values
+    # Initialize globals
     _tokens derefp NULL = if
         TOKEN_SIZE new_list _tokens setp
 
@@ -100,7 +100,7 @@ def tokenize: ptr source -> ptr
             _tokens derefp create_token _tokens setp
             swap
             1 +
-        elif dup "->" is_word
+        elif dup "->" startswith
             over TOKEN_ARROW NULL
             _tokens derefp create_token _tokens setp
             2 +
@@ -152,15 +152,15 @@ def tokenize: ptr source -> ptr
             over TOKEN_COMMA NULL
             _tokens derefp create_token _tokens setp
             1 +
-        elif dup "!=" is_word
+        elif dup "!=" startswith
             over TOKEN_COMPARISON "!="
             _tokens derefp create_token _tokens setp
             2 +
-        elif dup ">=" is_word
+        elif dup ">=" startswith
             over TOKEN_COMPARISON ">="
             _tokens derefp create_token _tokens setp
             2 +
-        elif dup "<=" is_word
+        elif dup "<=" startswith
             over TOKEN_COMPARISON "<="
             _tokens derefp create_token _tokens setp
             2 +
