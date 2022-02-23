@@ -719,7 +719,7 @@ def list_append: int item, ptr list -> ptr
 
 def puti: int i -> void
     # Prints a number to STDOUT
-    i 255 < i 0 >= and if
+    i 255 <= i 0 >= and if
         5 malloc
         dup i swap i8tohex
         dup puts
@@ -732,7 +732,7 @@ def puti: int i -> void
 
 def errori: int i -> void
     # Prints a number to STDERR
-    i 255 < i 0 >= and if
+    i 255 <= i 0 >= and if
         5 malloc
         dup i swap i8tohex
         dup error
