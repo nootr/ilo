@@ -128,3 +128,31 @@ def create_token: int line, int type, ptr value -> void
     dup token.type  + type  swap seti
     dup token.value + value swap setp
     drop
+
+
+def dump_tokens: -> void
+    # Prints the contents of tokenlist to STDOUT
+    "Number of tokens: "                            puts
+    tokenlist derefp tokenlist.num_tokens + derefi  puti
+    "\n"                                            puts
+
+    "Tokens:\n" puts
+    0
+    while dup tokenlist derefp tokenlist.num_tokens + derefi <
+        "* " puts
+        dup TOKEN_SIZE *
+        tokenlist derefp tokenlist.tokens + +
+        token.type + derefi token_to_str puts " " puts
+        dup TOKEN_SIZE *
+        tokenlist derefp tokenlist.tokens + +
+        token.value + derefp
+        dup NULL != if
+            puts " " puts
+        else
+            drop
+        dup TOKEN_SIZE *
+        tokenlist derefp tokenlist.tokens + +
+        token.line + derefi puti " " puts
+        "\n" puts
+        1 +
+    drop
