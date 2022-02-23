@@ -1,0 +1,58 @@
+# Description:ilo.tokens - Expanding tokenlist
+# Exit code:0
+# Stdout:
+# Stderr:
+
+import lib.std
+import lib.ilo.lexer
+
+
+def main: int argc, ptr argv -> int
+    "def foo: int -> bool\n"
+    "    # This is a function\n"  concat
+    "    True if\n"               concat
+    "        \"Yeah baby\""       concat
+
+    tokenize
+    tokenlist.tokens +
+
+    dup token.type + derefi TOKEN_KEYWORD =     "Token 1 should be keyword" assert
+    dup token.line + derefi 1 =                 "Token 1 should be on line 1" assert
+    TOKEN_SIZE +
+    dup token.type + derefi TOKEN_IDENTIFIER =  "Token 2 should be identifier" assert
+    dup token.line + derefi 1 =                 "Token 2 should be on line 1" assert
+    TOKEN_SIZE +
+    dup token.type + derefi TOKEN_COLON =       "Token 3 should be colon" assert
+    dup token.line + derefi 1 =                 "Token 3 should be on line 1" assert
+    TOKEN_SIZE +
+    dup token.type + derefi TOKEN_TYPE =        "Token 4 should be type" assert
+    dup token.line + derefi 1 =                 "Token 4 should be on line 1" assert
+    TOKEN_SIZE +
+    dup token.type + derefi TOKEN_ARROW =       "Token 5 should be arrow" assert
+    dup token.line + derefi 1 =                 "Token 5 should be on line 1" assert
+    TOKEN_SIZE +
+    dup token.type + derefi TOKEN_TYPE =        "Token 6 should be type" assert
+    dup token.line + derefi 1 =                 "Token 6 should be on line 1" assert
+    TOKEN_SIZE +
+    dup token.type + derefi TOKEN_BLOCK_START = "Token 7 should be block start" assert
+    dup token.line + derefi 2 =                 "Token 7 should be on line 2" assert
+    TOKEN_SIZE +
+    dup token.type + derefi TOKEN_BOOL =        "Token 8 should be boolean" assert
+    dup token.line + derefi 3 =                 "Token 8 should be on line 3" assert
+    TOKEN_SIZE +
+    dup token.type + derefi TOKEN_KEYWORD =     "Token 9 should be keyword" assert
+    dup token.line + derefi 3 =                 "Token 9 should be on line 3" assert
+    TOKEN_SIZE +
+    dup token.type + derefi TOKEN_BLOCK_START = "Token 10 should be block start" assert
+    dup token.line + derefi 4 =                 "Token 10 should be on line 4" assert
+    TOKEN_SIZE +
+    dup token.type + derefi TOKEN_STRING =      "Token 11 should be string" assert
+    dup token.line + derefi 4 =                 "Token 11 should be on line 4" assert
+    TOKEN_SIZE +
+    dup token.type + derefi TOKEN_BLOCK_END =   "Token 12 should be block end" assert
+    dup token.line + derefi 4 =                 "Token 12 should be on line 5" assert
+    TOKEN_SIZE +
+    dup token.type + derefi TOKEN_BLOCK_END =   "Token 13 should be block end" assert
+    dup token.line + derefi 4 =                 "Token 13 should be on line 5" assert
+    TOKEN_SIZE +
+    0

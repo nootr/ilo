@@ -8,8 +8,8 @@ buffer _indent_stack 8  # ptr
 buffer _at_start     1  # bool
 
 
-def tokenize: ptr source -> void
-    # Tokenizes a given source code
+def tokenize: ptr source -> ptr
+    # Tokenizes a given source code and returns a pointer to the tokenlist
 
     # Initialize values
     tokenlist derefp NULL = if
@@ -276,3 +276,6 @@ def tokenize: ptr source -> void
     while _indent_stack derefp list_peek 0 !=
         _indent_stack derefp list_pop drop
         dup TOKEN_BLOCK_END NULL create_token
+
+    # Return a pointer to the tokenlist
+    tokenlist derefp
