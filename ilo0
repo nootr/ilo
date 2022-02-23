@@ -613,7 +613,6 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
                             f"If and else block should leave similar types on line {line_no}"
                         )
                 else:
-                    opcodes.append((Opcode.LABEL, if_identifier, line_no))
                     if if_stack != stack:
                         raise TypeError(
                             f"If block without else should not alter types on line {line_no}"
