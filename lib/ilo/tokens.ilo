@@ -68,7 +68,7 @@ const TOKEN_SIZE  24
 
 
 def create_token: int line, int type, ptr value, ptr list -> ptr
-    # Appends a token to the tokenlist and returns a pointer to the list
+    # Appends a token to a list and returns a pointer to the list
     TOKEN_SIZE malloc
     dup token.line  + line swap seti
     dup token.type  + type swap seti
@@ -76,7 +76,7 @@ def create_token: int line, int type, ptr value, ptr list -> ptr
     list list_append
 
 def dump_tokens: ptr tokens -> void
-    # Prints the contents of a given tokenlist to STDOUT
+    # Prints the contents of a given list to STDOUT
     "Number of tokens: "      puts
     tokens list.len + derefi  puti
     "\n"                      puts
