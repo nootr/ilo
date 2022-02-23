@@ -36,22 +36,22 @@ def main: -> int
         dup derefc '+' = if
             mp derefp dup derefc casti 1 + castc
             swap setc
-        dup derefc '-' = if
+        elif dup derefc '-' =
             mp derefp dup derefc casti 1 - castc
             swap setc
-        dup derefc '>' = if
+        elif dup derefc '>' =
             mp derefp 1 + mp setp
-        dup derefc '<' = if
+        elif dup derefc '<' =
             mp derefp 1 - mp setp
-        dup derefc ',' = if
+        elif dup derefc ',' =
             get_character mp derefp setc
-        dup derefc '.' = if
+        elif dup derefc '.' =
             2 malloc
             dup mp derefp derefc swap setc
             dup 1 + 0 castc swap setc
             dup puts
             free
-        dup derefc '[' = if
+        elif dup derefc '[' =
             mp derefp derefc 0 castc = if
                 1  # counter
                 while dup 0 !=
@@ -62,7 +62,7 @@ def main: -> int
                         swap 1 - swap
                     swap
                 drop
-        dup derefc ']' = if
+        elif dup derefc ']' =
             mp derefp derefc 0 castc != if
                 1  # counter
                 while dup 0 !=

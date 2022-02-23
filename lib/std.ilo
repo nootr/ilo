@@ -46,35 +46,35 @@ def i64tohex: int x, ptr buf -> void
 
         dup 0 = if
             rot dup '0' swap setc rot rot
-        dup 1 = if
+        elif dup 1 =
             rot dup '1' swap setc rot rot
-        dup 2 = if
+        elif dup 2 =
             rot dup '2' swap setc rot rot
-        dup 3 = if
+        elif dup 3 =
             rot dup '3' swap setc rot rot
-        dup 4 = if
+        elif dup 4 =
             rot dup '4' swap setc rot rot
-        dup 5 = if
+        elif dup 5 =
             rot dup '5' swap setc rot rot
-        dup 6 = if
+        elif dup 6 =
             rot dup '6' swap setc rot rot
-        dup 7 = if
+        elif dup 7 =
             rot dup '7' swap setc rot rot
-        dup 8 = if
+        elif dup 8 =
             rot dup '8' swap setc rot rot
-        dup 9 = if
+        elif dup 9 =
             rot dup '9' swap setc rot rot
-        dup 10 = if
+        elif dup 10 =
             rot dup 'a' swap setc rot rot
-        dup 11 = if
+        elif dup 11 =
             rot dup 'b' swap setc rot rot
-        dup 12 = if
+        elif dup 12 =
             rot dup 'c' swap setc rot rot
-        dup 13 = if
+        elif dup 13 =
             rot dup 'd' swap setc rot rot
-        dup 14 = if
+        elif dup 14 =
             rot dup 'e' swap setc rot rot
-        dup 15 = if
+        elif dup 15 =
             rot dup 'f' swap setc rot rot
         drop 4 - swap 1 + swap
     drop 0 castc swap setc
@@ -95,35 +95,35 @@ def i8tohex: int x, ptr buf -> void
 
         dup 0 = if
             rot dup '0' swap setc rot rot
-        dup 1 = if
+        elif dup 1 =
             rot dup '1' swap setc rot rot
-        dup 2 = if
+        elif dup 2 =
             rot dup '2' swap setc rot rot
-        dup 3 = if
+        elif dup 3 =
             rot dup '3' swap setc rot rot
-        dup 4 = if
+        elif dup 4 =
             rot dup '4' swap setc rot rot
-        dup 5 = if
+        elif dup 5 =
             rot dup '5' swap setc rot rot
-        dup 6 = if
+        elif dup 6 =
             rot dup '6' swap setc rot rot
-        dup 7 = if
+        elif dup 7 =
             rot dup '7' swap setc rot rot
-        dup 8 = if
+        elif dup 8 =
             rot dup '8' swap setc rot rot
-        dup 9 = if
+        elif dup 9 =
             rot dup '9' swap setc rot rot
-        dup 10 = if
+        elif dup 10 =
             rot dup 'a' swap setc rot rot
-        dup 11 = if
+        elif dup 11 =
             rot dup 'b' swap setc rot rot
-        dup 12 = if
+        elif dup 12 =
             rot dup 'c' swap setc rot rot
-        dup 13 = if
+        elif dup 13 =
             rot dup 'd' swap setc rot rot
-        dup 14 = if
+        elif dup 14 =
             rot dup 'e' swap setc rot rot
-        dup 15 = if
+        elif dup 15 =
             rot dup 'f' swap setc rot rot
         drop 4 - swap 1 + swap
     drop 0 castc swap setc
