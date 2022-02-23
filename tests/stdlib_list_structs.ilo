@@ -1,0 +1,41 @@
+# Description:Standard library - list of structs
+# Exit code:1
+# Stdout:
+# Stderr:Error: Can't peek in an empty list
+
+import lib.std
+
+const foo.a    0  # int
+const foo.b    8  # int
+const FOO_SIZE 16
+
+
+def main: ptr argv, int argc -> int
+    FOO_SIZE new_list
+
+    FOO_SIZE malloc
+    dup foo.a + 13 swap seti
+    dup foo.b + 37 swap seti
+    swap                          # item list
+    list_append                   # list
+
+    FOO_SIZE malloc
+    dup foo.a + 12 swap seti
+    dup foo.b + 34 swap seti
+    swap                          # item list
+    list_append                   # list
+
+    dup 1 swap list_fetch foo.a + derefi 12 = "Second element's a should be 12" assert
+    dup 0 swap list_fetch foo.b + derefi 37 = "First element's b should be 37" assert
+
+    dup list_pop \
+        dup foo.b + derefi 34 = "Popped element's b should be 34" assert \
+        free
+    dup list_peek foo.b + derefi 37 = "Peeked element's b should be 37" assert
+    dup list_pop \
+        dup foo.a + derefi 13 = "Popped element's a should be 13" assert \
+        free
+    dup list_peek drop  # Should raise
+
+    free
+    0

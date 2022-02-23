@@ -564,6 +564,33 @@ def free: ptr block_data -> void
     verify_memory
 
 
+def puti: int i -> void
+    # Prints a number to STDOUT
+    i 255 <= i 0 >= and if
+        5 malloc
+        dup i swap i8tohex
+        dup puts
+        free
+    else
+        19 malloc
+        dup i swap i64tohex
+        dup puts
+        free
+
+def errori: int i -> void
+    # Prints a number to STDERR
+    i 255 <= i 0 >= and if
+        5 malloc
+        dup i swap i8tohex
+        dup error
+        free
+    else
+        19 malloc
+        dup i swap i64tohex
+        dup error
+        free
+
+
 def concat: ptr a, ptr b -> ptr
     # Takes two string and returns them after being concatenated.
     # Note that this mallocs, so don't forget to free!
@@ -670,9 +697,41 @@ def new_list: int item_size -> ptr
     1 item_size list_create
 
 
+def list_fetch: int index, ptr list -> ptr
+    # Returns a pointer to a certain index in a given list
+    index list list.len + derefi >= if
+        "index: " puts index puti "\n" puts
+        "len  : " puts list list.len + derefi puti "\n" puts
+        "List index out of bounds" raise
+    list LIST_METADATA_SIZE + index list list.item_size + derefi * +
+
+
 def list_fetch_int: int index, ptr list -> int
     # Returns the value of a certain index in a given list
+    index list list.len + derefi >= if
+        "List index out of bounds" raise
     list LIST_METADATA_SIZE + index list list.item_size + derefi * + derefi
+
+
+def list_pop: ptr list -> ptr
+    # Copies, removes and returns the last item of a given list
+    # The returned data is malloc'ed, so don't forget to free!
+    list list.len + derefi 0 = if
+        "Can't pop from an empty list" raise
+
+    # Get index of last item
+    list list.len + derefi 1 -
+
+    # Get pointer to item
+    dup list list_fetch
+
+    # Decrease list.len
+    over list list.len + seti
+
+    # Copy
+    list list.item_size + derefi malloc
+    dup rot swap
+    list list.item_size + derefi memcpy
 
 
 def list_pop_int: ptr list -> int
@@ -685,14 +744,57 @@ def list_pop_int: ptr list -> int
     list list.item_size + derefi * list + LIST_METADATA_SIZE + derefi
 
 
+def list_peek: ptr list -> ptr
+    # Returns a pointer to the last item of a given list
+    list list.len + derefi 0 = if
+        "Can't peek in an empty list" raise
+
+    list dup list.len + derefi 1 - swap list_fetch
+
+
 def list_peek_int: ptr list -> int
     # Returns the last value of a given list
     list list.len + derefi 0 = if
         "Can't peek in an empty list" raise
 
-    list list.len + derefi 1 -
-    list list.item_size + derefi *
-    list + LIST_METADATA_SIZE + derefi
+    list dup list.len + derefi 1 - swap list_fetch_int
+
+
+def list_append: ptr item, ptr list -> ptr
+    # Appends an item to a given list and return a pointer to the list
+    # Note that the original item is free'd, so make sure it's dynamically allocated!
+    list list.len + derefi
+    list list.capacity + derefi = if
+        # Create a list with double the capacity
+        list list.capacity + derefi 2 * list list.item_size + derefi list_create
+
+        # Copy items
+        list list.items +
+        over list.items +
+        list list.len + derefi list list.item_size + derefi *
+        memcpy
+
+        # Update metadata
+        list list.capacity + derefi 2 *
+        over list.capacity + seti
+        list list.len + derefi
+        over list.len + seti
+
+        # Free old list
+        list free
+    else
+        list
+
+    # Append item to list
+    #dup list.len + derefi over list_fetch
+    dup list.len + derefi over list.item_size + derefi * LIST_METADATA_SIZE + over +
+    over list.item_size + derefi
+    item rot rot memcpy
+
+    dup list.len + derefi 1 + over list.len + seti
+
+    # Free original item
+    item free
 
 
 def list_append_int: int item, ptr list -> ptr
@@ -723,29 +825,3 @@ def list_append_int: int item, ptr list -> ptr
     dup list.len + derefi
     dup 1 + rot dup rot swap list.len + seti swap
     list list.item_size + derefi * LIST_METADATA_SIZE + over + item swap seti
-
-def puti: int i -> void
-    # Prints a number to STDOUT
-    i 255 <= i 0 >= and if
-        5 malloc
-        dup i swap i8tohex
-        dup puts
-        free
-    else
-        19 malloc
-        dup i swap i64tohex
-        dup puts
-        free
-
-def errori: int i -> void
-    # Prints a number to STDERR
-    i 255 <= i 0 >= and if
-        5 malloc
-        dup i swap i8tohex
-        dup error
-        free
-    else
-        19 malloc
-        dup i swap i64tohex
-        dup error
-        free
