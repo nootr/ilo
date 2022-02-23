@@ -1,3 +1,8 @@
+const BOOL_SIZE 1
+const CHAR_SIZE 1
+const INT_SIZE  8
+const PTR_SIZE  8
+
 const STDIN  0
 const STDOUT 1
 const STDERR 2
