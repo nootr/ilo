@@ -9,14 +9,16 @@ import lib.ilo.lexer
 
 def main: int argc, ptr argv -> int
     "def foo: int -> bool_"
-    "    # This is a function_"  concat
-    "    True if_"               concat
-    "        \"Yeah baby\""       concat
+    "    # This is a function_"   concat
+    "    True if_"                concat
+    "        \"Yeah baby\"_"      concat
+    "const constant 123"          concat
 
     # TODO: Unescape characters
     dup 20 + 10 castc swap setc
     dup 45 + 10 castc swap setc
     dup 57 + 10 castc swap setc
+    dup 77 + 10 castc swap setc
 
     tokenize
     list.items +
@@ -55,9 +57,11 @@ def main: int argc, ptr argv -> int
     dup token.line + derefi 4 =                 "Token 11 should be on line 4" assert
     TOKEN_SIZE +
     dup token.type + derefi TOKEN_BLOCK_END =   "Token 12 should be block end" assert
-    dup token.line + derefi 4 =                 "Token 12 should be on line 5" assert
+    dup token.line + derefi 5 =                 "Token 12 should be on line 5" assert
     TOKEN_SIZE +
     dup token.type + derefi TOKEN_BLOCK_END =   "Token 13 should be block end" assert
-    dup token.line + derefi 4 =                 "Token 13 should be on line 5" assert
+    dup token.line + derefi 5 =                 "Token 13 should be on line 5" assert
     TOKEN_SIZE +
+    dup token.type + derefi TOKEN_KEYWORD   =   "Token 14 should be keyword" assert
+    dup token.line + derefi 5 =                 "Token 14 should be on line 5" assert
     0

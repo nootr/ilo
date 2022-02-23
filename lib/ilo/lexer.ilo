@@ -100,7 +100,7 @@ def tokenize: ptr source -> ptr
             _tokens derefp create_token _tokens setp
             swap
             1 +
-        elif dup "->" startswith
+        elif dup "->" is_word
             over TOKEN_ARROW NULL
             _tokens derefp create_token _tokens setp
             2 +
@@ -120,27 +120,27 @@ def tokenize: ptr source -> ptr
             over TOKEN_ARITHMETIC "/"
             _tokens derefp create_token _tokens setp
             1 +
-        elif dup "and" startswith
+        elif dup "and" is_word
             over TOKEN_ARITHMETIC "and"
             _tokens derefp create_token _tokens setp
             3 +
-        elif dup "or" startswith
+        elif dup "or" is_word
             over TOKEN_ARITHMETIC "or"
             _tokens derefp create_token _tokens setp
             2 +
-        elif dup "shl" startswith
+        elif dup "shl" is_word
             over TOKEN_ARITHMETIC "shl"
             _tokens derefp create_token _tokens setp
             3 +
-        elif dup "shr" startswith
+        elif dup "shr" is_word
             over TOKEN_ARITHMETIC "shr"
             _tokens derefp create_token _tokens setp
             3 +
-        elif dup "True" startswith
+        elif dup "True" is_word
             over TOKEN_BOOL "1"
             _tokens derefp create_token _tokens setp
             4 +
-        elif dup "False" startswith
+        elif dup "False" is_word
             over TOKEN_BOOL "0"
             _tokens derefp create_token _tokens setp
             5 +
@@ -152,15 +152,15 @@ def tokenize: ptr source -> ptr
             over TOKEN_COMMA NULL
             _tokens derefp create_token _tokens setp
             1 +
-        elif dup "!=" startswith
+        elif dup "!=" is_word
             over TOKEN_COMPARISON "!="
             _tokens derefp create_token _tokens setp
             2 +
-        elif dup ">=" startswith
+        elif dup ">=" is_word
             over TOKEN_COMPARISON ">="
             _tokens derefp create_token _tokens setp
             2 +
-        elif dup "<=" startswith
+        elif dup "<=" is_word
             over TOKEN_COMPARISON "<="
             _tokens derefp create_token _tokens setp
             2 +
@@ -176,135 +176,135 @@ def tokenize: ptr source -> ptr
             over TOKEN_COMPARISON ">"
             _tokens derefp create_token _tokens setp
             1 +
-        elif dup "buffer" startswith
+        elif dup "buffer" is_word
             over TOKEN_KEYWORD "buffer"
             _tokens derefp create_token _tokens setp
             6 +
-        elif dup "castb" startswith
+        elif dup "castb" is_word
             over TOKEN_KEYWORD "castb"
             _tokens derefp create_token _tokens setp
             5 +
-        elif dup "castc" startswith
+        elif dup "castc" is_word
             over TOKEN_KEYWORD "castc"
             _tokens derefp create_token _tokens setp
             5 +
-        elif dup "casti" startswith
+        elif dup "casti" is_word
             over TOKEN_KEYWORD "casti"
             _tokens derefp create_token _tokens setp
             5 +
-        elif dup "castp" startswith
+        elif dup "castp" is_word
             over TOKEN_KEYWORD "castp"
             _tokens derefp create_token _tokens setp
             5 +
-        elif dup "const" startswith
+        elif dup "const" is_word
             over TOKEN_KEYWORD "const"
             _tokens derefp create_token _tokens setp
             5 +
-        elif dup "debug" startswith
+        elif dup "debug" is_word
             over TOKEN_KEYWORD "debug"
             _tokens derefp create_token _tokens setp
             5 +
-        elif dup "def" startswith
+        elif dup "def" is_word
             over TOKEN_KEYWORD "def"
             _tokens derefp create_token _tokens setp
             3 +
-        elif dup "derefb" startswith
+        elif dup "derefb" is_word
             over TOKEN_KEYWORD "derefb"
             _tokens derefp create_token _tokens setp
             6 +
-        elif dup "derefc" startswith
+        elif dup "derefc" is_word
             over TOKEN_KEYWORD "derefc"
             _tokens derefp create_token _tokens setp
             6 +
-        elif dup "derefi" startswith
+        elif dup "derefi" is_word
             over TOKEN_KEYWORD "derefi"
             _tokens derefp create_token _tokens setp
             6 +
-        elif dup "derefp" startswith
+        elif dup "derefp" is_word
             over TOKEN_KEYWORD "derefp"
             _tokens derefp create_token _tokens setp
             6 +
-        elif dup "drop" startswith
+        elif dup "drop" is_word
             over TOKEN_KEYWORD "drop"
             _tokens derefp create_token _tokens setp
             4 +
-        elif dup "dup" startswith
+        elif dup "dup" is_word
             over TOKEN_KEYWORD "dup"
             _tokens derefp create_token _tokens setp
             3 +
-        elif dup "elif" startswith
+        elif dup "elif" is_word
             over TOKEN_KEYWORD "elif"
             _tokens derefp create_token _tokens setp
             4 +
-        elif dup "else" startswith
+        elif dup "else" is_word
             over TOKEN_KEYWORD "else"
             _tokens derefp create_token _tokens setp
             4 +
-        elif dup "if" startswith
+        elif dup "if" is_word
             over TOKEN_KEYWORD "if"
             _tokens derefp create_token _tokens setp
             2 +
-        elif dup "import" startswith
+        elif dup "import" is_word
             over TOKEN_KEYWORD "import"
             _tokens derefp create_token _tokens setp
             6 +
-        elif dup "location" startswith
+        elif dup "location" is_word
             over TOKEN_KEYWORD "location"
             _tokens derefp create_token _tokens setp
             8 +
-        elif dup "over" startswith
+        elif dup "over" is_word
             over TOKEN_KEYWORD "over"
             _tokens derefp create_token _tokens setp
             4 +
-        elif dup "rot" startswith
+        elif dup "rot" is_word
             over TOKEN_KEYWORD "rot"
             _tokens derefp create_token _tokens setp
             3 +
-        elif dup "setb" startswith
+        elif dup "setb" is_word
             over TOKEN_KEYWORD "setb"
             _tokens derefp create_token _tokens setp
             4 +
-        elif dup "setc" startswith
+        elif dup "setc" is_word
             over TOKEN_KEYWORD "setc"
             _tokens derefp create_token _tokens setp
             4 +
-        elif dup "seti" startswith
+        elif dup "seti" is_word
             over TOKEN_KEYWORD "seti"
             _tokens derefp create_token _tokens setp
             4 +
-        elif dup "setp" startswith
+        elif dup "setp" is_word
             over TOKEN_KEYWORD "setp"
             _tokens derefp create_token _tokens setp
             4 +
-        elif dup "swap" startswith
+        elif dup "swap" is_word
             over TOKEN_KEYWORD "swap"
             _tokens derefp create_token _tokens setp
             4 +
-        elif dup "syscall" startswith
+        elif dup "syscall" is_word
             over TOKEN_KEYWORD "syscall"
             _tokens derefp create_token _tokens setp
             7 +
-        elif dup "bool" startswith
+        elif dup "bool" is_word
             over TOKEN_TYPE "bool"
             _tokens derefp create_token _tokens setp
             4 +
-        elif dup "char" startswith
+        elif dup "char" is_word
             over TOKEN_TYPE "char"
             _tokens derefp create_token _tokens setp
             4 +
-        elif dup "int" startswith
+        elif dup "int" is_word
             over TOKEN_TYPE "int"
             _tokens derefp create_token _tokens setp
             3 +
-        elif dup "ptr" startswith
+        elif dup "ptr" is_word
             over TOKEN_TYPE "ptr"
             _tokens derefp create_token _tokens setp
             3 +
-        elif dup "void" startswith
+        elif dup "void" is_word
             over TOKEN_TYPE "void"
             _tokens derefp create_token _tokens setp
             4 +
-        elif dup "while" startswith
+        elif dup "while" is_word
             over TOKEN_TYPE "while"
             _tokens derefp create_token _tokens setp
             5 +

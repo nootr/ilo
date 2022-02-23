@@ -18,11 +18,17 @@ def is_int: char c -> bool
 
 
 def is_alphabet: char c -> bool
+    # Returns True if given character is in the alphabet or `-`, `_` or `.`
     'A' c <= c 'Z' <= and
     'a' c <= c 'z' <= and or
     c '-' =               or
     c '_' =               or
     c '.' =               or
+
+
+def is_alphanumeric: char c -> bool
+    # Returns True if given character is alphanumeric
+    c is_int c is_alphabet or
 
 
 def count_indent: ptr s -> int
@@ -33,3 +39,12 @@ def count_indent: ptr s -> int
         1 + swap
         1 + swap
     drop
+
+
+def is_word: ptr s, ptr q -> bool
+    # Returns True if str s starts with substring q, followed by a non-alphabet char
+    s strlen q strlen = if
+        True
+    else
+        s q startswith
+    s q strlen + derefc is_alphanumeric False = and
