@@ -19,7 +19,7 @@ def main: int argc, ptr argv -> int
     dup 57 + 10 castc swap setc
 
     tokenize
-    tokenlist.tokens +
+    list.items +
 
     dup token.type + derefi TOKEN_KEYWORD =     "Token 1 should be keyword" assert
     dup token.line + derefi 1 =                 "Token 1 should be on line 1" assert

@@ -67,91 +67,36 @@ const token.line  16 # int
 const TOKEN_SIZE  24
 
 
-# TOKENLIST
-# A tokenlist is a data structure containing some metadata in its leading bytes and
-# token structs in the remaining bytes. It's meant to be dynamically growing in the
-# following way:
-#
-# * The tokenlist has space for 2^N tokens (starting at 2^0=1)
-# * When a token needs to be appended to a full tokenlist, a new tokenlist with double
-#   the capacity is created, the data is copied over and the old tokenlist is freed.
-#
-# This algorithm has a time complexity of O(n)[1], while being more space- and (in this
-# case) time-efficient than a linked list.
-#
-# [1] The Simple and Elegant Idea behind Efficient Dynamic Arrays
-#     https://youtu.be/Ij7NQ-0mIVA
-const tokenlist.max_tokens     0  # int
-const tokenlist.num_tokens     8  # int
-const tokenlist.tokens         16 # ptr
-const TOKENLIST_METADATA_SIZE  16
-
-buffer tokenlist 8  # Global pointer to the tokenlist
-
-
-def create_tokenlist: int max_tokens -> ptr
-    # Initializes a tokenlist and returns its pointer
-    max_tokens TOKEN_SIZE * TOKENLIST_METADATA_SIZE + malloc
-    dup tokenlist.max_tokens + max_tokens swap seti
-    dup tokenlist.num_tokens + 0          swap seti
-
-
-def create_token: int line, int type, ptr value -> void
-    # Appends a token to the tokenlist
-    tokenlist derefp tokenlist.num_tokens + derefi
-    tokenlist derefp tokenlist.max_tokens + derefi = if
-        # Create a tokenlist with double the capacity
-        tokenlist derefp tokenlist.max_tokens + derefi 2 * create_tokenlist
-
-        # Copy tokens
-        tokenlist derefp tokenlist.tokens +
-        over             tokenlist.tokens +
-        tokenlist derefp tokenlist.num_tokens + derefi TOKEN_SIZE *
-        memcpy
-
-        # Update metadata
-        tokenlist derefp tokenlist.max_tokens + derefi 2 *
-        over             tokenlist.max_tokens + seti
-        tokenlist derefp tokenlist.num_tokens + derefi
-        over             tokenlist.num_tokens + seti
-
-        tokenlist derefp free
-        tokenlist setp
-
-    # Calculate memory offset
-    tokenlist derefp tokenlist.num_tokens + derefi
-    dup 1 + tokenlist derefp tokenlist.num_tokens + seti
-    TOKEN_SIZE * TOKENLIST_METADATA_SIZE +
-    tokenlist derefp +
-
-    dup token.line  + line  swap seti
-    dup token.type  + type  swap seti
+def create_token: int line, int type, ptr value, ptr list -> ptr
+    # Appends a token to the tokenlist and returns a pointer to the list
+    TOKEN_SIZE malloc
+    dup token.line  + line swap seti
+    dup token.type  + type swap seti
     dup token.value + value swap setp
-    drop
-
+    list list_append
 
 def dump_tokens: ptr tokens -> void
     # Prints the contents of a given tokenlist to STDOUT
-    "Number of tokens: "                            puts
-    tokens tokenlist.num_tokens + derefi  puti
-    "\n"                                            puts
+    "Number of tokens: "      puts
+    tokens list.len + derefi  puti
+    "\n"                      puts
 
     "Tokens:\n" puts
     0
-    while dup tokens tokenlist.num_tokens + derefi <
+    while dup tokens list.len + derefi <
         "* " puts
         dup TOKEN_SIZE *
-        tokens tokenlist.tokens + +
+        tokens list.items + +
         token.type + derefi token_to_str puts " " puts
         dup TOKEN_SIZE *
-        tokens tokenlist.tokens + +
+        tokens list.items + +
         token.value + derefp
         dup NULL != if
             puts " " puts
         else
             drop
         dup TOKEN_SIZE *
-        tokens tokenlist.tokens + +
+        tokens list.items + +
         token.line + derefi puti " " puts
         "\n" puts
         1 +

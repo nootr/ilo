@@ -672,7 +672,12 @@ def substring: ptr s, int n -> ptr
 
 
 # LIST
-# A dynamic list of 64-bit integers, with O(n) time complexity[1].
+# A dynamic list of 64-bit integers, with O(n) time complexity[1]. It has a capacity of
+# 2^N items (starting at 2^0 = 1) and when an item needs to be appended and the list is
+# full, it's capacity is doubled.
+#
+# Note that this means that expanding lists means their location in the memory is likely
+# to change!
 #
 # [1] The Simple and Elegant Idea behind Efficient Dynamic Arrays
 #     https://youtu.be/Ij7NQ-0mIVA

@@ -6,6 +6,7 @@ import lib.ilo.helpers
 
 buffer _indent_stack 8  # ptr
 buffer _at_start     1  # bool
+buffer tokenlist     8  # ptr
 
 
 def tokenize: ptr source -> ptr
@@ -13,7 +14,7 @@ def tokenize: ptr source -> ptr
 
     # Initialize values
     tokenlist derefp NULL = if
-        1 create_tokenlist tokenlist setp
+        TOKEN_SIZE new_list tokenlist setp
 
     _indent_stack derefp NULL = if
         0 INT_SIZE new_list list_append_int _indent_stack setp
@@ -35,12 +36,16 @@ def tokenize: ptr source -> ptr
 
             dup _indent_stack derefp list_peek_int > if
                 dup _indent_stack derefp list_append_int _indent_stack setp
-                rot dup TOKEN_BLOCK_START NULL create_token rot rot
+                rot dup TOKEN_BLOCK_START NULL
+                tokenlist derefp create_token tokenlist setp
+                rot rot
             dup _indent_stack derefp list_peek_int < if
                 while dup _indent_stack derefp list_pop_int !=
                     _indent_stack derefp list.len + derefi 0 = if
                         rot dup "Unexpexted indenting" syntax_error rot rot
-                    rot dup TOKEN_BLOCK_END NULL create_token rot rot
+                    rot dup TOKEN_BLOCK_END NULL
+                    tokenlist derefp create_token tokenlist setp
+                    rot rot
                 dup _indent_stack derefp list_append_int _indent_stack setp
         +
 
@@ -64,7 +69,8 @@ def tokenize: ptr source -> ptr
             over swap substring
 
             # Create token
-            rot dup rot dup strlen rot rot TOKEN_INT swap create_token
+            rot dup rot dup strlen rot rot TOKEN_INT swap
+            tokenlist derefp create_token tokenlist setp
 
             # Shift source
             rot +
@@ -74,7 +80,8 @@ def tokenize: ptr source -> ptr
                 1 +
             dup 1 + derefc '\'' != if
                 swap "Character should be a single character" syntax_error 0 swap
-            dup 1 substring rot dup rot TOKEN_CHAR swap create_token
+            dup 1 substring rot dup rot TOKEN_CHAR swap
+            tokenlist derefp create_token tokenlist setp
             swap 2 +
         elif dup derefc '"' =
             1 +
@@ -89,164 +96,217 @@ def tokenize: ptr source -> ptr
             rot rot substring
 
             # Create token
-            rot dup rot TOKEN_STRING swap create_token
+            rot dup rot TOKEN_STRING swap
+            tokenlist derefp create_token tokenlist setp
             swap
             1 +
         elif dup "->" startswith
-            over TOKEN_ARROW NULL create_token
+            over TOKEN_ARROW NULL
+            tokenlist derefp create_token tokenlist setp
             2 +
         elif dup derefc '+' =
-            over TOKEN_ARITHMETIC "+" create_token
+            over TOKEN_ARITHMETIC "+"
+            tokenlist derefp create_token tokenlist setp
             1 +
         elif dup derefc '-' =
-            over TOKEN_ARITHMETIC "-" create_token
+            over TOKEN_ARITHMETIC "-"
+            tokenlist derefp create_token tokenlist setp
             1 +
         elif dup derefc '*' =
-            over TOKEN_ARITHMETIC "*" create_token
+            over TOKEN_ARITHMETIC "*"
+            tokenlist derefp create_token tokenlist setp
             1 +
         elif dup derefc '/' =
-            over TOKEN_ARITHMETIC "/" create_token
+            over TOKEN_ARITHMETIC "/"
+            tokenlist derefp create_token tokenlist setp
             1 +
         elif dup "and" startswith
-            over TOKEN_ARITHMETIC "and" create_token
+            over TOKEN_ARITHMETIC "and"
+            tokenlist derefp create_token tokenlist setp
             3 +
         elif dup "or" startswith
-            over TOKEN_ARITHMETIC "or" create_token
+            over TOKEN_ARITHMETIC "or"
+            tokenlist derefp create_token tokenlist setp
             2 +
         elif dup "shl" startswith
-            over TOKEN_ARITHMETIC "shl" create_token
+            over TOKEN_ARITHMETIC "shl"
+            tokenlist derefp create_token tokenlist setp
             3 +
         elif dup "shr" startswith
-            over TOKEN_ARITHMETIC "shr" create_token
+            over TOKEN_ARITHMETIC "shr"
+            tokenlist derefp create_token tokenlist setp
             3 +
         elif dup "True" startswith
-            over TOKEN_BOOL "1" create_token
+            over TOKEN_BOOL "1"
+            tokenlist derefp create_token tokenlist setp
             4 +
         elif dup "False" startswith
-            over TOKEN_BOOL "0" create_token
+            over TOKEN_BOOL "0"
+            tokenlist derefp create_token tokenlist setp
             5 +
         elif dup derefc ':' =
-            over TOKEN_COLON NULL create_token
+            over TOKEN_COLON NULL
+            tokenlist derefp create_token tokenlist setp
             1 +
         elif dup derefc ',' =
-            over TOKEN_COMMA NULL create_token
+            over TOKEN_COMMA NULL
+            tokenlist derefp create_token tokenlist setp
             1 +
         elif dup "!=" startswith
-            over TOKEN_COMPARISON "!=" create_token
+            over TOKEN_COMPARISON "!="
+            tokenlist derefp create_token tokenlist setp
             2 +
         elif dup ">=" startswith
-            over TOKEN_COMPARISON ">=" create_token
+            over TOKEN_COMPARISON ">="
+            tokenlist derefp create_token tokenlist setp
             2 +
         elif dup "<=" startswith
-            over TOKEN_COMPARISON "<=" create_token
+            over TOKEN_COMPARISON "<="
+            tokenlist derefp create_token tokenlist setp
             2 +
         elif dup derefc '=' =
-            over TOKEN_COMPARISON "=" create_token
+            over TOKEN_COMPARISON "="
+            tokenlist derefp create_token tokenlist setp
             1 +
         elif dup derefc '<' =
-            over TOKEN_COMPARISON "<" create_token
+            over TOKEN_COMPARISON "<"
+            tokenlist derefp create_token tokenlist setp
             1 +
         elif dup derefc '>' =
-            over TOKEN_COMPARISON ">" create_token
+            over TOKEN_COMPARISON ">"
+            tokenlist derefp create_token tokenlist setp
             1 +
         elif dup "buffer" startswith
-            over TOKEN_KEYWORD "buffer" create_token
+            over TOKEN_KEYWORD "buffer"
+            tokenlist derefp create_token tokenlist setp
             6 +
         elif dup "castb" startswith
-            over TOKEN_KEYWORD "castb" create_token
+            over TOKEN_KEYWORD "castb"
+            tokenlist derefp create_token tokenlist setp
             5 +
         elif dup "castc" startswith
-            over TOKEN_KEYWORD "castc" create_token
+            over TOKEN_KEYWORD "castc"
+            tokenlist derefp create_token tokenlist setp
             5 +
         elif dup "casti" startswith
-            over TOKEN_KEYWORD "casti" create_token
+            over TOKEN_KEYWORD "casti"
+            tokenlist derefp create_token tokenlist setp
             5 +
         elif dup "castp" startswith
-            over TOKEN_KEYWORD "castp" create_token
+            over TOKEN_KEYWORD "castp"
+            tokenlist derefp create_token tokenlist setp
             5 +
         elif dup "const" startswith
-            over TOKEN_KEYWORD "const" create_token
+            over TOKEN_KEYWORD "const"
+            tokenlist derefp create_token tokenlist setp
             5 +
         elif dup "debug" startswith
-            over TOKEN_KEYWORD "debug" create_token
+            over TOKEN_KEYWORD "debug"
+            tokenlist derefp create_token tokenlist setp
             5 +
         elif dup "def" startswith
-            over TOKEN_KEYWORD "def" create_token
+            over TOKEN_KEYWORD "def"
+            tokenlist derefp create_token tokenlist setp
             3 +
         elif dup "derefb" startswith
-            over TOKEN_KEYWORD "derefb" create_token
+            over TOKEN_KEYWORD "derefb"
+            tokenlist derefp create_token tokenlist setp
             6 +
         elif dup "derefc" startswith
-            over TOKEN_KEYWORD "derefc" create_token
+            over TOKEN_KEYWORD "derefc"
+            tokenlist derefp create_token tokenlist setp
             6 +
         elif dup "derefi" startswith
-            over TOKEN_KEYWORD "derefi" create_token
+            over TOKEN_KEYWORD "derefi"
+            tokenlist derefp create_token tokenlist setp
             6 +
         elif dup "derefp" startswith
-            over TOKEN_KEYWORD "derefp" create_token
+            over TOKEN_KEYWORD "derefp"
+            tokenlist derefp create_token tokenlist setp
             6 +
         elif dup "drop" startswith
-            over TOKEN_KEYWORD "drop" create_token
+            over TOKEN_KEYWORD "drop"
+            tokenlist derefp create_token tokenlist setp
             4 +
         elif dup "dup" startswith
-            over TOKEN_KEYWORD "dup" create_token
+            over TOKEN_KEYWORD "dup"
+            tokenlist derefp create_token tokenlist setp
             3 +
         elif dup "elif" startswith
-            over TOKEN_KEYWORD "elif" create_token
+            over TOKEN_KEYWORD "elif"
+            tokenlist derefp create_token tokenlist setp
             4 +
         elif dup "else" startswith
-            over TOKEN_KEYWORD "else" create_token
+            over TOKEN_KEYWORD "else"
+            tokenlist derefp create_token tokenlist setp
             4 +
         elif dup "if" startswith
-            over TOKEN_KEYWORD "if" create_token
+            over TOKEN_KEYWORD "if"
+            tokenlist derefp create_token tokenlist setp
             2 +
         elif dup "import" startswith
-            over TOKEN_KEYWORD "import" create_token
+            over TOKEN_KEYWORD "import"
+            tokenlist derefp create_token tokenlist setp
             6 +
         elif dup "location" startswith
-            over TOKEN_KEYWORD "location" create_token
+            over TOKEN_KEYWORD "location"
+            tokenlist derefp create_token tokenlist setp
             8 +
         elif dup "over" startswith
-            over TOKEN_KEYWORD "over" create_token
+            over TOKEN_KEYWORD "over"
+            tokenlist derefp create_token tokenlist setp
             4 +
         elif dup "rot" startswith
-            over TOKEN_KEYWORD "rot" create_token
+            over TOKEN_KEYWORD "rot"
+            tokenlist derefp create_token tokenlist setp
             3 +
         elif dup "setb" startswith
-            over TOKEN_KEYWORD "setb" create_token
+            over TOKEN_KEYWORD "setb"
+            tokenlist derefp create_token tokenlist setp
             4 +
         elif dup "setc" startswith
-            over TOKEN_KEYWORD "setc" create_token
+            over TOKEN_KEYWORD "setc"
+            tokenlist derefp create_token tokenlist setp
             4 +
         elif dup "seti" startswith
-            over TOKEN_KEYWORD "seti" create_token
+            over TOKEN_KEYWORD "seti"
+            tokenlist derefp create_token tokenlist setp
             4 +
         elif dup "setp" startswith
-            over TOKEN_KEYWORD "setp" create_token
+            over TOKEN_KEYWORD "setp"
+            tokenlist derefp create_token tokenlist setp
             4 +
         elif dup "swap" startswith
-            over TOKEN_KEYWORD "swap" create_token
+            over TOKEN_KEYWORD "swap"
+            tokenlist derefp create_token tokenlist setp
             4 +
         elif dup "syscall" startswith
-            over TOKEN_KEYWORD "syscall" create_token
+            over TOKEN_KEYWORD "syscall"
+            tokenlist derefp create_token tokenlist setp
             7 +
         elif dup "bool" startswith
-            over TOKEN_TYPE "bool" create_token
+            over TOKEN_TYPE "bool"
+            tokenlist derefp create_token tokenlist setp
             4 +
         elif dup "char" startswith
-            over TOKEN_TYPE "char" create_token
+            over TOKEN_TYPE "char"
+            tokenlist derefp create_token tokenlist setp
             4 +
         elif dup "int" startswith
-            over TOKEN_TYPE "int" create_token
+            over TOKEN_TYPE "int"
+            tokenlist derefp create_token tokenlist setp
             3 +
         elif dup "ptr" startswith
-            over TOKEN_TYPE "ptr" create_token
+            over TOKEN_TYPE "ptr"
+            tokenlist derefp create_token tokenlist setp
             3 +
         elif dup "void" startswith
-            over TOKEN_TYPE "void" create_token
+            over TOKEN_TYPE "void"
+            tokenlist derefp create_token tokenlist setp
             4 +
         elif dup "while" startswith
-            over TOKEN_TYPE "while" create_token
+            over TOKEN_TYPE "while"
+            tokenlist derefp create_token tokenlist setp
             5 +
         elif dup derefc is_alphabet
             dup
@@ -261,7 +321,8 @@ def tokenize: ptr source -> ptr
             over swap substring
 
             # Create token
-            rot dup rot dup strlen rot rot TOKEN_IDENTIFIER swap create_token
+            rot dup rot dup strlen rot rot TOKEN_IDENTIFIER swap
+            tokenlist derefp create_token tokenlist setp
 
             # Shift source
             rot +
@@ -275,7 +336,8 @@ def tokenize: ptr source -> ptr
     drop
     while _indent_stack derefp list_peek_int 0 !=
         _indent_stack derefp list_pop_int drop
-        dup TOKEN_BLOCK_END NULL create_token
+        dup TOKEN_BLOCK_END NULL
+        tokenlist derefp create_token tokenlist setp
 
     # Return a pointer to the tokenlist
     tokenlist derefp
