@@ -64,4 +64,10 @@ def main: int argc, ptr argv -> int
     TOKEN_SIZE +
     dup token.type + derefi TOKEN_KEYWORD   =   "Token 14 should be keyword" assert
     dup token.line + derefi 5 =                 "Token 14 should be on line 5" assert
+    TOKEN_SIZE +
+    dup token.type + derefi TOKEN_IDENTIFIER =  "Token 15 should be identifier" assert
+    dup token.line + derefi 5 =                 "Token 15 should be on line 5" assert
+    TOKEN_SIZE +
+    dup token.type + derefi TOKEN_INT =         "Token 16 should be integer" assert
+    dup token.line + derefi 5 =                 "Token 16 should be on line 5" assert
     0
