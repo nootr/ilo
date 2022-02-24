@@ -10,20 +10,30 @@ import lib.ilo.parser
 
 def main: int argc, ptr argv -> int
     "foo.ilo"
-    "6 3 +"
+
+    "6 3 +_" dup 5 + 10 castc swap setc
+    "'q' True" concat
 
     tokenize
     parse
     list.items +
 
-    dup opcode.opcode  + derefi OPCODE_PUSH_INT = "Op 1 should be integer" assert
-    dup opcode.operand + derefp derefc '6' =      "Op 1 should be 6" assert
-    dup opcode.line    + derefi 1 =               "Op 1 should be on line 1" assert
+    dup opcode.opcode  + derefi OPCODE_PUSH_INT =  "Op 1 should be integer" assert
+    dup opcode.operand + derefp derefc '6' =       "Op 1 should be 6" assert
+    dup opcode.line    + derefi 1 =                "Op 1 should be on line 1" assert
     OPCODE_SIZE +
-    dup opcode.opcode  + derefi OPCODE_PUSH_INT = "Op 2 should be integer" assert
-    dup opcode.operand + derefp derefc '3' =      "Op 2 should be 3" assert
-    dup opcode.line    + derefi 1 =               "Op 2 should be on line 1" assert
+    dup opcode.opcode  + derefi OPCODE_PUSH_INT =  "Op 2 should be integer" assert
+    dup opcode.operand + derefp derefc '3' =       "Op 2 should be 3" assert
+    dup opcode.line    + derefi 1 =                "Op 2 should be on line 1" assert
     OPCODE_SIZE +
-    dup opcode.opcode  + derefi OPCODE_ADD      = "Op 3 should be integer" assert
-    dup opcode.line    + derefi 1 =               "Op 3 should be on line 1" assert
+    dup opcode.opcode  + derefi OPCODE_ADD =       "Op 3 should be integer" assert
+    dup opcode.line    + derefi 1 =                "Op 3 should be on line 1" assert
+    OPCODE_SIZE +
+    dup opcode.opcode  + derefi OPCODE_PUSH_CHAR = "Op 4 should be character" assert
+    dup opcode.operand + derefp derefc 'q' =       "Op 4 should be q" assert
+    dup opcode.line    + derefi 2 =                "Op 4 should be on line 2" assert
+    OPCODE_SIZE +
+    dup opcode.opcode  + derefi OPCODE_PUSH_BOOL = "Op 5 should be character" assert
+    dup opcode.operand + derefp derefc '1' =       "Op 5 should be True" assert
+    dup opcode.line    + derefi 2 =                "Op 5 should be on line 2" assert
     0

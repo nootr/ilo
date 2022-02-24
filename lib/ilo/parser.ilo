@@ -82,7 +82,21 @@ def parse: ptr filename, ptr tokens -> ptr
     while tokens _peek_next_token NULL !=
         tokens _get_next_token
 
-        dup token.type + derefi TOKEN_INT = if
+        dup token.type + derefi TOKEN_BOOL = if
+            OPCODE_PUSH_BOOL
+            over dup token.value + derefp
+            swap token.line + derefi
+            _opcodes derefp create_opcode _opcodes setp
+
+            TYPE_BOOL _push_type
+        elif dup token.type + derefi TOKEN_CHAR =
+            OPCODE_PUSH_CHAR
+            over dup token.value + derefp
+            swap token.line + derefi
+            _opcodes derefp create_opcode _opcodes setp
+
+            TYPE_CHAR _push_type
+        elif dup token.type + derefi TOKEN_INT =
             OPCODE_PUSH_INT
             over dup token.value + derefp
             swap token.line + derefi
