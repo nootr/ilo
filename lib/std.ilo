@@ -705,8 +705,6 @@ def new_list: int item_size -> ptr
 def list_fetch: int index, ptr list -> ptr
     # Returns a pointer to a certain index in a given list
     index list list.len + derefi >= if
-        "index: " puts index puti "\n" puts
-        "len  : " puts list list.len + derefi puti "\n" puts
         "List index out of bounds" raise
     list LIST_METADATA_SIZE + index list list.item_size + derefi * +
 
@@ -801,7 +799,6 @@ def list_append: ptr item, ptr list -> ptr
         list
 
     # Append item to list
-    #dup list.len + derefi over list_fetch
     dup list.len + derefi over list.item_size + derefi * LIST_METADATA_SIZE + over +
     over list.item_size + derefi
     item rot rot memcpy
