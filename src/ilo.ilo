@@ -1,5 +1,6 @@
 import lib.std
 import lib.ilo.lexer
+import lib.ilo.parser
 
 
 def main: ptr argv, int argc -> int
@@ -14,8 +15,11 @@ def main: ptr argv, int argc -> int
         1 exit
 
     argv 1 get_argument
-    read_file
+    dup read_file
     tokenize
-    dump_tokens
+    dup dump_tokens
+    parse
+    dup dump_opcodes
+    drop  # TODO: Implement code generator
 
     0

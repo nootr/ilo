@@ -1,0 +1,29 @@
+# Description:ilo.parser - Parse tokens
+# Exit code:0
+# Stdout:
+# Stderr:
+
+import lib.std
+import lib.ilo.lexer
+import lib.ilo.parser
+
+
+def main: int argc, ptr argv -> int
+    "foo.ilo"
+    "6 3 +"
+
+    tokenize
+    parse
+    list.items +
+
+    dup opcode.opcode  + derefi OPCODE_PUSH_INT = "Op 1 should be integer" assert
+    dup opcode.operand + derefp derefc '6' =      "Op 1 should be 6" assert
+    dup opcode.line    + derefi 1 =               "Op 1 should be on line 1" assert
+    OPCODE_SIZE +
+    dup opcode.opcode  + derefi OPCODE_PUSH_INT = "Op 2 should be integer" assert
+    dup opcode.operand + derefp derefc '3' =      "Op 2 should be 3" assert
+    dup opcode.line    + derefi 1 =               "Op 2 should be on line 1" assert
+    OPCODE_SIZE +
+    dup opcode.opcode  + derefi OPCODE_ADD      = "Op 3 should be integer" assert
+    dup opcode.line    + derefi 1 =               "Op 3 should be on line 1" assert
+    0

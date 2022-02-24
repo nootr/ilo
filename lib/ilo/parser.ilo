@@ -1,0 +1,125 @@
+import lib.std
+import lib.ilo.constants
+import lib.ilo.opcodes
+import lib.ilo.types
+
+
+buffer _if_index     8  # int
+buffer _while_index  8  # int
+buffer _token_index  8  # int
+buffer _type_stack   8  # ptr
+buffer _buffers      8  # ptr
+buffer _constants    8  # ptr
+buffer _opcodes      8  # ptr
+buffer _files        8  # ptr
+
+
+def _type_error: int line, ptr message -> void
+    # Raises a type error
+    "Type error on line " error
+    line                  errori
+    ": "                  error
+    message               error
+    "\n"                  error
+    1 exit
+
+
+def _peek_next_token: ptr tokens -> ptr
+    # Returns the next token without increasing the token index
+    _token_index derefi tokens list.len + derefi < if
+        _token_index derefi tokens list_fetch
+    else
+        NULL
+
+
+def _get_next_token: ptr tokens -> ptr
+    # Returns the next token while increasing the token index
+    _token_index derefi tokens list.len + derefi < if
+        _token_index derefi dup tokens list_fetch
+        swap 1 + _token_index seti
+    else
+        NULL
+
+
+def _push_type: int type -> void
+    # Pushes a given type to the type stack
+    type _type_stack derefp list_append_int _type_stack setp
+
+
+def _pop_type: int line -> int
+    # Pops and returns a type from the type stack
+    _type_stack derefp list.len + derefi 0 = if
+        line "Not enough values on the stack" _type_error
+    _type_stack derefp list_pop_int
+
+
+def parse: ptr filename, ptr tokens -> ptr
+    # Parses a given tokenlist and returns a list of opcodes
+
+    # Initialize globals
+    _if_index derefi 0 = if
+        1 _if_index seti
+
+    _while_index derefi 0 = if
+        1 _while_index seti
+
+    _type_stack derefp NULL = if
+        INT_SIZE new_list _type_stack setp
+
+    _buffers derefp NULL = if
+        PTR_SIZE new_list _buffers setp
+
+    _constants derefp NULL = if
+        CONSTANT_SIZE new_list _constants setp
+
+    _opcodes derefp NULL = if
+        OPCODE_SIZE new_list _opcodes setp
+
+    _files derefp NULL = if
+        PTR_SIZE new_list _files setp
+
+
+    while tokens _peek_next_token NULL !=
+        tokens _get_next_token
+
+        dup token.type + derefi TOKEN_INT = if
+            OPCODE_PUSH_INT
+            over dup token.value + derefp
+            swap token.line + derefi
+            _opcodes derefp create_opcode _opcodes setp
+
+            TYPE_INT _push_type
+        elif dup token.type + derefi TOKEN_ARITHMETIC =
+            dup token.value + derefp derefc '+' = if
+                OPCODE_ADD
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup token.line + derefi _pop_type
+                dup TYPE_INT != over TYPE_PTR != and if
+                    over token.line + derefi
+                    "Only integers and pointers could be added" _type_error
+
+                over token.line + derefi _pop_type
+                dup TYPE_INT != over TYPE_PTR != and if
+                    rot token.line + derefi
+                    "Only integers and pointers could be added" _type_error
+                    NULL rot rot
+
+                TYPE_PTR = swap TYPE_PTR = or if
+                    TYPE_PTR _push_type
+                else
+                    TYPE_INT _push_type
+            else
+                "Unknown value for arithmetic token: "
+                over token.value + derefp concat
+                raise
+        else
+            "Unknown token type: "
+            over token.type + derefi token_to_str concat
+            raise
+
+        drop
+
+    _opcodes derefp

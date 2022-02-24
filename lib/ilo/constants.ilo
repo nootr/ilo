@@ -1,0 +1,23 @@
+import lib.std
+
+
+# CONSTANT
+# A constant is a key(str)-value(int) pair.
+
+const constant.key    0  # ptr
+const constant.value  8  # int
+const CONSTANT_SIZE   16
+
+
+def create_constant: ptr key, int value, ptr list -> ptr
+    # Appends a constant to a list and returns a pointer to the list
+    CONSTANT_SIZE malloc
+    dup constant.key   + key   swap setp
+    dup constant.value + value swap seti
+    list list_append
+
+
+def get_value: ptr key, ptr list -> ptr
+    # Returns the value of a given key or NULL if the key was not found
+    "get_value is not implemented yet" raise
+    NULL

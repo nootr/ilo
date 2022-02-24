@@ -1,0 +1,193 @@
+import lib.std
+
+
+## Constants
+
+const OPCODE_NOOP                 0
+const OPCODE_ADD                  1
+const OPCODE_BITWISE_AND          2
+const OPCODE_BITWISE_OR           3
+const OPCODE_CALL                 4
+const OPCODE_CLEANUP              5
+const OPCODE_CREATE_BUFFER        6
+const OPCODE_DEREF_B              7
+const OPCODE_DEREF_C              8
+const OPCODE_DEREF_I              9
+const OPCODE_DEREF_P              10
+const OPCODE_DROP                 11
+const OPCODE_DUP                  12
+const OPCODE_FUNCTION             13
+const OPCODE_GET_ARG              14
+const OPCODE_GET_BUFFER           15
+const OPCODE_IF                   16
+const OPCODE_IS_EQUAL             17
+const OPCODE_IS_GREATER           18
+const OPCODE_IS_GREATER_OR_EQUAL  19
+const OPCODE_IS_LESS              20
+const OPCODE_IS_LESS_OR_EQUAL     21
+const OPCODE_IS_NOT_EQUAL         22
+const OPCODE_JUMP                 23
+const OPCODE_LABEL                24
+const OPCODE_MULTIPLY             25
+const OPCODE_OVER                 26
+const OPCODE_PUSH_BOOL            27
+const OPCODE_PUSH_CHAR            28
+const OPCODE_PUSH_INT             29
+const OPCODE_PUSH_STRING          30
+const OPCODE_RETURN               31
+const OPCODE_ROT                  32
+const OPCODE_SET_B                33
+const OPCODE_SET_C                34
+const OPCODE_SET_I                35
+const OPCODE_SET_P                36
+const OPCODE_SHIFT_LEFT           37
+const OPCODE_SHIFT_RIGHT          38
+const OPCODE_SUBTRACT             39
+const OPCODE_SWAP                 40
+const OPCODE_SYSCALL              41
+const OPCODE_WHILE_END            42
+const OPCODE_WHILE_START          43
+
+
+def opcode_to_str: int opcode -> ptr
+    # Returns the string representation of a given opcode
+    opcode
+    dup OPCODE_NOOP = if
+        "no operation"
+    elif dup OPCODE_ADD =
+        "add"
+    elif dup OPCODE_BITWISE_AND =
+        "bitwise and"
+    elif dup OPCODE_BITWISE_OR =
+        "bitwise or"
+    elif dup OPCODE_CALL =
+        "call"
+    elif dup OPCODE_CLEANUP =
+        "cleanup"
+    elif dup OPCODE_CREATE_BUFFER =
+        "create buffer"
+    elif dup OPCODE_DEREF_B =
+        "dereference boolean"
+    elif dup OPCODE_DEREF_C =
+        "dereference character"
+    elif dup OPCODE_DEREF_I =
+        "dereference integer"
+    elif dup OPCODE_DEREF_P =
+        "dereference pointer"
+    elif dup OPCODE_DROP =
+        "drop"
+    elif dup OPCODE_DUP =
+        "duplicate"
+    elif dup OPCODE_FUNCTION =
+        "function definition"
+    elif dup OPCODE_GET_ARG =
+        "get argument"
+    elif dup OPCODE_GET_BUFFER =
+        "get pointer to buffer"
+    elif dup OPCODE_IF =
+        "start of if-block"
+    elif dup OPCODE_IS_EQUAL =
+        "is equal?"
+    elif dup OPCODE_IS_GREATER =
+        "is greater?"
+    elif dup OPCODE_IS_GREATER_OR_EQUAL =
+        "is greater or equal?"
+    elif dup OPCODE_IS_LESS =
+        "is less?"
+    elif dup OPCODE_IS_LESS_OR_EQUAL =
+        "is less or equal?"
+    elif dup OPCODE_IS_NOT_EQUAL =
+        "is not equal?"
+    elif dup OPCODE_JUMP =
+        "jump"
+    elif dup OPCODE_LABEL =
+        "label"
+    elif dup OPCODE_MULTIPLY =
+        "multiply"
+    elif dup OPCODE_OVER =
+        "over"
+    elif dup OPCODE_PUSH_BOOL =
+        "push boolean"
+    elif dup OPCODE_PUSH_CHAR =
+        "push character"
+    elif dup OPCODE_PUSH_INT =
+        "push integer"
+    elif dup OPCODE_PUSH_STRING =
+        "push string"
+    elif dup OPCODE_RETURN =
+        "push return"
+    elif dup OPCODE_ROT =
+        "rot"
+    elif dup OPCODE_SET_B =
+        "set boolean value"
+    elif dup OPCODE_SET_C =
+        "set character value"
+    elif dup OPCODE_SET_I =
+        "set integer value"
+    elif dup OPCODE_SET_P =
+        "set pointer value"
+    elif dup OPCODE_SHIFT_LEFT =
+        "shift left"
+    elif dup OPCODE_SHIFT_RIGHT =
+        "shift right"
+    elif dup OPCODE_SUBTRACT =
+        "subtract"
+    elif dup OPCODE_SWAP =
+        "swap"
+    elif dup OPCODE_SYSCALL =
+        "syscall"
+    elif dup OPCODE_WHILE_END =
+        "end of while-loop"
+    elif dup OPCODE_WHILE_START =
+        "start of while-loop"
+    else
+        "Unknown opcode" raise "UNKNOWN"
+
+
+## Structs
+
+# OPCODE
+# An opcode is actually a combination of an opcode, its operand and the line number of
+# the token from which it originates.
+
+const opcode.opcode  0  # int
+const opcode.operand 8  # ptr
+const opcode.line    16 # int
+const OPCODE_SIZE    24
+
+
+def create_opcode: int opcode, ptr operand, int line, ptr list -> ptr
+    # Appends an opcode to a list and returns a pointer to the list
+    OPCODE_SIZE malloc
+    dup opcode.opcode  + opcode swap seti
+    dup opcode.operand + operand swap setp
+    dup opcode.line    + line swap seti
+    list list_append
+
+
+def dump_opcodes: ptr opcodes -> void
+    # Prints the contents of a given opcodelist to STDOUT
+    "Number of opcodes: "      puts
+    opcodes list.len + derefi  puti
+    "\n"                       puts
+
+    "Opcodes:\n" puts
+    0
+    while dup opcodes list.len + derefi <
+        "* " puts
+        dup OPCODE_SIZE *
+        opcodes list.items + +
+        opcode.opcode + derefi opcode_to_str puts " " puts
+        dup OPCODE_SIZE *
+        opcodes list.items + +
+        opcode.operand + derefp
+        dup NULL != if
+            puts " " puts
+        else
+            drop
+        dup OPCODE_SIZE *
+        opcodes list.items + +
+        opcode.line + derefi puti " " puts
+        "\n" puts
+        1 +
+    drop
