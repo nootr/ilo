@@ -1,7 +1,7 @@
 .PHONY: clean
 
-ilo.asm: ilo.ilo
-	./ilo0 ilo.ilo > ilo.asm
+ilo.asm: src/ilo.ilo
+	./ilo0 src/ilo.ilo > ilo.asm
 
 ilo.o: ilo.asm
 	nasm -felf64 ilo.asm -o ilo.o
