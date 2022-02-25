@@ -376,20 +376,20 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
                 )
             filename = import_value.replace(".", "/") + ".ilo"
             parse_file(filename)
-        elif token_type == TokenType.INT:
+        elif token_type == TokenType.INT:  # DONE
             opcodes.append((Opcode.PUSH_INT, value, line_no))
             stack.append(Type.INT)
-        elif token_type == TokenType.BOOL:
+        elif token_type == TokenType.BOOL:  # DONE
             opcodes.append((Opcode.PUSH_BOOL, value, line_no))
             stack.append(Type.BOOL)
-        elif token_type == TokenType.STRING:
+        elif token_type == TokenType.STRING:  # DONE
             opcodes.append((Opcode.PUSH_STRING, value, line_no))
             stack.append(Type.PTR)
-        elif token_type == TokenType.CHAR:
+        elif token_type == TokenType.CHAR:  # DONE
             opcodes.append((Opcode.PUSH_CHAR, value, line_no))
             stack.append(Type.CHAR)
         elif token_type == TokenType.ARITHMETIC:
-            if value == "+":
+            if value == "+":  # DONE
                 opcodes.append((Opcode.ADD, 0, line_no))
                 a = pop(line_no)
                 if a not in {Type.INT, Type.PTR}:
@@ -402,7 +402,7 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
                         f"Only integers and pointers can be added on line {line_no}"
                     )
                 stack.append(a if a == Type.PTR else b)
-            elif value == "-":
+            elif value == "-":  # DONE
                 opcodes.append((Opcode.SUBTRACT, 0, line_no))
                 if pop(line_no) != Type.INT:
                     raise TypeError(
@@ -414,7 +414,7 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
                         f"Only integers and pointers can be subtracted on line {line_no}"
                     )
                 stack.append(a)
-            elif value == "*":
+            elif value == "*":  # DONE
                 opcodes.append((Opcode.MULTIPLY, 0, line_no))
                 if pop(line_no) != Type.INT or pop(line_no) != Type.INT:
                     raise TypeError(
@@ -449,7 +449,7 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
                 stack.append(Type.INT)
             else:
                 raise ValueError(f"Unknown value for arithmetic: {value}")
-        elif token_type == TokenType.COMPARISON:
+        elif token_type == TokenType.COMPARISON:  # DONE
             if value == "=":
                 opcodes.append((Opcode.IS_EQUAL, 0, line_no))
             elif value == "!=":

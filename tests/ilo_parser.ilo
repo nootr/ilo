@@ -11,29 +11,47 @@ import lib.ilo.parser
 def main: int argc, ptr argv -> int
     "foo.ilo"
 
-    "6 3 +_" dup 5 + 10 castc swap setc
-    "'q' True" concat
+    "6 3 +_"     dup 5 + 10  castc swap setc
+    "'q' True_"  dup 8 + 10  castc swap setc concat
+    "_foo__"     dup 5 + 10  castc swap setc \
+                 dup     '"'       swap setc \
+                 dup 4 + '"'       swap setc concat
+    "1 2 - 2 *_" dup 9 + 10  castc swap setc concat
+    "1 2 !=_"    dup 6 + 10  castc swap setc concat
 
     tokenize
     parse
     list.items +
 
-    dup opcode.opcode  + derefi OPCODE_PUSH_INT =  "Op 1 should be integer" assert
-    dup opcode.operand + derefp derefc '6' =       "Op 1 should be 6" assert
-    dup opcode.line    + derefi 1 =                "Op 1 should be on line 1" assert
+    dup opcode.opcode  + derefi OPCODE_PUSH_INT =     "Op 1 should be integer" assert
+    dup opcode.operand + derefp derefc '6' =          "Op 1 should be 6" assert
+    dup opcode.line    + derefi 1 =                   "Op 1 should be on line 1" assert
     OPCODE_SIZE +
-    dup opcode.opcode  + derefi OPCODE_PUSH_INT =  "Op 2 should be integer" assert
-    dup opcode.operand + derefp derefc '3' =       "Op 2 should be 3" assert
-    dup opcode.line    + derefi 1 =                "Op 2 should be on line 1" assert
+    dup opcode.opcode  + derefi OPCODE_PUSH_INT =     "Op 2 should be integer" assert
+    dup opcode.operand + derefp derefc '3' =          "Op 2 should be 3" assert
+    dup opcode.line    + derefi 1 =                   "Op 2 should be on line 1" assert
     OPCODE_SIZE +
-    dup opcode.opcode  + derefi OPCODE_ADD =       "Op 3 should be integer" assert
-    dup opcode.line    + derefi 1 =                "Op 3 should be on line 1" assert
+    dup opcode.opcode  + derefi OPCODE_ADD =          "Op 3 should be integer" assert
+    dup opcode.line    + derefi 1 =                   "Op 3 should be on line 1" assert
     OPCODE_SIZE +
-    dup opcode.opcode  + derefi OPCODE_PUSH_CHAR = "Op 4 should be character" assert
-    dup opcode.operand + derefp derefc 'q' =       "Op 4 should be q" assert
-    dup opcode.line    + derefi 2 =                "Op 4 should be on line 2" assert
+    dup opcode.opcode  + derefi OPCODE_PUSH_CHAR =    "Op 4 should be character" assert
+    dup opcode.operand + derefp derefc 'q' =          "Op 4 should be q" assert
+    dup opcode.line    + derefi 2 =                   "Op 4 should be on line 2" assert
     OPCODE_SIZE +
-    dup opcode.opcode  + derefi OPCODE_PUSH_BOOL = "Op 5 should be character" assert
-    dup opcode.operand + derefp derefc '1' =       "Op 5 should be True" assert
-    dup opcode.line    + derefi 2 =                "Op 5 should be on line 2" assert
+    dup opcode.opcode  + derefi OPCODE_PUSH_BOOL =    "Op 5 should be character" assert
+    dup opcode.operand + derefp derefc '1' =          "Op 5 should be True" assert
+    dup opcode.line    + derefi 2 =                   "Op 5 should be on line 2" assert
+    OPCODE_SIZE +
+    dup opcode.opcode  + derefi OPCODE_PUSH_STRING =  "Op 6 should be string" assert
+    dup opcode.operand + derefp derefc 'f' =          "Op 6 should be foo" assert
+    dup opcode.line    + derefi 3 =                   "Op 6 should be on line 3" assert
+    OPCODE_SIZE 3 * +
+    dup opcode.opcode  + derefi OPCODE_SUBTRACT =     "Op 7 should be subtract" assert
+    dup opcode.line    + derefi 4 =                   "Op 7 should be on line 4" assert
+    OPCODE_SIZE 2 * +
+    dup opcode.opcode  + derefi OPCODE_MULTIPLY =     "Op 8 should be multiply" assert
+    dup opcode.line    + derefi 4 =                   "Op 8 should be on line 4" assert
+    OPCODE_SIZE 3 * +
+    dup opcode.opcode  + derefi OPCODE_IS_NOT_EQUAL = "Op 9 should be not equal" assert
+    dup opcode.line    + derefi 5 =                   "Op 9 should be on line 5" assert
     0

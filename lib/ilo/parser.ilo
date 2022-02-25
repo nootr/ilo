@@ -78,8 +78,7 @@ def parse: ptr filename, ptr tokens -> ptr
     _files derefp NULL = if
         PTR_SIZE new_list _files setp
 
-
-    while tokens _peek_next_token NULL !=
+    while tokens _peek_next_token token.type + derefi TOKEN_END !=
         tokens _get_next_token
 
         dup token.type + derefi TOKEN_BOOL = if
@@ -103,6 +102,13 @@ def parse: ptr filename, ptr tokens -> ptr
             _opcodes derefp create_opcode _opcodes setp
 
             TYPE_INT _push_type
+        elif dup token.type + derefi TOKEN_STRING =
+            OPCODE_PUSH_STRING
+            over dup token.value + derefp
+            swap token.line + derefi
+            _opcodes derefp create_opcode _opcodes setp
+
+            TYPE_PTR _push_type
         elif dup token.type + derefi TOKEN_ARITHMETIC =
             dup token.value + derefp derefc '+' = if
                 OPCODE_ADD
@@ -125,15 +131,90 @@ def parse: ptr filename, ptr tokens -> ptr
                     TYPE_PTR _push_type
                 else
                     TYPE_INT _push_type
+            elif dup token.value + derefp derefc '-' =
+                OPCODE_SUBTRACT
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup token.line + derefi _pop_type TYPE_INT != if
+                    dup token.line + derefi
+                    "Second type in subtract must be an integer" _type_error
+
+                dup token.line + derefi _pop_type
+                dup dup TYPE_INT != swap TYPE_PTR != and if
+                    over token.line + derefi
+                    "Only integers and pointers can be subtracted" _type_error
+
+                _push_type
+            elif dup token.value + derefp derefc '*' =
+                OPCODE_MULTIPLY
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup  token.line + derefi _pop_type TYPE_INT !=
+                over token.line + derefi _pop_type TYPE_INT != or if
+                    dup token.line + derefi
+                    "Can't multiply non-integer" _type_error
+
+                TYPE_INT _push_type
             else
                 "Unknown value for arithmetic token: "
                 over token.value + derefp concat
                 raise
+        elif dup token.type + derefi TOKEN_COMPARISON =
+            dup token.value + derefp derefc '=' = if
+                OPCODE_IS_EQUAL
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+            elif dup  token.value + derefp     derefc '!' = \
+                 over token.value + derefp 1 + derefc '=' = and
+                OPCODE_IS_NOT_EQUAL
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+            elif dup  token.value + derefp     derefc '>' = \
+                 over token.value + derefp 1 + derefc '=' = and
+                OPCODE_IS_GREATER_OR_EQUAL
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+            elif dup  token.value + derefp     derefc '<' = \
+                 over token.value + derefp 1 + derefc '=' = and
+                OPCODE_IS_LESS_OR_EQUAL
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+            elif dup token.value + derefp derefc '>' =
+                OPCODE_IS_GREATER
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+            elif dup token.value + derefp derefc '<' =
+                OPCODE_IS_LESS
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+            else
+                "Unknown comparison token: "
+                over token.value + derefp concat
+                raise
+
+            dup token.line + derefi _pop_type
+            over token.line + derefi _pop_type != if
+                dup token.line + derefi
+                "Comparison between different types" _type_error
+
+            TYPE_BOOL _push_type
         else
             "Unknown token type: "
             over token.type + derefi token_to_str concat
             raise
 
         drop
+
+        tokens _peek_next_token NULL != "Token list should end with END token" assert
 
     _opcodes derefp
