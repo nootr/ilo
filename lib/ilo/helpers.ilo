@@ -46,5 +46,5 @@ def is_word: ptr s, ptr q -> bool
     s strlen q strlen = if
         True
     else
-        s q startswith
-    s q strlen + derefc is_alphanumeric False = and
+        s q strlen + derefc is_alphanumeric False =
+    s q startswith and
