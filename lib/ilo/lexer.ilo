@@ -92,6 +92,8 @@ def tokenize: ptr source -> ptr
                 1 + swap 1 + swap
 
             # Separate string
+            # TODO: Unescape the string here and escape the string again in the code
+            # generator.
             rot rot substring
 
             # Create token
