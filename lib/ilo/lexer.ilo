@@ -331,12 +331,14 @@ def tokenize: ptr source -> ptr
             True _at_start setb
         else
             over NULL syntax_error
-
     drop
+
     while _indent_stack derefp list_peek_int 0 !=
         _indent_stack derefp list_pop_int drop
         dup TOKEN_BLOCK_END NULL
         _tokens derefp create_token _tokens setp
+
+    dup TOKEN_END NULL _tokens derefp create_token _tokens setp
 
     # Return a pointer to the list of tokens
     _tokens derefp
