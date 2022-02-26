@@ -1,0 +1,13 @@
+# Description:Standard library - stoi
+# Exit code:1
+# Stdout:
+# Stderr:Error: Unable to convert string to integer: abc
+
+import lib.std
+
+def main: ptr argv, int argc -> int
+    "0" stoi 0 =             "0 should be 0" assert
+    "12" stoi 12 =           "12 should be 12" assert
+    "9912391" stoi 9912391 = "9912391 should be 9912391" assert
+    "abc" stoi drop  # Should raise
+    0

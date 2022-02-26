@@ -616,6 +616,20 @@ def concat: ptr a, ptr b -> ptr
     dup a strlen + b strlen + 1 + 0 castc swap setc
 
 
+def stoi: ptr s -> int
+    # Converts a string to an integer
+    s 0
+    while over derefc 0 castc !=
+        10 *
+        over derefc
+
+        dup '0' < over '9' > or if
+            "Unable to convert string to integer: " s concat raise
+
+        casti '0' casti - +
+        swap 1 + swap
+
+
 buffer _read_file_buffer 513
 
 def read_file: ptr filename -> ptr
