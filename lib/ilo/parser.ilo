@@ -1,6 +1,7 @@
 import lib.std
 import lib.ilo.constants
 import lib.ilo.opcodes
+import lib.ilo.tokens
 import lib.ilo.types
 
 
@@ -274,6 +275,26 @@ def parse: ptr filename, ptr tokens -> ptr
                 dup token.line + derefi _pop_type
                 over token.line + derefi _pop_type
                 dup _push_type swap _push_type _push_type
+            elif dup token.value + derefp "syscall" streq
+                drop
+                tokens _get_next_token
+                dup token.type + derefi TOKEN_INT != if
+                    dup token.line + derefi
+                    "Syscall is missing argument count"
+                    _type_error
+
+                dup dup token.value + derefp
+                swap token.line + derefi
+                OPCODE_SYSCALL
+                rot rot
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup token.value + derefp stoi
+                while dup 0 >
+                    over token.line + derefi _pop_type drop
+                    1 -
+                drop
+                TYPE_INT _push_type
         else
             "Unknown token type: "
             over token.type + derefi token_to_str concat

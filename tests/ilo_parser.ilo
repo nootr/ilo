@@ -18,6 +18,7 @@ def main: int argc, ptr argv -> int
                  dup 4 + '"'       swap setc concat
     "1 2 - 2 *_" dup 9 + 10  castc swap setc concat
     "1 2 !=_"    dup 6 + 10  castc swap setc concat
+    "syscall 3_" dup 9 + 10  castc swap setc concat
 
     tokenize
     parse
@@ -54,4 +55,7 @@ def main: int argc, ptr argv -> int
     OPCODE_SIZE 3 * +
     dup opcode.opcode  + derefi OPCODE_IS_NOT_EQUAL = "Op 9 should be not equal" assert
     dup opcode.line    + derefi 5 =                   "Op 9 should be on line 5" assert
+    OPCODE_SIZE +
+    dup opcode.opcode  + derefi OPCODE_SYSCALL =      "Op 10 should be syscall" assert
+    dup opcode.line    + derefi 6 =                   "Op 10 should be on line 6" assert
     0

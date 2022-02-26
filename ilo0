@@ -515,7 +515,7 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
                 stack.append(b)
                 stack.append(a)
                 stack.append(b)
-            elif value == "syscall":
+            elif value == "syscall":  # DONE
                 operand_type, operand, line_no = tokens[token_index]
                 token_index += 1
                 if operand_type != TokenType.INT:
