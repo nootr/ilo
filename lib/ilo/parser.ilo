@@ -110,7 +110,7 @@ def parse: ptr filename, ptr tokens -> ptr
 
             TYPE_PTR _push_type
         elif dup token.type + derefi TOKEN_ARITHMETIC =
-            dup token.value + derefp derefc '+' = if
+            dup token.value + derefp "+" streq if
                 OPCODE_ADD
                 over token.line + derefi
                 NULL swap
@@ -131,7 +131,7 @@ def parse: ptr filename, ptr tokens -> ptr
                     TYPE_PTR _push_type
                 else
                     TYPE_INT _push_type
-            elif dup token.value + derefp derefc '-' =
+            elif dup token.value + derefp "-" streq
                 OPCODE_SUBTRACT
                 over token.line + derefi
                 NULL swap
@@ -147,7 +147,7 @@ def parse: ptr filename, ptr tokens -> ptr
                     "Only integers and pointers can be subtracted" _type_error
 
                 _push_type
-            elif dup token.value + derefp derefc '*' =
+            elif dup token.value + derefp "*" streq
                 OPCODE_MULTIPLY
                 over token.line + derefi
                 NULL swap
@@ -164,35 +164,32 @@ def parse: ptr filename, ptr tokens -> ptr
                 over token.value + derefp concat
                 raise
         elif dup token.type + derefi TOKEN_COMPARISON =
-            dup token.value + derefp derefc '=' = if
+            dup token.value + derefp "=" streq if
                 OPCODE_IS_EQUAL
                 over token.line + derefi
                 NULL swap
                 _opcodes derefp create_opcode _opcodes setp
-            elif dup  token.value + derefp     derefc '!' = \
-                 over token.value + derefp 1 + derefc '=' = and
+            elif dup token.value + derefp "!=" streq
                 OPCODE_IS_NOT_EQUAL
                 over token.line + derefi
                 NULL swap
                 _opcodes derefp create_opcode _opcodes setp
-            elif dup  token.value + derefp     derefc '>' = \
-                 over token.value + derefp 1 + derefc '=' = and
+            elif dup token.value + derefp ">=" streq
                 OPCODE_IS_GREATER_OR_EQUAL
                 over token.line + derefi
                 NULL swap
                 _opcodes derefp create_opcode _opcodes setp
-            elif dup  token.value + derefp     derefc '<' = \
-                 over token.value + derefp 1 + derefc '=' = and
+            elif dup token.value + derefp "<=" streq
                 OPCODE_IS_LESS_OR_EQUAL
                 over token.line + derefi
                 NULL swap
                 _opcodes derefp create_opcode _opcodes setp
-            elif dup token.value + derefp derefc '>' =
+            elif dup token.value + derefp ">" streq
                 OPCODE_IS_GREATER
                 over token.line + derefi
                 NULL swap
                 _opcodes derefp create_opcode _opcodes setp
-            elif dup token.value + derefp derefc '<' =
+            elif dup token.value + derefp "<" streq
                 OPCODE_IS_LESS
                 over token.line + derefi
                 NULL swap
