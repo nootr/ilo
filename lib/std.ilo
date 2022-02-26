@@ -383,6 +383,14 @@ def verify_memory: -> void
                 dup 0 >= "Blocks should not overflow page memory" assert
                 swap
 
+                dup block.next + derefp NULL =
+                over dup block.next + derefp swap casti - casti PAGE_SIZE <= or
+                "Next block should be in the same page" assert
+
+                dup block.prev + derefp NULL =
+                over dup block.prev + derefi - casti PAGE_SIZE <= or
+                "Previous block should be in the same page" assert
+
                 block.next + derefp
             drop
 
