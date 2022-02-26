@@ -377,6 +377,8 @@ def parse: ptr filename, ptr tokens -> ptr
                 TYPE_INT _push_type
             else
                 "Unknown keyword: " over token.value + derefp concat raise
+        elif dup token.type + derefi TOKEN_TYPE =
+            dup token.line + derefi "Unexpected type" _type_error
         else
             "Unknown token type: "
             over token.type + derefi token_to_str concat

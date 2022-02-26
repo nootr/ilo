@@ -801,7 +801,7 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
             if return_on == TokenType.BLOCK_START:
                 return stack, token_index
             raise SyntaxError(f"Unexpected block start on line {line_no}")
-        elif token_type == TokenType.TYPE:
+        elif token_type == TokenType.TYPE:  # DONE
             raise SyntaxError(f"Unexpected type on line {line_no}")
         elif token_type == TokenType.IDENTIFIER:
             if value in functions:
