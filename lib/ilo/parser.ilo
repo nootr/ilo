@@ -312,6 +312,78 @@ def parse: ptr filename, ptr tokens -> ptr
             elif dup token.value + derefp "castp" streq
                 dup token.line + derefi _pop_type drop
                 TYPE_PTR _push_type
+            elif dup token.value + derefp "derefb" streq
+                OPCODE_DEREF_B
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                TYPE_BOOL _push_type
+            elif dup token.value + derefp "derefc" streq
+                OPCODE_DEREF_C
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                TYPE_CHAR _push_type
+            elif dup token.value + derefp "derefi" streq
+                OPCODE_DEREF_I
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                TYPE_INT _push_type
+            elif dup token.value + derefp "derefp" streq
+                OPCODE_DEREF_P
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                TYPE_PTR _push_type
+            elif dup token.value + derefp "setb" streq
+                OPCODE_SET_B
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup token.line + derefi _pop_type TYPE_PTR != if
+                    dup token.line + derefi "Need pointer to set" _type_error
+
+                dup token.line + derefi _pop_type TYPE_BOOL != if
+                    dup token.line + derefi "Need boolean to set" _type_error
+            elif dup token.value + derefp "setc" streq
+                OPCODE_SET_C
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup token.line + derefi _pop_type TYPE_PTR != if
+                    dup token.line + derefi "Need pointer to set" _type_error
+
+                dup token.line + derefi _pop_type TYPE_CHAR != if
+                    dup token.line + derefi "Need character to set" _type_error
+            elif dup token.value + derefp "seti" streq
+                OPCODE_SET_I
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup token.line + derefi _pop_type TYPE_PTR != if
+                    dup token.line + derefi "Need pointer to set" _type_error
+
+                dup token.line + derefi _pop_type TYPE_INT != if
+                    dup token.line + derefi "Need integer to set" _type_error
+            elif dup token.value + derefp "setp" streq
+                OPCODE_SET_P
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup token.line + derefi _pop_type TYPE_PTR != if
+                    dup token.line + derefi "Need pointer to set" _type_error
+
+                dup token.line + derefi _pop_type TYPE_PTR != if
+                    dup token.line + derefi "Need pointer to set" _type_error
             elif dup token.value + derefp "dup" streq
                 OPCODE_DUP
                 over token.line + derefi

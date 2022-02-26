@@ -729,35 +729,35 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
                         f"{line_no}: Non-integer constants are unsupported"
                     )
                 constants[const_name] = value
-            elif value == "derefb":
+            elif value == "derefb":  # DONE
                 opcodes.append((Opcode.DEREF_B, 0, line_no))
                 if pop(line_no) != Type.PTR:
                     raise TypeError(
                         f"Cannot dereference non-pointer on line {line_no}"
                     )
                 stack.append(Type.BOOL)
-            elif value == "derefc":
+            elif value == "derefc":  # DONE
                 opcodes.append((Opcode.DEREF_C, 0, line_no))
                 if pop(line_no) != Type.PTR:
                     raise TypeError(
                         f"Cannot dereference non-pointer on line {line_no}"
                     )
                 stack.append(Type.CHAR)
-            elif value == "derefi":
+            elif value == "derefi":  # DONE
                 opcodes.append((Opcode.DEREF_I, 0, line_no))
                 if pop(line_no) != Type.PTR:
                     raise TypeError(
                         f"Cannot dereference non-pointer on line {line_no}"
                     )
                 stack.append(Type.INT)
-            elif value == "derefp":
+            elif value == "derefp":  # DONE
                 opcodes.append((Opcode.DEREF_P, 0, line_no))
                 if pop(line_no) != Type.PTR:
                     raise TypeError(
                         f"Cannot dereference non-pointer on line {line_no}"
                     )
                 stack.append(Type.PTR)
-            elif value == "setb":
+            elif value == "setb":  # DONE
                 opcodes.append((Opcode.SET_B, 0, line_no))
                 if pop(line_no) != Type.PTR:
                     raise TypeError(
@@ -767,7 +767,7 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
                     raise TypeError(
                         f"Need bool to set on line {line_no}"
                     )
-            elif value == "setc":
+            elif value == "setc":  # DONE
                 opcodes.append((Opcode.SET_C, 0, line_no))
                 if pop(line_no) != Type.PTR:
                     raise TypeError(
@@ -777,7 +777,7 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
                     raise TypeError(
                         f"Need character to set on line {line_no}"
                     )
-            elif value == "seti":
+            elif value == "seti":  # DONE
                 opcodes.append((Opcode.SET_I, 0, line_no))
                 if pop(line_no) != Type.PTR:
                     raise TypeError(
@@ -787,7 +787,7 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
                     raise TypeError(
                         f"Need integer to set on line {line_no}"
                     )
-            elif value == "setp":
+            elif value == "setp":  # DONE
                 opcodes.append((Opcode.SET_P, 0, line_no))
                 if pop(line_no) != Type.PTR:
                     raise TypeError(
