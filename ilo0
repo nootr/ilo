@@ -421,26 +421,26 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
                         f"Non-integer multiplied on line {line_no}"
                     )
                 stack.append(Type.INT)
-            elif value == "and":
+            elif value == "and":  # DONE
                 opcodes.append((Opcode.BITWISE_AND, 0, line_no))
                 a = pop(line_no)
                 if a not in {Type.INT, Type.BOOL} or pop(line_no) != a:
                     raise TypeError(f"Incorrect types for 'and' on line {line_no}")
                 stack.append(a)
-            elif value == "or":
+            elif value == "or":  # DONE
                 opcodes.append((Opcode.BITWISE_OR, 0, line_no))
                 a = pop(line_no)
                 if a not in {Type.INT, Type.BOOL} or pop(line_no) != a:
                     raise TypeError(f"Incorrect types for 'or' on line {line_no}")
                 stack.append(a)
-            elif value == "shr":
+            elif value == "shr":  # DONE
                 opcodes.append((Opcode.SHIFT_RIGHT, 0, line_no))
                 if pop(line_no) != Type.INT or pop(line_no) != Type.INT:
                     raise TypeError(
                         f"Non-integer shift right on line {line_no}"
                     )
                 stack.append(Type.INT)
-            elif value == "shl":
+            elif value == "shl":  # DONE
                 opcodes.append((Opcode.SHIFT_LEFT, 0, line_no))
                 if pop(line_no) != Type.INT or pop(line_no) != Type.INT:
                     raise TypeError(

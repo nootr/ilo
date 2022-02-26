@@ -19,6 +19,10 @@ def main: int argc, ptr argv -> int
     "1 2 - 2 *_" dup 9 + 10  castc swap setc concat
     "1 2 !=_"    dup 6 + 10  castc swap setc concat
     "syscall 3_" dup 9 + 10  castc swap setc concat
+    "1 2 and_"   dup 7 + 10  castc swap setc concat
+    "1 2 or_"    dup 6 + 10  castc swap setc concat
+    "1 2 shr_"   dup 7 + 10  castc swap setc concat
+    "1 2 shl_"   dup 7 + 10  castc swap setc concat
 
     tokenize
     parse
@@ -58,4 +62,16 @@ def main: int argc, ptr argv -> int
     OPCODE_SIZE +
     dup opcode.opcode  + derefi OPCODE_SYSCALL =      "Op 10 should be syscall" assert
     dup opcode.line    + derefi 6 =                   "Op 10 should be on line 6" assert
+    OPCODE_SIZE 3 * +
+    dup opcode.opcode  + derefi OPCODE_BITWISE_AND =  "Op 11 should be and" assert
+    dup opcode.line    + derefi 7 =                   "Op 11 should be on line 7" assert
+    OPCODE_SIZE 3 * +
+    dup opcode.opcode  + derefi OPCODE_BITWISE_OR =   "Op 12 should be or" assert
+    dup opcode.line    + derefi 8 =                   "Op 12 should be on line 8" assert
+    OPCODE_SIZE 3 * +
+    dup opcode.opcode  + derefi OPCODE_SHIFT_RIGHT =  "Op 13 should be shift right" assert
+    dup opcode.line    + derefi 9 =                   "Op 13 should be on line 9" assert
+    OPCODE_SIZE 3 * +
+    dup opcode.opcode  + derefi OPCODE_SHIFT_LEFT =   "Op 14 should be shift left" assert
+    dup opcode.line    + derefi 10 =                  "Op 14 should be on line 10" assert
     0

@@ -175,6 +175,60 @@ def parse: ptr filename, ptr tokens -> ptr
                     "Can't multiply non-integer" _type_error
 
                 TYPE_INT _push_type
+            elif dup token.value + derefp "and" streq
+                OPCODE_BITWISE_AND
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup token.line + derefi _pop_type
+                dup TYPE_INT != over TYPE_BOOL != and if
+                    over token.line + derefi
+                    "Need integers or booleans for bitwise and" _type_error
+                over token.line + derefi _pop_type != if
+                    dup token.line + derefi
+                    "Bitwise and needs two similar types as input" _type_error
+
+                TYPE_BOOL _push_type
+            elif dup token.value + derefp "or" streq
+                OPCODE_BITWISE_OR
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup token.line + derefi _pop_type
+                dup TYPE_INT != over TYPE_BOOL != and if
+                    over token.line + derefi
+                    "Need integers or booleans for bitwise or" _type_error
+                over token.line + derefi _pop_type != if
+                    dup token.line + derefi
+                    "Bitwise or needs two similar types as input" _type_error
+
+                TYPE_BOOL _push_type
+            elif dup token.value + derefp "shr" streq
+                OPCODE_SHIFT_RIGHT
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup  token.line + derefi _pop_type TYPE_INT !=
+                over token.line + derefi _pop_type TYPE_INT != or if
+                    dup token.line + derefi
+                    "Can't shift non-integer" _type_error
+
+                TYPE_INT _push_type
+            elif dup token.value + derefp "shl" streq
+                OPCODE_SHIFT_LEFT
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup  token.line + derefi _pop_type TYPE_INT !=
+                over token.line + derefi _pop_type TYPE_INT != or if
+                    dup token.line + derefi
+                    "Can't shift non-integer" _type_error
+
+                TYPE_INT _push_type
             else
                 "Unknown value for arithmetic token: "
                 over token.value + derefp concat
