@@ -193,6 +193,16 @@ def strcpy: ptr src, ptr dest -> ptr
     dest
 
 
+def replace: ptr s, char q, char r -> ptr
+    # Replaces each instance of char q in str s with char r
+    s
+    while dup derefc 0 castc !=
+        dup derefc q = if
+            dup r swap setc
+        1 +
+    s
+
+
 def startswith: ptr s, ptr q -> bool
     # Returns True if str s starts with substring q
     q strlen s strlen <= if
