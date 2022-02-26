@@ -367,7 +367,7 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
 
         if token_type == TokenType.BLOCK_END:
             break
-        elif token_type == TokenType.KEYWORD and value == "import":
+        elif token_type == TokenType.KEYWORD and value == "import":  # DONE
             import_type, import_value, line_no = tokens[token_index]
             token_index += 1
             if import_type != TokenType.IDENTIFIER:

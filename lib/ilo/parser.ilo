@@ -1,5 +1,6 @@
 import lib.std
 import lib.ilo.constants
+import lib.ilo.lexer
 import lib.ilo.opcodes
 import lib.ilo.tokens
 import lib.ilo.types
@@ -54,6 +55,19 @@ def _pop_type: int line -> int
     _type_stack derefp list_pop_int
 
 
+def _file_has_been_imported: ptr file -> bool
+    # Returns True if file has already been imported
+    False
+    0
+    while dup _files derefp list.len + derefi <
+        dup _files derefp list_fetch_int castp file streq if
+            swap drop True swap
+        1 +
+    drop
+    dup False = if
+        file casti _files derefp list_append_int _files setp
+
+
 def parse: ptr filename, ptr tokens -> ptr
     # Parses a given tokenlist and returns a list of opcodes
 
@@ -78,6 +92,7 @@ def parse: ptr filename, ptr tokens -> ptr
 
     _files derefp NULL = if
         PTR_SIZE new_list _files setp
+        filename casti _files derefp list_append_int _files setp
 
     while tokens _peek_next_token token.type + derefi TOKEN_END !=
         tokens _get_next_token
@@ -217,6 +232,17 @@ def parse: ptr filename, ptr tokens -> ptr
                 drop
                 "\n" puts
                 0 exit
+            elif dup token.value + derefp "import" streq
+                drop
+                tokens _get_next_token
+                dup token.type + derefi TOKEN_IDENTIFIER != if
+                    dup token.line + derefi
+                    "Expected identifier after import keyword" _type_error
+
+                dup token.value + derefp '.' '/' replace ".ilo" concat
+                dup _file_has_been_imported False = if
+                    dup dup read_file tokenize parse drop
+                drop
             elif dup token.value + derefp "location" streq
                 # TODO: Implement this as soon as we've got a better int to str function
                 "The location keyword is not implemented yet" raise
@@ -295,6 +321,8 @@ def parse: ptr filename, ptr tokens -> ptr
                     1 -
                 drop
                 TYPE_INT _push_type
+            else
+                "Unknown keyword: " over token.value + derefp concat raise
         else
             "Unknown token type: "
             over token.type + derefi token_to_str concat
