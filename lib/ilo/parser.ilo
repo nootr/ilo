@@ -205,6 +205,17 @@ def parse: ptr filename, ptr tokens -> ptr
                 "Comparison between different types" _type_error
 
             TYPE_BOOL _push_type
+        elif dup token.type + derefi TOKEN_KEYWORD =
+            dup token.value + derefp "debug" streq if
+                "Stack: " puts
+                0  # index
+                while dup _type_stack derefp list.len + derefi <
+                    dup _type_stack derefp list_fetch_int type_to_str puts
+                    " " puts
+                    1 +
+                drop
+                "\n" puts
+                0 exit
         else
             "Unknown token type: "
             over token.type + derefi token_to_str concat

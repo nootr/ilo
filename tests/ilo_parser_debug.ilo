@@ -1,0 +1,19 @@
+# Description:ilo.parser - Parse debug keyword
+# Exit code:0
+# Stdout:Stack: PTR INT BOOL CHAR 
+# Stderr:
+
+import lib.std
+import lib.ilo.lexer
+import lib.ilo.parser
+
+
+def main: int argc, ptr argv -> int
+    "foo.ilo"
+
+    "_s_ 1 True 'c' debug" dup     '"' swap setc \
+                           dup 2 + '"' swap setc
+
+    tokenize
+    parse
+    0
