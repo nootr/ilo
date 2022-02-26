@@ -216,6 +216,64 @@ def parse: ptr filename, ptr tokens -> ptr
                 drop
                 "\n" puts
                 0 exit
+            elif dup token.value + derefp "location" streq
+                # TODO: Implement this as soon as we've got a better int to str function
+                "The location keyword is not implemented yet" raise
+            elif dup token.value + derefp "castb" streq
+                dup token.line + derefi _pop_type drop
+                TYPE_BOOL _push_type
+            elif dup token.value + derefp "castc" streq
+                dup token.line + derefi _pop_type drop
+                TYPE_CHAR _push_type
+            elif dup token.value + derefp "casti" streq
+                dup token.line + derefi _pop_type drop
+                TYPE_INT _push_type
+            elif dup token.value + derefp "castp" streq
+                dup token.line + derefi _pop_type drop
+                TYPE_PTR _push_type
+            elif dup token.value + derefp "dup" streq
+                OPCODE_DUP
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup token.line + derefi _pop_type
+                dup _push_type _push_type
+            elif dup token.value + derefp "drop" streq
+                OPCODE_DROP
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup token.line + derefi _pop_type drop
+            elif dup token.value + derefp "rot" streq
+                OPCODE_ROT
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup token.line + derefi _pop_type
+                swap dup token.line + derefi _pop_type
+                swap dup token.line + derefi _pop_type
+                rot _push_type rot _push_type _push_type
+            elif dup token.value + derefp "swap" streq
+                OPCODE_SWAP
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup token.line + derefi _pop_type
+                over token.line + derefi _pop_type
+                swap _push_type _push_type
+            elif dup token.value + derefp "over" streq
+                OPCODE_OVER
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup token.line + derefi _pop_type
+                over token.line + derefi _pop_type
+                dup _push_type swap _push_type _push_type
         else
             "Unknown token type: "
             over token.type + derefi token_to_str concat

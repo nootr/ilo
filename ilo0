@@ -468,33 +468,33 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
                 raise TypeError(f"Comparison between different types on line {line_no}")
             stack.append(Type.BOOL)
         elif token_type == TokenType.KEYWORD:
-            if value == "debug":
+            if value == "debug":  # DONE
                 print(f"Stack: {stack}")
                 exit(1)
-            elif value == "location":
+            elif value == "location":  # DONE
                 opcodes.append((Opcode.PUSH_STRING, f"{filename}:{line_no}", line_no))
                 stack.append(Type.PTR)
-            elif value == "castc":
+            elif value == "castc":  # DONE
                 pop(line_no)
                 stack.append(Type.CHAR)
-            elif value == "casti":
+            elif value == "casti":  # DONE
                 pop(line_no)
                 stack.append(Type.INT)
-            elif value == "castp":
+            elif value == "castp":  # DONE
                 pop(line_no)
                 stack.append(Type.PTR)
-            elif value == "castb":
+            elif value == "castb":  # DONE
                 pop(line_no)
                 stack.append(Type.BOOL)
-            elif value == "dup":
+            elif value == "dup":  # DONE
                 opcodes.append((Opcode.DUP, 0, line_no))
                 a = pop(line_no)
                 stack.append(a)
                 stack.append(a)
-            elif value == "drop":
+            elif value == "drop":  # DONE
                 opcodes.append((Opcode.DROP, 0, line_no))
                 pop(line_no)
-            elif value == "rot":
+            elif value == "rot":  # DONE
                 opcodes.append((Opcode.ROT, 0, line_no))
                 a = pop(line_no)
                 b = pop(line_no)
@@ -502,13 +502,13 @@ def parse(filename, tokens, token_index=0, return_on=None, args=None, stack=None
                 stack.append(b)
                 stack.append(a)
                 stack.append(c)
-            elif value == "swap":
+            elif value == "swap":  # DONE
                 opcodes.append((Opcode.SWAP, 0, line_no))
                 a = pop(line_no)
                 b = pop(line_no)
                 stack.append(a)
                 stack.append(b)
-            elif value == "over":
+            elif value == "over":  # DONE
                 opcodes.append((Opcode.OVER, 0, line_no))
                 a = pop(line_no)
                 b = pop(line_no)
