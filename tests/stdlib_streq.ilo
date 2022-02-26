@@ -1,0 +1,12 @@
+# Description:Standard library - streq
+# Exit code:0
+# Stdout:
+# Stderr:
+
+import lib.std
+
+def main: ptr argv, int argc -> int
+    "foobar" "foobar" streq         "Expression 1 should be True" assert
+    "foobar" "foo"    streq False = "Expression 2 should be False" assert
+    "foo" "foobar"    streq False = "Expression 3 should be False" assert
+    0
