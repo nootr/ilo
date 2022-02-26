@@ -1,0 +1,20 @@
+digraph traceback {
+    start -> pop;
+
+    subgraph cluster_traceback {
+        label = "Traceback\nNote that the function call string and main flag are pushed together with the arguments.";
+
+        pop [ label = "Pop message ptr to register" ];
+        pop -> print_call;
+        print_call [ label = "Print function call\nlib/ilo/parser.ilo, line 123, in parse" ];
+        print_call -> check_main;
+        check_main [ label = "Check if main flag is set" ];
+        check_main -> print_message [ label = "True" ];
+        check_main -> prev_fp [ label = "False" ];
+        prev_fp [ label = "Jump to previous framepointer" ];
+        prev_fp -> print_call;
+        print_message [ label = "Print error message (saved in register)" ];
+        print_message -> exit;
+        exit [ label = "End with exit code 1" ];
+    }
+}
