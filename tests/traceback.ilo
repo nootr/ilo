@@ -1,0 +1,17 @@
+# Description:Print traceback
+# Exit code:1
+# Stdout:
+# Stderr:tests/traceback.ilo, line 10 in bar\ntests/traceback.ilo, line 13 in foo\ntests/traceback.ilo, line 16 in main\n\nSomething went wrong
+
+def baz: -> void
+    "Something went wrong" traceback
+
+def bar: -> void
+    baz
+
+def foo: -> void
+    bar
+
+def main: int argc, ptr argv -> int
+    foo
+    0

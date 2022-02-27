@@ -1,6 +1,6 @@
 # Description:Location
 # Exit code:0
-# Stdout:lib/std.ilo:9
+# Stdout:lib/std.ilo, line 9 in main
 # Stderr:
 
 import lib.std
