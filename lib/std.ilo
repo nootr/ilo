@@ -260,10 +260,7 @@ def exit: int code -> void
 
 def raise: ptr message -> void
     # Prints a given error message and exits with exitcode 1
-    "Error: " error
-    message   error
-    "\n"      error
-    1 exit
+    message traceback
 
 
 def assert: bool assertion, ptr message -> void
@@ -287,14 +284,14 @@ def open: ptr filename, char mode -> int
     syscall 3
 
     dup 0 < if
-        "Could not open file" raise
+        "Could not open file\n" raise
 
 
 def read: int fd, ptr buf, int count -> int
     # Reads from a file descriptor and returns the number of bytes read or zero if EOF
     fd buf count SYS_READ syscall 3
     dup 0 < if
-        "Could not read file" raise
+        "Could not read file\n" raise
 
 
 const page.next          0   # ptr
@@ -348,12 +345,18 @@ def verify_memory: -> void
                 "\n"                                            puts
 
             swap over page.prev + derefp = \
-                "Pointer to previous page should be valid" assert
+                "Pointer to previous page should be valid\n" assert
             dup page.size + derefi PAGE_SIZE >= \
-                "Page size should be at least the default value" assert
+                "Page size should be at least the default value\n" assert
 
             dup page.size + derefi PAGE_METADATA_SIZE -  # Save page size to stack
             over page.blocks +
+
+            dup  block.next + derefp NULL =
+            over block.prev + derefp NULL = and
+            over block.free + derefb True = and False = \
+                "Page without blocks should be unmapped" assert
+
             while dup NULL !=
                 DUMP_MEMORY derefb if
                     "  * block: "                       puts
@@ -380,16 +383,16 @@ def verify_memory: -> void
 
                 dup block.size + derefi BLOCK_METADATA_SIZE +
                 rot swap -
-                dup 0 >= "Blocks should not overflow page memory" assert
+                dup 0 >= "Blocks should not overflow page memory\n" assert
                 swap
 
                 dup block.next + derefp NULL =
                 over dup block.next + derefp swap casti - casti PAGE_SIZE <= or
-                "Next block should be in the same page" assert
+                "Next block should be in the same page\n" assert
 
                 dup block.prev + derefp NULL =
                 over dup block.prev + derefi - casti PAGE_SIZE <= or
-                "Previous block should be in the same page" assert
+                "Previous block should be in the same page\n" assert
 
                 block.next + derefp
             drop
@@ -399,7 +402,7 @@ def verify_memory: -> void
                     "  * unused bytes: "          puts
                     dup _vm_buf i64tohex _vm_buf  puts
                     "\n"                          puts
-                False "Block sizes should sum up to page size" assert
+                False "Block sizes should sum up to page size\n" assert
             drop
 
         drop
@@ -409,7 +412,7 @@ def verify_memory: -> void
 
 def _malloc_get_next_page: ptr page, int size -> ptr
     # Returns the next page, creates a new page if there are none
-    size PAGE_SIZE >= "Page size should be at least the default size" assert
+    size PAGE_SIZE >= "Page size should be at least the default size\n" assert
 
     page page.next + derefp NULL = if
         NULL                          # addr; kernel chooses position in memory
@@ -422,7 +425,7 @@ def _malloc_get_next_page: ptr page, int size -> ptr
         syscall 6
 
         dup 0 < if
-            "Unable to allocate memory page" raise
+            "Unable to allocate memory page\n" raise
 
         castp
 
@@ -445,13 +448,13 @@ def _malloc_get_next_page: ptr page, int size -> ptr
     # Return next page
     page page.next + derefp
 
-    dup NULL != "Next page should not be NULL" assert
+    dup NULL != "Next page should not be NULL\n" assert
 
 
 def _malloc_split_block: ptr block, int old_size, int size -> ptr
     # Splits a free block into a taken and a free block and returns a pointer to the
     # first, taken block.
-    block block.free + derefb "Splitted block should be free" assert
+    block block.free + derefb "Splitted block should be free\n" assert
 
     block block.next + derefp  # Save pointer to next block on the stack
 
@@ -488,9 +491,9 @@ def malloc: int size -> ptr
 
     # TODO: Test edge cases
 
-    root_page NULL != "Root page should exist" assert
+    root_page NULL != "Root page should exist\n" assert
     size 0 = if
-        "Size should be greater than zero" raise
+        "Size should be greater than zero\n" raise
 
     root_page   # var: current_page
     NULL        # var: available_block
@@ -503,21 +506,21 @@ def malloc: int size -> ptr
         size PAGE_METADATA_SIZE + BLOCK_METADATA_SIZE + \
             PAGE_SIZE max _malloc_get_next_page
 
-        root_page page.next + derefp NULL != "First page should be set" assert
-        dup root_page != "Page should not be root page" assert
-        dup NULL != "Next page should be set" assert
+        root_page page.next + derefp NULL != "First page should be set\n" assert
+        dup root_page != "Page should not be root page\n" assert
+        dup NULL != "Next page should be set\n" assert
 
         # current_block = current_page.blocks[0]
         dup page.blocks +
 
-        dup block.size + derefi 0 != "Block size should be greater than zero" assert
+        dup block.size + derefi 0 != "Block size should be greater than zero\n" assert
 
         # Find next available block or NULL (no available blocks in this page)
         while dup size _malloc_block_is_available_or_NULL False =
             block.next + derefp
 
-    dup NULL != "Pointer to found block should be non-NULL" assert
-    dup block.free + derefb "Found block should be free" assert
+    dup NULL != "Pointer to found block should be non-NULL\n" assert
+    dup block.free + derefb "Found block should be free\n" assert
 
     dup block.size + derefi size = if
         # The block is a perfect fit
@@ -536,7 +539,7 @@ def free: ptr block_data -> void
     block_data block.data -
 
     dup block.free + derefb if
-        "Trying to free already freed data" raise
+        "Trying to free already freed data\n" raise
 
     dup block.free + True swap setb
 
@@ -571,9 +574,9 @@ def free: ptr block_data -> void
 
     # Find the first block
     while dup block.prev + derefp NULL !=
-        dup block.prev + derefp over < "Previous block should be earlier" assert
+        dup block.prev + derefp over < "Previous block should be earlier\n" assert
         dup dup block.prev + derefi - PAGE_SIZE castp < \
-            "Previous block should be within the same page" assert
+            "Previous block should be within the same page\n" assert
 
         block.prev + derefp
 
@@ -593,7 +596,7 @@ def free: ptr block_data -> void
         syscall 2
 
         0 < if
-            "Unable to free memory page" raise
+            "Unable to free memory page\n" raise
 
     verify_memory
 
@@ -642,7 +645,7 @@ def stoi: ptr s -> int
         over derefc
 
         dup '0' < over '9' > or if
-            "Unable to convert string to integer: " s concat raise
+            "Unable to convert string to integer: " s concat "\n" concat raise
 
         casti '0' casti - +
         swap 1 + swap
@@ -753,17 +756,17 @@ def new_list: int item_size -> ptr
 def list_fetch: int index, ptr list -> ptr
     # Returns a pointer to a certain index in a given list
     index list list.len + derefi >= if
-        "List index out of bounds" raise
+        "List index out of bounds\n" raise
     list LIST_METADATA_SIZE + index list list.item_size + derefi * +
 
 
 def list_fetch_int: int index, ptr list -> int
     # Returns the value of a certain index in a given list
     list list.item_size + derefi INT_SIZE != if
-        "Can't call integer-specific method for list with non-integer items" raise
+        "Can't call integer-specific method for list with non-integer items\n" raise
 
     index list list.len + derefi >= if
-        "List index out of bounds" raise
+        "List index out of bounds\n" raise
 
     list LIST_METADATA_SIZE + index list list.item_size + derefi * + derefi
 
@@ -772,7 +775,7 @@ def list_pop: ptr list -> ptr
     # Copies, removes and returns the last item of a given list
     # The returned data is malloc'ed, so don't forget to free!
     list list.len + derefi 0 = if
-        "Can't pop from an empty list" raise
+        "Can't pop from an empty list\n" raise
 
     # Get index of last item
     list list.len + derefi 1 -
@@ -792,10 +795,10 @@ def list_pop: ptr list -> ptr
 def list_pop_int: ptr list -> int
     # Removes and returns the last value of a given list
     list list.item_size + derefi INT_SIZE != if
-        "Can't call integer-specific method for list with non-integer items" raise
+        "Can't call integer-specific method for list with non-integer items\n" raise
 
     list list.len + derefi 0 = if
-        "Can't pop from an empty list" raise
+        "Can't pop from an empty list\n" raise
 
     list list.len + derefi 1 -
     dup list list.len + seti
@@ -805,7 +808,7 @@ def list_pop_int: ptr list -> int
 def list_peek: ptr list -> ptr
     # Returns a pointer to the last item of a given list
     list list.len + derefi 0 = if
-        "Can't peek in an empty list" raise
+        "Can't peek in an empty list\n" raise
 
     list dup list.len + derefi 1 - swap list_fetch
 
@@ -813,10 +816,10 @@ def list_peek: ptr list -> ptr
 def list_peek_int: ptr list -> int
     # Returns the last value of a given list
     list list.item_size + derefi INT_SIZE != if
-        "Can't call integer-specific method for list with non-integer items" raise
+        "Can't call integer-specific method for list with non-integer items\n" raise
 
     list list.len + derefi 0 = if
-        "Can't peek in an empty list" raise
+        "Can't peek in an empty list\n" raise
 
     list dup list.len + derefi 1 - swap list_fetch_int
 
@@ -860,7 +863,7 @@ def list_append: ptr item, ptr list -> ptr
 def list_append_int: int item, ptr list -> ptr
     # Appends an item to a given list and return a pointer to the list
     list list.item_size + derefi INT_SIZE != if
-        "Can't call integer-specific method for list with non-integer items" raise
+        "Can't call integer-specific method for list with non-integer items\n" raise
 
     list list.len + derefi
     list list.capacity + derefi = if
