@@ -385,8 +385,8 @@ def parse(
                 raise ValueError(
                     f"Syntax Error: expected import identifier on line {line_no}"
                 )
-            filename = import_value.replace(".", "/") + ".ilo"
-            parse_file(filename)
+            _filename = import_value.replace(".", "/") + ".ilo"
+            parse_file(_filename)
         elif token_type == TokenType.INT:  # DONE
             opcodes.append((Opcode.PUSH_INT, value, line_no))
             stack.append(Type.INT)
