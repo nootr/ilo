@@ -1,7 +1,7 @@
 # Description:Standard library - list, int
-# Exit code:1
+# Exit code:0
 # Stdout:
-# Stderr:lib/std.ilo, line 822 in list_peek_int\ntests/stdlib_list_int.ilo, line 26 in main\n\nCan't peek in an empty list
+# Stderr:
 
 import lib.std
 
@@ -23,6 +23,5 @@ def main: ptr argv, int argc -> int
     dup list_peek_int 3 = "Peeking should still give 3" assert
     dup list_pop_int  drop
     dup list_pop_int  drop
-    dup list_peek_int drop  # Should raise
     free
     0
