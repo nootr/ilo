@@ -5,39 +5,26 @@ import lib.std
 # A constant is a key(str)-value(int) pair.
 
 const constant.key    0  # ptr
-const constant.value  8  # int
+const constant.value  8  # ptr
 const CONSTANT_SIZE   16
 
 
-def create_constant: ptr key, int value, ptr list -> ptr
+def create_constant: ptr key, ptr value, ptr list -> ptr
     # Appends a constant to a list and returns a pointer to the list
     CONSTANT_SIZE malloc
     dup constant.key   + key   swap setp
-    dup constant.value + value swap seti
+    dup constant.value + value swap setp
     list list_append
 
 
-def contains_key: ptr key, ptr list -> bool
-    # Returns True if the list contains a given key
-    False   # value
-    0       # index
+def get_value: ptr key, ptr list -> ptr
+    # Returns the value of a given key or NULL if not found
+    NULL  # value
+    0     # index
     while dup list list.len + derefi <
         dup list list_fetch
         dup constant.key + derefp key streq if
-            rot drop True rot rot
-        drop
-        1 +
-    drop
-
-
-def get_value: ptr key, ptr list -> int
-    # Returns the value of a given key
-    0   # value
-    0   # index
-    while dup list list.len + derefi <
-        dup list list_fetch
-        dup constant.key + derefp key streq if
-            rot drop dup constant.value + derefi rot rot
+            rot drop dup constant.value + derefp rot rot
         drop
         1 +
     drop

@@ -321,6 +321,20 @@ def parse: ptr filename, ptr tokens -> ptr
             elif dup token.value + derefp "castp" streq
                 dup token.line + derefi _pop_type drop
                 TYPE_PTR _push_type
+            elif dup token.value + derefp "const" streq
+                tokens _get_next_token
+                dup token.type + derefi TOKEN_IDENTIFIER != if
+                    dup token.line + derefi
+                    "Expected identifier as const key" _type_error
+                token.value + derefp
+
+                tokens _get_next_token
+                dup token.type + derefi TOKEN_INT != if
+                    dup token.line + derefi
+                    "Expected integer as const value" _type_error
+                token.value + derefp
+
+                _constants derefp create_constant _constants setp
             elif dup token.value + derefp "derefb" streq
                 OPCODE_DEREF_B
                 over token.line + derefi
@@ -460,6 +474,18 @@ def parse: ptr filename, ptr tokens -> ptr
                 "Unknown keyword: " over token.value + derefp concat raise
         elif dup token.type + derefi TOKEN_TYPE =
             dup token.line + derefi "Unexpected type" _type_error
+        elif dup token.type + derefi TOKEN_IDENTIFIER =
+            dup token.value + derefp _constants derefp get_value NULL != if
+                dup token.value + derefp _constants derefp get_value
+                over token.line + derefi
+                OPCODE_PUSH_INT
+                rot rot
+                _opcodes derefp create_opcode _opcodes setp
+
+                TYPE_INT _push_type
+            else
+                dup token.line + derefi over token.value + derefp
+                "Unknown identifier: " swap concat _type_error
         else
             "Unknown token type: "
             over token.type + derefi token_to_str concat

@@ -35,6 +35,8 @@ def main: int argc, ptr argv -> int
     "_a_ traceback_"  dup 13 + 10  castc swap setc \
                       dup      '"'       swap setc \
                       dup 2  + '"'       swap setc concat
+    "const a 8_"      dup 9  + 10  castc swap setc concat
+    "a_"              dup 1  + 10  castc swap setc concat
 
     tokenize
     parse
@@ -96,4 +98,8 @@ def main: int argc, ptr argv -> int
     dup opcode.opcode  + derefi OPCODE_JUMP =         "Op 16 should be jump" assert
     dup opcode.operand + derefp "_tb" streq           "Op 16 should be _tb" assert
     dup opcode.line    + derefi 13 =                  "Op 16 should be on line 13" assert
+    OPCODE_SIZE +
+    dup opcode.opcode  + derefi OPCODE_PUSH_INT =     "Op 17 should be push int" assert
+    dup opcode.operand + derefp "8" streq             "Op 17 should be 8" assert
+    dup opcode.line    + derefi 15 =                  "Op 17 should be on line 15" assert
     0

@@ -12,15 +12,13 @@ buffer _constants 8  # ptr
 def main: int argc, ptr argv -> int
     CONSTANT_SIZE new_list _constants setp
 
-    "foo" 13 _constants derefp create_constant _constants setp
-    "bar" 37 _constants derefp create_constant _constants setp
+    "foo" "13" _constants derefp create_constant _constants setp
+    "bar" "37" _constants derefp create_constant _constants setp
 
-    "foo" _constants derefp get_value 13 = \
+    "foo" _constants derefp get_value "13" streq \
         "Value of key 'foo' should be 13" assert
-    "bar" _constants derefp get_value 37 = \
+    "bar" _constants derefp get_value "37" streq \
         "Value of key 'bar' should be 37" assert
-    "foo" _constants derefp contains_key \
-        "Key 'foo' should be in the list" assert
-    "baz" _constants derefp contains_key False = \
-        "Key 'baz' should not be in the list" assert
+    "baz" _constants derefp get_value NULL = \
+        "Value of key 'baz' should be NULL" assert
     0
