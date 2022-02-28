@@ -17,7 +17,14 @@ def create_constant: ptr key, int value, ptr list -> ptr
     list list_append
 
 
-def get_value: ptr key, ptr list -> ptr
-    # Returns the value of a given key or NULL if the key was not found
-    "get_value is not implemented yet" raise
-    NULL
+def get_value: ptr key, ptr list -> int
+    # Returns the value of a given key
+    0   # value
+    0   # index
+    while dup list list.len + derefi <
+        dup list list_fetch
+        dup constant.key + derefp key streq if
+            rot drop dup constant.value + derefi rot rot
+        drop
+        1 +
+    drop

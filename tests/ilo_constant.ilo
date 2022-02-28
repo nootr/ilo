@@ -1,0 +1,22 @@
+# Description:ilo.constants - Constant
+# Exit code:0
+# Stdout:
+# Stderr:
+
+import lib.std
+import lib.ilo.constants
+
+buffer _constants 8  # ptr
+
+
+def main: int argc, ptr argv -> int
+    CONSTANT_SIZE new_list _constants setp
+
+    "foo" 13 _constants derefp create_constant _constants setp
+    "bar" 37 _constants derefp create_constant _constants setp
+
+    "foo" _constants derefp get_value 13 = \
+        "Value of key 'foo' should be 13" assert
+    "bar" _constants derefp get_value 37 = \
+        "Value of key 'bar' should be 37" assert
+    0
