@@ -482,7 +482,7 @@ def parse(
             if value == "debug":  # DONE
                 print(f"Stack: {stack}")
                 exit(1)
-            elif value == "traceback":
+            elif value == "traceback":  # DONE
                 if pop(line_no) != Type.PTR:
                     raise TypeError(
                         f"Traceback needs string as argument on line {line_no}"

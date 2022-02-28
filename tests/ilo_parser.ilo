@@ -14,50 +14,53 @@ def main: int argc, ptr argv -> int
 
     "foo.ilo"
 
-    "6 3 +_"     dup 5 + 10  castc swap setc
-    "'q' True_"  dup 8 + 10  castc swap setc concat
-    "_foo__"     dup 5 + 10  castc swap setc \
-                 dup     '"'       swap setc \
-                 dup 4 + '"'       swap setc concat
-    "1 2 - 2 *_" dup 9 + 10  castc swap setc concat
-    "1 2 !=_"    dup 6 + 10  castc swap setc concat
-    "syscall 3_" dup 9 + 10  castc swap setc concat
-    "1 2 and_"   dup 7 + 10  castc swap setc concat
-    "1 2 or_"    dup 6 + 10  castc swap setc concat
-    "1 2 shr_"   dup 7 + 10  castc swap setc concat
-    "1 2 shl_"   dup 7 + 10  castc swap setc concat
-    "_bar_ "     dup     '"'       swap setc \
-                 dup 4 + '"'       swap setc concat
-    "derefc_"    dup 6 + 10  castc swap setc concat
-    "'f' _baz_ " dup 4 + '"'       swap setc \
-                 dup 8 + '"'       swap setc concat
-    "setc_"      dup 4 + 10  castc swap setc concat
+    "6 3 +_"          dup 5  + 10  castc swap setc
+    "'q' True_"       dup 8  + 10  castc swap setc concat
+    "_foo__"          dup 5  + 10  castc swap setc \
+                      dup      '"'       swap setc \
+                      dup 4  + '"'       swap setc concat
+    "1 2 - 2 *_"      dup 9  + 10  castc swap setc concat
+    "1 2 !=_"         dup 6  + 10  castc swap setc concat
+    "syscall 3_"      dup 9  + 10  castc swap setc concat
+    "1 2 and_"        dup 7  + 10  castc swap setc concat
+    "1 2 or_"         dup 6  + 10  castc swap setc concat
+    "1 2 shr_"        dup 7  + 10  castc swap setc concat
+    "1 2 shl_"        dup 7  + 10  castc swap setc concat
+    "_bar_ "          dup      '"'       swap setc \
+                      dup 4  + '"'       swap setc concat
+    "derefc_"         dup 6  + 10  castc swap setc concat
+    "'f' _baz_ "      dup 4  + '"'       swap setc \
+                      dup 8  + '"'       swap setc concat
+    "setc_"           dup 4  + 10  castc swap setc concat
+    "_a_ traceback_"  dup 13 + 10  castc swap setc \
+                      dup      '"'       swap setc \
+                      dup 2  + '"'       swap setc concat
 
     tokenize
     parse
     list.items +
 
     dup opcode.opcode  + derefi OPCODE_PUSH_INT =     "Op 1 should be integer" assert
-    dup opcode.operand + derefp derefc '6' =          "Op 1 should be 6" assert
+    dup opcode.operand + derefp "6" streq             "Op 1 should be 6" assert
     dup opcode.line    + derefi 1 =                   "Op 1 should be on line 1" assert
     OPCODE_SIZE +
     dup opcode.opcode  + derefi OPCODE_PUSH_INT =     "Op 2 should be integer" assert
-    dup opcode.operand + derefp derefc '3' =          "Op 2 should be 3" assert
+    dup opcode.operand + derefp "3" streq             "Op 2 should be 3" assert
     dup opcode.line    + derefi 1 =                   "Op 2 should be on line 1" assert
     OPCODE_SIZE +
     dup opcode.opcode  + derefi OPCODE_ADD =          "Op 3 should be integer" assert
     dup opcode.line    + derefi 1 =                   "Op 3 should be on line 1" assert
     OPCODE_SIZE +
     dup opcode.opcode  + derefi OPCODE_PUSH_CHAR =    "Op 4 should be character" assert
-    dup opcode.operand + derefp derefc 'q' =          "Op 4 should be q" assert
+    dup opcode.operand + derefp "q" streq             "Op 4 should be q" assert
     dup opcode.line    + derefi 2 =                   "Op 4 should be on line 2" assert
     OPCODE_SIZE +
     dup opcode.opcode  + derefi OPCODE_PUSH_BOOL =    "Op 5 should be character" assert
-    dup opcode.operand + derefp derefc '1' =          "Op 5 should be True" assert
+    dup opcode.operand + derefp "1" streq             "Op 5 should be True" assert
     dup opcode.line    + derefi 2 =                   "Op 5 should be on line 2" assert
     OPCODE_SIZE +
     dup opcode.opcode  + derefi OPCODE_PUSH_STRING =  "Op 6 should be string" assert
-    dup opcode.operand + derefp derefc 'f' =          "Op 6 should be foo" assert
+    dup opcode.operand + derefp "foo" streq           "Op 6 should be foo" assert
     dup opcode.line    + derefi 3 =                   "Op 6 should be on line 3" assert
     OPCODE_SIZE 3 * +
     dup opcode.opcode  + derefi OPCODE_SUBTRACT =     "Op 7 should be subtract" assert
@@ -89,4 +92,8 @@ def main: int argc, ptr argv -> int
     OPCODE_SIZE 3 * +
     dup opcode.opcode  + derefi OPCODE_SET_C =        "Op 15 should be setc" assert
     dup opcode.line    + derefi 12 =                  "Op 15 should be on line 12" assert
+    OPCODE_SIZE 2 * +
+    dup opcode.opcode  + derefi OPCODE_JUMP =         "Op 16 should be jump" assert
+    dup opcode.operand + derefp "_tb" streq           "Op 16 should be _tb" assert
+    dup opcode.line    + derefi 13 =                  "Op 16 should be on line 13" assert
     0

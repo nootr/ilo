@@ -286,6 +286,15 @@ def parse: ptr filename, ptr tokens -> ptr
                 drop
                 "\n" puts
                 0 exit
+            elif dup token.value + derefp "traceback" streq
+                OPCODE_JUMP
+                over token.line + derefi
+                "_tb" swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup token.line + derefi _pop_type TYPE_PTR != if
+                    dup token.line + derefi
+                    "Traceback needs string as argument" _type_error
             elif dup token.value + derefp "import" streq
                 drop
                 tokens _get_next_token
