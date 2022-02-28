@@ -784,6 +784,17 @@ def list_fetch_int: int index, ptr list -> int
     list LIST_METADATA_SIZE + index list list.item_size + derefi * + derefi
 
 
+def list_fetch_ptr: int index, ptr list -> ptr
+    # Returns the value of a certain index in a given list
+    list list.item_size + derefi PTR_SIZE != if
+        "Can't call pointer-specific method for list with non-pointer items\n" raise
+
+    index list list.len + derefi >= if
+        "List index out of bounds\n" raise
+
+    list LIST_METADATA_SIZE + index list list.item_size + derefi * + derefp
+
+
 def list_pop: ptr list -> ptr
     # Copies, removes and returns the last item of a given list
     # The returned data is malloc'ed, so don't forget to free!
@@ -818,6 +829,19 @@ def list_pop_int: ptr list -> int
     list list.item_size + derefi * list + LIST_METADATA_SIZE + derefi
 
 
+def list_pop_ptr: ptr list -> ptr
+    # Removes and returns the last value of a given list
+    list list.item_size + derefi PTR_SIZE != if
+        "Can't call pointer-specific method for list with non-pointer items\n" raise
+
+    list list.len + derefi 0 = if
+        "Can't pop from an empty list\n" raise
+
+    list list.len + derefi 1 -
+    dup list list.len + seti
+    list list.item_size + derefi * list + LIST_METADATA_SIZE + derefp
+
+
 def list_peek: ptr list -> ptr
     # Returns a pointer to the last item of a given list
     list list.len + derefi 0 = if
@@ -835,6 +859,17 @@ def list_peek_int: ptr list -> int
         "Can't peek in an empty list\n" raise
 
     list dup list.len + derefi 1 - swap list_fetch_int
+
+
+def list_peek_ptr: ptr list -> ptr
+    # Returns the last value of a given list
+    list list.item_size + derefi PTR_SIZE != if
+        "Can't call pointer-specific method for list with non-pointer items\n" raise
+
+    list list.len + derefi 0 = if
+        "Can't peek in an empty list\n" raise
+
+    list dup list.len + derefi 1 - swap list_fetch_ptr
 
 
 def list_append: ptr item, ptr list -> ptr
@@ -904,3 +939,36 @@ def list_append_int: int item, ptr list -> ptr
     dup list.len + derefi
     dup 1 + rot dup rot swap list.len + seti swap
     list list.item_size + derefi * LIST_METADATA_SIZE + over + item swap seti
+
+
+def list_append_ptr: ptr item, ptr list -> ptr
+    # Appends an item to a given list and return a pointer to the list
+    list list.item_size + derefi PTR_SIZE != if
+        "Can't call pointer-specific method for list with non-pointer items\n" raise
+
+    list list.len + derefi
+    list list.capacity + derefi = if
+        # Create a list with double the capacity
+        list list.capacity + derefi 2 * list list.item_size + derefi list_create
+
+        # Copy items
+        list list.items +
+        over list.items +
+        list list.len + derefi list list.item_size + derefi *
+        memcpy
+
+        # Update metadata
+        list list.capacity + derefi 2 *
+        over list.capacity + seti
+        list list.len + derefi
+        over list.len + seti
+
+        # Free old list
+        list free
+    else
+        list
+
+    # Append item to list
+    dup list.len + derefi
+    dup 1 + rot dup rot swap list.len + seti swap
+    list list.item_size + derefi * LIST_METADATA_SIZE + over + item swap setp
