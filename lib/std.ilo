@@ -795,6 +795,20 @@ def list_fetch_ptr: int index, ptr list -> ptr
     list LIST_METADATA_SIZE + index list list.item_size + derefi * + derefp
 
 
+def list_contains_string: ptr s, ptr list -> bool
+    # Returns True when the list contains a given string
+    list list.item_size + derefi PTR_SIZE != if
+        "Can't call pointer-specific method for list with non-pointer items\n" raise
+
+    False # value
+    0     # index
+    while dup list list.len + derefi <
+        dup list list_fetch_ptr s streq if
+            swap drop True swap
+        1 +
+    drop
+
+
 def list_pop: ptr list -> ptr
     # Copies, removes and returns the last item of a given list
     # The returned data is malloc'ed, so don't forget to free!
