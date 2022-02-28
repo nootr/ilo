@@ -908,7 +908,7 @@ def parse(
 
 
 def output(a, b, c, to_string=False):
-    string = f"{a:10} {b:10} {c}"
+    string = f"{a:10} {b:10} {c}".rstrip()
     if to_string:
         return string + "\n"
     else:
