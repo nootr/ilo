@@ -9,6 +9,9 @@ import lib.ilo.parser
 
 
 def main: int argc, ptr argv -> int
+    True  VERIFY_MEMORY setb
+    False DUMP_MEMORY setb
+
     "foo.ilo"
 
     "6 3 +_"     dup 5 + 10  castc swap setc
@@ -23,6 +26,12 @@ def main: int argc, ptr argv -> int
     "1 2 or_"    dup 6 + 10  castc swap setc concat
     "1 2 shr_"   dup 7 + 10  castc swap setc concat
     "1 2 shl_"   dup 7 + 10  castc swap setc concat
+    "_bar_ "     dup     '"'       swap setc \
+                 dup 4 + '"'       swap setc concat
+    "derefc_"    dup 6 + 10  castc swap setc concat
+    "'f' _baz_ " dup 4 + '"'       swap setc \
+                 dup 8 + '"'       swap setc concat
+    "setc_"      dup 4 + 10  castc swap setc concat
 
     tokenize
     parse
@@ -74,4 +83,10 @@ def main: int argc, ptr argv -> int
     OPCODE_SIZE 3 * +
     dup opcode.opcode  + derefi OPCODE_SHIFT_LEFT =   "Op 14 should be shift left" assert
     dup opcode.line    + derefi 10 =                  "Op 14 should be on line 10" assert
+    OPCODE_SIZE 2 * +
+    dup opcode.opcode  + derefi OPCODE_DEREF_C =      "Op 14 should be derefc" assert
+    dup opcode.line    + derefi 11 =                  "Op 14 should be on line 11" assert
+    OPCODE_SIZE 3 * +
+    dup opcode.opcode  + derefi OPCODE_SET_C =        "Op 15 should be setc" assert
+    dup opcode.line    + derefi 12 =                  "Op 15 should be on line 12" assert
     0
