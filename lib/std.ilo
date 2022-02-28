@@ -266,7 +266,7 @@ def raise: ptr message -> void
 def assert: bool assertion, ptr message -> void
     # Raises when assertion is False
     assertion False = if
-        message raise
+        message traceback
 
 
 def open: ptr filename, char mode -> int

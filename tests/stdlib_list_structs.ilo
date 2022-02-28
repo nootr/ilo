@@ -1,7 +1,7 @@
 # Description:Standard library - list of structs
 # Exit code:1
 # Stdout:
-# Stderr:Error: Can't peek in an empty list
+# Stderr:lib/std.ilo, line 811 in list_peek\ntests/stdlib_list_structs.ilo, line 38 in main\n\nCan't peek in an empty list
 
 import lib.std
 

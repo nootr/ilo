@@ -1,7 +1,7 @@
 # Description:Standard library - stoi
 # Exit code:1
 # Stdout:
-# Stderr:Error: Unable to convert string to integer: abc
+# Stderr:lib/std.ilo, line 648 in stoi\ntests/stdlib_stoi.ilo, line 12 in main\n\nUnable to convert string to integer: abc
 
 import lib.std
 

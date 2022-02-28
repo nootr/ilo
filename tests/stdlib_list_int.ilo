@@ -1,7 +1,7 @@
 # Description:Standard library - list, int
 # Exit code:1
 # Stdout:
-# Stderr:Error: Can't peek in an empty list
+# Stderr:lib/std.ilo, line 822 in list_peek_int\ntests/stdlib_list_int.ilo, line 26 in main\n\nCan't peek in an empty list
 
 import lib.std
 
