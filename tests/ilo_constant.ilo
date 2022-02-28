@@ -19,4 +19,8 @@ def main: int argc, ptr argv -> int
         "Value of key 'foo' should be 13" assert
     "bar" _constants derefp get_value 37 = \
         "Value of key 'bar' should be 37" assert
+    "foo" _constants derefp contains_key \
+        "Key 'foo' should be in the list" assert
+    "baz" _constants derefp contains_key False = \
+        "Key 'baz' should not be in the list" assert
     0

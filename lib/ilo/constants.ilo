@@ -17,6 +17,19 @@ def create_constant: ptr key, int value, ptr list -> ptr
     list list_append
 
 
+def contains_key: ptr key, ptr list -> bool
+    # Returns True if the list contains a given key
+    False   # value
+    0       # index
+    while dup list list.len + derefi <
+        dup list list_fetch
+        dup constant.key + derefp key streq if
+            rot drop True rot rot
+        drop
+        1 +
+    drop
+
+
 def get_value: ptr key, ptr list -> int
     # Returns the value of a given key
     0   # value
