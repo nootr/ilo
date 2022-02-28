@@ -486,6 +486,9 @@ def _malloc_split_block: ptr block, int old_size, int size -> ptr
         dup      block block.next + derefp block.size + seti
         over     block block.next + derefp block.next + setp
 
+        block block.next + derefp block.next + derefp NULL != if
+            block block.next + derefp dup block.next + derefp block.prev + setp
+
     block
 
 
@@ -500,8 +503,6 @@ def _malloc_block_is_available_or_NULL: ptr block, int size -> bool
 
 def malloc: int size -> ptr
     # Allocates a memory block of given size and returns its address
-
-    # TODO: Test edge cases
 
     root_page NULL != "Root page should exist\n" assert
     size 0 = if
