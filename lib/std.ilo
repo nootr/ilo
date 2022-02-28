@@ -394,6 +394,18 @@ def verify_memory: -> void
                 over dup block.prev + derefi - casti PAGE_SIZE <= or
                 "Previous block should be in the same page\n" assert
 
+                dup block.next + derefp NULL != if
+                    dup block.next + derefp
+                    over block.size + derefi -
+                    BLOCK_METADATA_SIZE -
+                    over = "Next block should be directly after this one\n" assert
+
+                dup block.prev + derefp NULL != if
+                    dup block.prev + derefp
+                    dup block.size + derefi +
+                    BLOCK_METADATA_SIZE +
+                    over = "Previous block should be directly before this one\n" assert
+
                 block.next + derefp
             drop
 
