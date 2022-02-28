@@ -231,7 +231,7 @@ def parse: ptr filename, ptr tokens -> ptr
                 TYPE_INT _push_type
             else
                 "Unknown value for arithmetic token: "
-                over token.value + derefp concat
+                over token.value + derefp concat "\n" concat
                 raise
         elif dup token.type + derefi TOKEN_COMPARISON =
             dup token.value + derefp "=" streq if
@@ -266,7 +266,7 @@ def parse: ptr filename, ptr tokens -> ptr
                 _opcodes derefp create_opcode _opcodes setp
             else
                 "Unknown comparison token: "
-                over token.value + derefp concat
+                over token.value + derefp concat "\n" concat
                 raise
 
             dup token.line + derefi _pop_type
@@ -308,7 +308,7 @@ def parse: ptr filename, ptr tokens -> ptr
                 drop
             elif dup token.value + derefp "location" streq
                 # TODO: Implement this as soon as we've got a better int to str function
-                "The location keyword is not implemented yet" raise
+                "The location keyword is not implemented yet\n" raise
             elif dup token.value + derefp "castb" streq
                 dup token.line + derefi _pop_type drop
                 TYPE_BOOL _push_type
@@ -471,7 +471,7 @@ def parse: ptr filename, ptr tokens -> ptr
                 drop
                 TYPE_INT _push_type
             else
-                "Unknown keyword: " over token.value + derefp concat raise
+                "Unknown keyword: " over token.value + derefp concat "\n" concat raise
         elif dup token.type + derefi TOKEN_TYPE =
             dup token.line + derefi "Unexpected type" _type_error
         elif dup token.type + derefi TOKEN_IDENTIFIER =

@@ -25,7 +25,7 @@ def _tokenize: ptr source, ptr tokens -> ptr
     while dup derefc 0 castc !=
         # Count indenting and create block begin/end tokens if necessary
         _indent_stack derefp list.len + derefi 0 > \
-            "Indent stack should have items" assert
+            "Indent stack should have items\n" assert
 
         dup count_indent
         _at_start derefb if
