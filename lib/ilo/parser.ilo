@@ -65,7 +65,7 @@ def _create_buffer_operand: ptr buf_name, ptr buf_size -> ptr
     buf_size over buffer_operand_buffer_size + setp
 
 
-def _parse: ptr filename, ptr tokens, ptr token_index -> ptr
+def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
     # Parses a given tokenlist and returns a list of opcodes
 
     # Initialize globals
@@ -91,7 +91,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index -> ptr
         PTR_SIZE new_list _files setp
         filename casti _files derefp list_append_int _files setp
 
-    while tokens token_index _peek_next_token token.type + derefi TOKEN_END !=
+    while tokens token_index _peek_next_token token.type + derefi return_on !=
         tokens token_index _get_next_token
 
         dup token.type + derefi TOKEN_BOOL = if
@@ -305,7 +305,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index -> ptr
                     # TODO: The malloc below is a memory leak, it could be fixed when we
                     # are able to reference `parse` instead of `_parse`, but we need
                     # function declarations to do that.
-                    dup dup read_file tokenize 8 malloc _parse drop
+                    dup dup read_file tokenize 8 malloc return_on _parse drop
                 drop
             elif dup token.value + derefp "location" streq
                 # TODO: Implement this as soon as we've got a better int to str function
@@ -531,8 +531,11 @@ def _parse: ptr filename, ptr tokens, ptr token_index -> ptr
 
         drop
 
-        tokens token_index _peek_next_token NULL != \
-            "Token list should end with END token" assert
+        tokens token_index _peek_next_token NULL = if
+            "Unexpected end of file" raise
+
+    tokens token_index _get_next_token token.type + derefi return_on = \
+        "Last token should be return_on" assert
 
     _opcodes derefp
 
@@ -541,5 +544,5 @@ def parse: ptr filename, ptr tokens -> ptr
     # Wrapper for _parse
     8 malloc
     dup 0 swap seti
-    dup filename tokens rot _parse
+    dup filename tokens rot TOKEN_END _parse
     swap free
