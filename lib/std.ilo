@@ -775,6 +775,21 @@ def list_copy: ptr src -> ptr
     dup rot src rot rot memcpy
 
 
+def list_eq: ptr a, ptr b -> bool
+    # Returns True if two lists have the same content
+    a list.len + derefi b list.len + derefi =
+    a list.item_size + derefi b list.item_size + derefi = and if
+        True
+        LIST_METADATA_SIZE
+        while dup a list.len + derefi a list.item_size + derefi * LIST_METADATA_SIZE + <
+            dup a + derefc over b + derefc != if
+                swap drop False swap
+            1 +
+        drop
+    else
+        False
+
+
 def list_fetch: int index, ptr list -> ptr
     # Returns a pointer to a certain index in a given list
     index list list.len + derefi >= if
