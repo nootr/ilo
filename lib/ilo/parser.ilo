@@ -8,7 +8,6 @@ import lib.ilo.types
 
 buffer _if_index     8  # int
 buffer _while_index  8  # int
-buffer _token_index  8  # int
 buffer _type_stack   8  # ptr
 buffer _buffers      8  # ptr
 buffer _constants    8  # ptr
@@ -26,19 +25,19 @@ def _type_error: int line, ptr message -> void
     1 exit
 
 
-def _peek_next_token: ptr tokens -> ptr
+def _peek_next_token: ptr tokens, ptr index -> ptr
     # Returns the next token without increasing the token index
-    _token_index derefi tokens list.len + derefi < if
-        _token_index derefi tokens list_fetch
+    index derefi tokens list.len + derefi < if
+        index derefi tokens list_fetch
     else
         NULL
 
 
-def _get_next_token: ptr tokens -> ptr
+def _get_next_token: ptr tokens, ptr index -> ptr
     # Returns the next token while increasing the token index
-    _token_index derefi tokens list.len + derefi < if
-        _token_index derefi dup tokens list_fetch
-        swap 1 + _token_index seti
+    index derefi tokens list.len + derefi < if
+        index derefi dup tokens list_fetch
+        swap 1 + index seti
     else
         NULL
 
@@ -66,7 +65,7 @@ def _create_buffer_operand: ptr buf_name, ptr buf_size -> ptr
     buf_size over buffer_operand_buffer_size + setp
 
 
-def parse: ptr filename, ptr tokens -> ptr
+def _parse: ptr filename, ptr tokens, ptr token_index -> ptr
     # Parses a given tokenlist and returns a list of opcodes
 
     # Initialize globals
@@ -92,8 +91,8 @@ def parse: ptr filename, ptr tokens -> ptr
         PTR_SIZE new_list _files setp
         filename casti _files derefp list_append_int _files setp
 
-    while tokens _peek_next_token token.type + derefi TOKEN_END !=
-        tokens _get_next_token
+    while tokens token_index _peek_next_token token.type + derefi TOKEN_END !=
+        tokens token_index _get_next_token
 
         dup token.type + derefi TOKEN_BOOL = if
             OPCODE_PUSH_BOOL
@@ -295,7 +294,7 @@ def parse: ptr filename, ptr tokens -> ptr
                     "Traceback needs string as argument" _type_error
             elif dup token.value + derefp "import" streq
                 drop
-                tokens _get_next_token
+                tokens token_index _get_next_token
                 dup token.type + derefi TOKEN_IDENTIFIER != if
                     dup token.line + derefi
                     "Expected identifier after import keyword" _type_error
@@ -303,7 +302,10 @@ def parse: ptr filename, ptr tokens -> ptr
                 dup token.value + derefp '.' '/' replace ".ilo" concat
                 dup _files derefp list_contains_string False = if
                     dup _files derefp list_append_ptr _files setp
-                    dup dup read_file tokenize parse drop
+                    # TODO: The malloc below is a memory leak, it could be fixed when we
+                    # are able to reference `parse` instead of `_parse`, but we need
+                    # function declarations to do that.
+                    dup dup read_file tokenize 8 malloc _parse drop
                 drop
             elif dup token.value + derefp "location" streq
                 # TODO: Implement this as soon as we've got a better int to str function
@@ -321,7 +323,7 @@ def parse: ptr filename, ptr tokens -> ptr
                 dup token.line + derefi _pop_type drop
                 TYPE_PTR _push_type
             elif dup token.value + derefp "buffer" streq
-                tokens _get_next_token
+                tokens token_index _get_next_token
                 dup token.type + derefi TOKEN_IDENTIFIER != if
                     dup token.line + derefi
                     "Expected identifier as buffer name" _type_error
@@ -329,7 +331,7 @@ def parse: ptr filename, ptr tokens -> ptr
 
                 dup _buffers derefp list_append_ptr _buffers setp
 
-                tokens _get_next_token
+                tokens token_index _get_next_token
                 dup token.type + derefi TOKEN_INT != if
                     dup token.line + derefi
                     "Expected integer as buffer size" _type_error
@@ -341,13 +343,13 @@ def parse: ptr filename, ptr tokens -> ptr
                 rot swap
                 _opcodes derefp create_opcode _opcodes setp
             elif dup token.value + derefp "const" streq
-                tokens _get_next_token
+                tokens token_index _get_next_token
                 dup token.type + derefi TOKEN_IDENTIFIER != if
                     dup token.line + derefi
                     "Expected identifier as const key" _type_error
                 token.value + derefp
 
-                tokens _get_next_token
+                tokens token_index _get_next_token
                 dup token.type + derefi TOKEN_INT != if
                     dup token.line + derefi
                     "Expected integer as const value" _type_error
@@ -471,7 +473,7 @@ def parse: ptr filename, ptr tokens -> ptr
                 dup _push_type swap _push_type _push_type
             elif dup token.value + derefp "syscall" streq
                 drop
-                tokens _get_next_token
+                tokens token_index _get_next_token
                 dup token.type + derefi TOKEN_INT != if
                     dup token.line + derefi
                     "Syscall is missing argument count"
@@ -529,6 +531,15 @@ def parse: ptr filename, ptr tokens -> ptr
 
         drop
 
-        tokens _peek_next_token NULL != "Token list should end with END token" assert
+        tokens token_index _peek_next_token NULL != \
+            "Token list should end with END token" assert
 
     _opcodes derefp
+
+
+def parse: ptr filename, ptr tokens -> ptr
+    # Wrapper for _parse
+    8 malloc
+    dup 0 swap seti
+    dup filename tokens rot _parse
+    swap free
