@@ -766,6 +766,15 @@ def new_list: int item_size -> ptr
     1 item_size list_create
 
 
+def list_copy: ptr src -> ptr
+    # Creates a copy of a list and returns its pointer
+    src list.len + derefi
+    src list.item_size + derefi *
+    LIST_METADATA_SIZE +
+    dup malloc
+    dup rot src rot rot memcpy
+
+
 def list_fetch: int index, ptr list -> ptr
     # Returns a pointer to a certain index in a given list
     index list list.len + derefi >= if
