@@ -755,7 +755,7 @@ def parse(
                         raise TypeError(
                             f"Function {function_name} returned incorrect type"
                         )
-            elif value == "buffer":
+            elif value == "buffer":  # DONE
                 name_type, buffer_name, line_no = tokens[token_index]
                 token_index += 1
                 if name_type != TokenType.IDENTIFIER:
@@ -770,7 +770,7 @@ def parse(
                     )
                 buffers.append(buffer_name)
                 opcodes.append((Opcode.CREATE_BUFFER, (buffer_name, buffer_size), line_no))
-            elif value == "const":
+            elif value == "const":  # DONE
                 name_type, const_name, line_no = tokens[token_index]
                 token_index += 1
                 if name_type != TokenType.IDENTIFIER:
@@ -883,7 +883,7 @@ def parse(
                         )
                 if return_type != Type.VOID:
                     stack.append(return_type)
-            elif value in buffers:
+            elif value in buffers:  # DONE
                 opcodes.append((Opcode.GET_BUFFER, value, line_no))
                 stack.append(Type.PTR)
             elif value in constants:  # DONE

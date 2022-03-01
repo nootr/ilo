@@ -68,6 +68,17 @@ def _file_has_been_imported: ptr file -> bool
         file casti _files derefp list_append_int _files setp
 
 
+const buffer_operand_buffer_name  0   # ptr
+const buffer_operand_buffer_size  8   # ptr
+const BUFFER_OPERAND_SIZE         16
+
+def _create_buffer_operand: ptr buf_name, ptr buf_size -> ptr
+    # Creates a tuple with is used as the buffer operand
+    BUFFER_OPERAND_SIZE malloc
+    buf_name over buffer_operand_buffer_name + setp
+    buf_size over buffer_operand_buffer_size + setp
+
+
 def parse: ptr filename, ptr tokens -> ptr
     # Parses a given tokenlist and returns a list of opcodes
 
@@ -321,6 +332,26 @@ def parse: ptr filename, ptr tokens -> ptr
             elif dup token.value + derefp "castp" streq
                 dup token.line + derefi _pop_type drop
                 TYPE_PTR _push_type
+            elif dup token.value + derefp "buffer" streq
+                tokens _get_next_token
+                dup token.type + derefi TOKEN_IDENTIFIER != if
+                    dup token.line + derefi
+                    "Expected identifier as buffer name" _type_error
+                token.value + derefp
+
+                dup _buffers derefp list_append_ptr _buffers setp
+
+                tokens _get_next_token
+                dup token.type + derefi TOKEN_INT != if
+                    dup token.line + derefi
+                    "Expected integer as buffer size" _type_error
+                token.value + derefp
+
+                _create_buffer_operand
+                over token.line + derefi
+                OPCODE_CREATE_BUFFER swap
+                rot swap
+                _opcodes derefp create_opcode _opcodes setp
             elif dup token.value + derefp "const" streq
                 tokens _get_next_token
                 dup token.type + derefi TOKEN_IDENTIFIER != if
@@ -476,13 +507,19 @@ def parse: ptr filename, ptr tokens -> ptr
             dup token.line + derefi "Unexpected type" _type_error
         elif dup token.type + derefi TOKEN_IDENTIFIER =
             dup token.value + derefp _constants derefp get_value NULL != if
-                dup token.value + derefp _constants derefp get_value
-                over token.line + derefi
                 OPCODE_PUSH_INT
-                rot rot
+                over dup token.value + derefp _constants derefp get_value
+                swap token.line + derefi
                 _opcodes derefp create_opcode _opcodes setp
 
                 TYPE_INT _push_type
+            elif dup token.value + derefp _buffers derefp list_contains_string
+                OPCODE_GET_BUFFER
+                over dup token.value + derefp
+                swap token.line + derefi
+                _opcodes derefp create_opcode _opcodes setp
+
+                TYPE_PTR _push_type
             else
                 dup token.line + derefi over token.value + derefp
                 "Unknown identifier: " swap concat _type_error
