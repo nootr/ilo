@@ -39,6 +39,7 @@ def main: int argc, ptr argv -> int
     "a_"              dup 1  + 10  castc swap setc concat
     "buffer b 8_"     dup 10 + 10  castc swap setc concat
     "b_"              dup 1  + 10  castc swap setc concat
+    "while True_"     dup 10 + 10  castc swap setc concat
 
     tokenize
     parse
@@ -111,4 +112,8 @@ def main: int argc, ptr argv -> int
     dup opcode.opcode  + derefi OPCODE_GET_BUFFER =    "Op 19 should be get buffer" assert
     dup opcode.operand + derefp "b" streq              "Op 19 should be b" assert
     dup opcode.line    + derefi 17 =                   "Op 19 should be on line 17" assert
+    OPCODE_SIZE +
+    dup opcode.opcode  + derefi OPCODE_LABEL =         "Op 20 should be label" assert
+    dup opcode.operand + derefp "while_" startswith    "Op 20 should start with while_" assert
+    dup opcode.line    + derefi 18 =                   "Op 20 should be on line 17" assert
     0

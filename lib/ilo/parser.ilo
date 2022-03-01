@@ -489,6 +489,17 @@ def parse: ptr filename, ptr tokens -> ptr
                     1 -
                 drop
                 TYPE_INT _push_type
+            elif dup token.value + derefp "while" streq
+                25 malloc
+                "while_" over 6 memcpy
+                _while_index derefi over 6 + i64tohex
+                _while_index derefi 1 + _while_index seti
+                over token.line + derefi
+                OPCODE_LABEL rot rot
+
+                _opcodes derefp create_opcode _opcodes setp
+
+                # TODO: implement the rest, but first we need to refactor `parse` a bit
             else
                 "Unknown keyword: " over token.value + derefp concat "\n" concat raise
         elif dup token.type + derefi TOKEN_TYPE =
