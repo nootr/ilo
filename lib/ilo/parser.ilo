@@ -55,19 +55,6 @@ def _pop_type: int line -> int
     _type_stack derefp list_pop_int
 
 
-def _file_has_been_imported: ptr file -> bool
-    # Returns True if file has already been imported
-    False
-    0
-    while dup _files derefp list.len + derefi <
-        dup _files derefp list_fetch_int castp file streq if
-            swap drop True swap
-        1 +
-    drop
-    dup False = if
-        file casti _files derefp list_append_int _files setp
-
-
 const buffer_operand_buffer_name  0   # ptr
 const buffer_operand_buffer_size  8   # ptr
 const BUFFER_OPERAND_SIZE         16
@@ -314,7 +301,8 @@ def parse: ptr filename, ptr tokens -> ptr
                     "Expected identifier after import keyword" _type_error
 
                 dup token.value + derefp '.' '/' replace ".ilo" concat
-                dup _file_has_been_imported False = if
+                dup _files derefp list_contains_string False = if
+                    dup _files derefp list_append_ptr _files setp
                     dup dup read_file tokenize parse drop
                 drop
             elif dup token.value + derefp "location" streq
