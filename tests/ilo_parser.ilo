@@ -40,6 +40,8 @@ def main: int argc, ptr argv -> int
     "buffer b 8_"     dup 10 + 10  castc swap setc concat
     "b_"              dup 1  + 10  castc swap setc concat
     "while True_"     dup 10 + 10  castc swap setc concat
+    "    1_"          dup 5  + 10  castc swap setc concat
+    "    drop_"       dup 8  + 10  castc swap setc concat
 
     tokenize
     parse
@@ -115,5 +117,24 @@ def main: int argc, ptr argv -> int
     OPCODE_SIZE +
     dup opcode.opcode  + derefi OPCODE_LABEL =         "Op 20 should be label" assert
     dup opcode.operand + derefp "while_" startswith    "Op 20 should start with while_" assert
-    dup opcode.line    + derefi 18 =                   "Op 20 should be on line 17" assert
+    dup opcode.line    + derefi 18 =                   "Op 20 should be on line 18" assert
+    OPCODE_SIZE +
+    dup opcode.opcode  + derefi OPCODE_PUSH_BOOL =     "Op 21 should be boolean" assert
+    dup opcode.operand + derefp "1" streq              "Op 21 should be True" assert
+    dup opcode.line    + derefi 18 =                   "Op 21 should be on line 18" assert
+    OPCODE_SIZE +
+    dup opcode.opcode  + derefi OPCODE_WHILE_START =   "Op 22 should be while start" assert
+    dup opcode.operand + derefp "while_" startswith    "Op 22 should start with while_" assert
+    dup opcode.line    + derefi 18 =                   "Op 22 should be on line 18" assert
+    OPCODE_SIZE +
+    dup opcode.opcode  + derefi OPCODE_PUSH_INT =      "Op 23 should be push int" assert
+    dup opcode.operand + derefp "1" streq              "Op 23 should be 1" assert
+    dup opcode.line    + derefi 19 =                   "Op 23 should be on line 19" assert
+    OPCODE_SIZE +
+    dup opcode.opcode  + derefi OPCODE_DROP =          "Op 24 should be drop" assert
+    dup opcode.line    + derefi 20 =                   "Op 24 should be on line 20" assert
+    OPCODE_SIZE +
+    dup opcode.opcode  + derefi OPCODE_WHILE_END =     "Op 25 should be while end" assert
+    dup opcode.operand + derefp "while_" startswith    "Op 25 should start with while_" assert
+    dup opcode.line    + derefi 18 =                   "Op 25 should be on line 18" assert
     0

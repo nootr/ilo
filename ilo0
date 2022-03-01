@@ -549,7 +549,7 @@ def parse(
                 for _ in range(int(operand) + 1):
                     pop(line_no)
                 stack.append(Type.INT)
-            elif value == "while":
+            elif value == "while":  # DONE
                 while_label = f"while_{while_index}"
                 while_index += 1
                 opcodes.append((Opcode.LABEL, while_label, line_no))

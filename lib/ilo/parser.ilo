@@ -492,16 +492,48 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 drop
                 TYPE_INT _push_type
             elif dup token.value + derefp "while" streq
+                # Create while label
                 25 malloc
                 "while_" over 6 memcpy
                 _while_index derefi over 6 + i64tohex
                 _while_index derefi 1 + _while_index seti
+
+                # Create LABEL opcode
+                dup
+                rot swap
                 over token.line + derefi
                 OPCODE_LABEL rot rot
 
+                _opcodes derefp create_opcode _opcodes setp swap
+
+                # Parse while condition
+                filename tokens token_index TOKEN_BLOCK_START _parse drop
+                over token.line + derefi _pop_type TYPE_BOOL != if
+                    over token.line + derefi
+                    "Expected boolean result" _type_error
+
+                # Create copy of type stack
+                _type_stack derefp list_copy
+
+                # Create WHILE_START opcode
+                rot rot dup rot
+                dup token.line + derefi
+                rot OPCODE_WHILE_START swap rot
                 _opcodes derefp create_opcode _opcodes setp
 
-                # TODO: implement the rest, but first we need to refactor `parse` a bit
+                # Parse while body
+                filename tokens token_index TOKEN_BLOCK_END _parse drop
+
+                # Compare type stacks before and after while body
+                rot dup _type_stack derefp list_eq False = if
+                    over token.line + derefi
+                    "While body should not change types" _type_error
+                free
+
+                # Create WHILE_END opcode
+                dup token.line + derefi
+                rot OPCODE_WHILE_END swap rot
+                _opcodes derefp create_opcode _opcodes setp
             else
                 "Unknown keyword: " over token.value + derefp concat "\n" concat raise
         elif dup token.type + derefi TOKEN_TYPE =
