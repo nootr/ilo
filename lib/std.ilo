@@ -27,15 +27,6 @@ def NULL: -> ptr
     0 castp
 
 
-def memcpy: ptr src, ptr dest, int num -> void
-    # Copies a given amount of bytes from src to dest
-    0
-    while dup num <
-        dup src + derefc
-        over dest + setc
-        1 +
-
-
 def i64tohex: int x, ptr buf -> void
     # Converts a given 64-bit integer to its hexadecimal representation
     buf
@@ -546,6 +537,16 @@ def malloc: int size -> ptr
     verify_memory
 
 
+def memcpy: ptr src, ptr dest, int num -> void
+    # Copies a given amount of bytes from src to dest
+    0
+    while dup num <
+        dup src + derefc
+        over dest + setc
+        1 +
+    verify_memory
+
+
 def free: ptr block_data -> void
     # Frees a given block
 
@@ -768,7 +769,7 @@ def new_list: int item_size -> ptr
 
 def list_copy: ptr src -> ptr
     # Creates a copy of a list and returns its pointer
-    src list.len + derefi
+    src list.capacity + derefi
     src list.item_size + derefi *
     LIST_METADATA_SIZE +
     dup malloc
@@ -925,8 +926,6 @@ def list_append: ptr item, ptr list -> ptr
         memcpy
 
         # Update metadata
-        list list.capacity + derefi 2 *
-        over list.capacity + seti
         list list.len + derefi
         over list.len + seti
 
@@ -963,8 +962,6 @@ def list_append_int: int item, ptr list -> ptr
         memcpy
 
         # Update metadata
-        list list.capacity + derefi 2 *
-        over list.capacity + seti
         list list.len + derefi
         over list.len + seti
 
@@ -976,7 +973,7 @@ def list_append_int: int item, ptr list -> ptr
     # Append item to list
     dup list.len + derefi
     dup 1 + rot dup rot swap list.len + seti swap
-    list list.item_size + derefi * LIST_METADATA_SIZE + over + item swap seti
+    over list.item_size + derefi * LIST_METADATA_SIZE + over + item swap seti
 
 
 def list_append_ptr: ptr item, ptr list -> ptr
@@ -996,8 +993,6 @@ def list_append_ptr: ptr item, ptr list -> ptr
         memcpy
 
         # Update metadata
-        list list.capacity + derefi 2 *
-        over list.capacity + seti
         list list.len + derefi
         over list.len + seti
 
