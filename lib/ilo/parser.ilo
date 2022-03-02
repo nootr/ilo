@@ -6,13 +6,15 @@ import lib.ilo.tokens
 import lib.ilo.types
 
 
-buffer _if_index     8  # int
-buffer _while_index  8  # int
-buffer _type_stack   8  # ptr
-buffer _buffers      8  # ptr
-buffer _constants    8  # ptr
-buffer _opcodes      8  # ptr
-buffer _files        8  # ptr
+buffer _if_index            8  # int
+buffer _while_index         8  # int
+buffer _type_stack          8  # ptr
+buffer _type_stack_before   8  # ptr
+buffer _type_stack_after    8  # ptr
+buffer _buffers             8  # ptr
+buffer _constants           8  # ptr
+buffer _opcodes             8  # ptr
+buffer _files               8  # ptr
 
 
 def _type_error: int line, ptr message -> void
@@ -67,29 +69,6 @@ def _create_buffer_operand: ptr buf_name, ptr buf_size -> ptr
 
 def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
     # Parses a given tokenlist and returns a list of opcodes
-
-    # Initialize globals
-    _if_index derefi 0 = if
-        1 _if_index seti
-
-    _while_index derefi 0 = if
-        1 _while_index seti
-
-    _type_stack derefp NULL = if
-        INT_SIZE new_list _type_stack setp
-
-    _buffers derefp NULL = if
-        PTR_SIZE new_list _buffers setp
-
-    _constants derefp NULL = if
-        CONSTANT_SIZE new_list _constants setp
-
-    _opcodes derefp NULL = if
-        OPCODE_SIZE new_list _opcodes setp
-
-    _files derefp NULL = if
-        PTR_SIZE new_list _files setp
-        filename casti _files derefp list_append_int _files setp
 
     while tokens token_index _peek_next_token token.type + derefi return_on !=
         tokens token_index _get_next_token
@@ -534,6 +513,136 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 dup token.line + derefi
                 rot OPCODE_WHILE_END swap rot
                 _opcodes derefp create_opcode _opcodes setp
+            elif dup token.value + derefp "if" streq
+                # Type check
+                dup token.line + derefi _pop_type TYPE_BOOL != if
+                    dup token.line + derefi
+                    "Expected boolean result" _type_error
+
+                # Create copy of type stack
+                _type_stack derefp list_copy _type_stack_before setp
+
+                # Create end label
+                23 malloc
+                "end_" over 4 memcpy
+                _if_index derefi over 4 + i64tohex
+
+                # Create if label
+                22 malloc
+                "if_" over 3 memcpy
+                _if_index derefi over 3 + i64tohex
+
+                _if_index derefi 1 + _if_index seti
+
+                # Create IF opcode
+                rot over over token.line + derefi
+                OPCODE_IF rot rot
+                _opcodes derefp create_opcode _opcodes setp
+
+                # Parse body
+                drop tokens token_index _get_next_token
+                dup token.type + derefi TOKEN_BLOCK_START != if
+                    dup token.line + derefi
+                    "Expected code block after if keyword" _type_error
+
+                filename tokens token_index TOKEN_BLOCK_END _parse drop
+
+                # Create JUMP and LABEL opcodes
+                rot over token.line + derefi over swap
+                OPCODE_JUMP rot rot
+                _opcodes derefp create_opcode _opcodes setp
+
+                rot rot dup token.line + derefi rot
+                OPCODE_LABEL swap rot
+                _opcodes derefp create_opcode _opcodes setp
+
+                # Restore stack to before if-body and keep copy of stack after if-body
+                _type_stack derefp _type_stack_after setp
+                _type_stack_before derefp list_copy _type_stack setp
+
+                # Parse `elif` statements
+                while tokens token_index _peek_next_token \
+                        token.value + derefp "elif" streq
+                    drop tokens token_index _get_next_token
+
+                    # Create elif label
+                    24 malloc
+                    "elif_" over 5 memcpy
+                    _if_index derefi over 5 + i64tohex
+                    _if_index derefi 1 + _if_index seti
+
+                    # Parse elif condition
+                    filename tokens token_index TOKEN_BLOCK_START _parse drop
+
+                    # Type check
+                    dup token.line + derefi _pop_type TYPE_BOOL != if
+                        dup token.line + derefi
+                        "Expected boolean result" _type_error
+
+                    # Compare type stacks before and after elif condition
+                    _type_stack derefp _type_stack_before derefp list_eq False = if
+                        over token.line + derefi
+                        "elif-condition should not change types" _type_error
+
+                    # Create IF opcode
+                    over token.line + derefi
+                    over
+                    OPCODE_IF swap rot
+                    _opcodes derefp create_opcode _opcodes setp  # <-- SEGFAULT
+
+                    # Parse elif body
+                    filename tokens token_index TOKEN_BLOCK_END _parse drop
+
+                    # Compare type stack after elif body with after if body
+                    _type_stack derefp _type_stack_after derefp list_eq False = if
+                        over token.line + derefi
+                        "elif-body has different stack than if" _type_error
+
+                    # Create JUMP and LABEL opcodes
+                    rot rot
+                    over over token.line + derefi
+                    OPCODE_JUMP rot rot
+                    _opcodes derefp create_opcode _opcodes setp
+
+                    rot over token.line + derefi
+                    OPCODE_LABEL rot rot
+                    _opcodes derefp create_opcode _opcodes setp
+
+                    # Restore type stack from before if-body
+                    _type_stack derefp free
+                    _type_stack_before derefp list_copy _type_stack setp
+
+                tokens token_index _peek_next_token token.value + derefp "else" streq if
+                    drop tokens token_index _get_next_token
+
+                    # Parse else-body
+                    drop tokens token_index _get_next_token
+                    dup token.type + derefi TOKEN_BLOCK_START != if
+                        dup token.line + derefi
+                        "Expected code block after else keyword" _type_error
+
+                    filename tokens token_index TOKEN_BLOCK_END _parse drop
+
+                    # Compare type stack after else body with after if body
+                    _type_stack derefp _type_stack_after derefp list_eq False = if
+                        over token.line + derefi
+                        "else-body has different stack than if" _type_error
+                else
+                    # Check type stack after if body
+                    _type_stack_before derefp
+                    _type_stack_after  derefp list_eq False = if
+                        over token.line + derefi
+                        "If block without else should not alter types" _type_error
+
+                # Create LABEL opcode
+                dup token.line + derefi rot
+                OPCODE_LABEL swap rot
+                _opcodes derefp create_opcode _opcodes setp
+
+                # Clean up stacks
+                _type_stack derefp free
+                _type_stack_before derefp free
+                _type_stack_after derefp _type_stack setp
             else
                 "Unknown keyword: " over token.value + derefp concat "\n" concat raise
         elif dup token.type + derefi TOKEN_TYPE =
@@ -573,7 +682,29 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
 
 
 def parse: ptr filename, ptr tokens -> ptr
-    # Wrapper for _parse
+    # Wrapper for _parse to initialize values and set default arguments
+    _if_index derefi 0 = if
+        1 _if_index seti
+
+    _while_index derefi 0 = if
+        1 _while_index seti
+
+    _type_stack derefp NULL = if
+        INT_SIZE new_list _type_stack setp
+
+    _buffers derefp NULL = if
+        PTR_SIZE new_list _buffers setp
+
+    _constants derefp NULL = if
+        CONSTANT_SIZE new_list _constants setp
+
+    _opcodes derefp NULL = if
+        OPCODE_SIZE new_list _opcodes setp
+
+    _files derefp NULL = if
+        PTR_SIZE new_list _files setp
+        filename casti _files derefp list_append_int _files setp
+
     8 malloc
     dup 0 swap seti
     dup filename tokens rot TOKEN_END _parse

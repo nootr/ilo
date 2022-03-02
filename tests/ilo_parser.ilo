@@ -42,6 +42,12 @@ def main: int argc, ptr argv -> int
     "while True_"     dup 10 + 10  castc swap setc concat
     "    1_"          dup 5  + 10  castc swap setc concat
     "    drop_"       dup 8  + 10  castc swap setc concat
+    "True if_"        dup 7  + 10  castc swap setc concat
+    "    1_"          dup 5  + 10  castc swap setc concat
+    "elif True_"      dup 9  + 10  castc swap setc concat
+    "    2_"          dup 5  + 10  castc swap setc concat
+    "else_"           dup 4  + 10  castc swap setc concat
+    "    3_"          dup 5  + 10  castc swap setc concat
 
     tokenize
     parse
@@ -137,4 +143,32 @@ def main: int argc, ptr argv -> int
     dup opcode.opcode  + derefi OPCODE_WHILE_END =     "Op 25 should be while end" assert
     dup opcode.operand + derefp "while_" startswith    "Op 25 should start with while_" assert
     dup opcode.line    + derefi 18 =                   "Op 25 should be on line 18" assert
+    OPCODE_SIZE 2 * +
+    dup opcode.opcode  + derefi OPCODE_IF =            "Op 26 should be if" assert
+    dup opcode.operand + derefp "if_" startswith       "Op 26 should start with if_" assert
+    dup opcode.line    + derefi 21 =                   "Op 26 should be on line 21" assert
+    OPCODE_SIZE 2 * +
+    dup opcode.opcode  + derefi OPCODE_JUMP =          "Op 27 should be jump" assert
+    dup opcode.operand + derefp "end_" startswith      "Op 27 should start with end_" assert
+    dup opcode.line    + derefi 22 =                   "Op 27 should be on line 22" assert
+    OPCODE_SIZE +
+    dup opcode.opcode  + derefi OPCODE_LABEL =         "Op 28 should be label" assert
+    dup opcode.operand + derefp "if_" startswith       "Op 28 should start with if_" assert
+    dup opcode.line    + derefi 22 =                   "Op 28 should be on line 22" assert
+    OPCODE_SIZE 2 * +
+    dup opcode.opcode  + derefi OPCODE_IF =            "Op 29 should be if" assert
+    dup opcode.operand + derefp "elif_" startswith     "Op 29 should start with elif_" assert
+    dup opcode.line    + derefi 23 =                   "Op 29 should be on line 23" assert
+    OPCODE_SIZE 2 * +
+    dup opcode.opcode  + derefi OPCODE_JUMP =          "Op 30 should be jump" assert
+    dup opcode.operand + derefp "end_" startswith      "Op 30 should start with end_" assert
+    dup opcode.line    + derefi 23 =                   "Op 30 should be on line 23" assert
+    OPCODE_SIZE +
+    dup opcode.opcode  + derefi OPCODE_LABEL =         "Op 31 should be label" assert
+    dup opcode.operand + derefp "elif_" startswith     "Op 31 should start with elif_" assert
+    dup opcode.line    + derefi 23 =                   "Op 31 should be on line 23" assert
+    OPCODE_SIZE 2 * +
+    dup opcode.opcode  + derefi OPCODE_LABEL =         "Op 32 should be label" assert
+    dup opcode.operand + derefp "end_" startswith      "Op 32 should start with end_" assert
+    dup opcode.line    + derefi 26 =                   "Op 32 should be on line 26" assert
     0

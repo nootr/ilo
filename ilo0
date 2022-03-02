@@ -583,7 +583,7 @@ def parse(
                         f"While body on line {line_no} should not change types"
                     )
                 opcodes.append((Opcode.WHILE_END, while_label, line_no))
-            elif value == "if":
+            elif value == "if":  # DONE
                 if_identifier = f"if_{if_index}"
                 end_identifier = f"end_{if_index}"
                 if_index += 1
