@@ -48,6 +48,9 @@ def main: int argc, ptr argv -> int
     "    2_"          dup 5  + 10  castc swap setc concat
     "else_"           dup 4  + 10  castc swap setc concat
     "    3_"          dup 5  + 10  castc swap setc concat
+    "def o: int x -> bool_" \
+                      dup 20 + 10  castc swap setc concat
+    "    True_"       dup 8  + 10  castc swap setc concat
 
     tokenize
     parse
@@ -171,4 +174,18 @@ def main: int argc, ptr argv -> int
     dup opcode.opcode  + derefi OPCODE_LABEL =         "Op 32 should be label" assert
     dup opcode.operand + derefp "end_" startswith      "Op 32 should start with end_" assert
     dup opcode.line    + derefi 26 =                   "Op 32 should be on line 26" assert
+    OPCODE_SIZE +
+    dup opcode.opcode  + derefi OPCODE_FUNCTION =      "Op 33 should be function" assert
+    dup opcode.operand + derefp "o" streq              "Op 33 should be o" assert
+    dup opcode.line    + derefi 27 =                   "Op 33 should be on line 27" assert
+    OPCODE_SIZE 2 * +
+    dup opcode.opcode  + derefi OPCODE_RETURN =        "Op 34 should be return" assert
+    dup opcode.line    + derefi 28 =                   "Op 34 should be on line 28" assert
+    _functions derefp list.len + derefi 1 =            "There should be 1 func" assert
+    _functions derefp function_get_current function.name + derefp "o" streq \
+                                                       "Func should be o" assert
+    "o" _functions derefp function_get_from_list function.args + derefp \
+        list.len + derefi 1 =                          "Func should have 1 arg" assert
+    "o" _functions derefp function_get_from_list function.return_type + derefi \
+        TYPE_BOOL =                                    "Func should return bool" assert
     0

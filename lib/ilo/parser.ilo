@@ -651,7 +651,102 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 _current_function derefp NULL != if
                     "Can't define function within function" raise
 
-                "Keyword dup is not implemented yet" raise
+                # Get function name
+                drop tokens token_index _get_next_token
+                dup token.type + derefi TOKEN_IDENTIFIER != if
+                    dup token.line + derefi
+                    "Expected identifier as function name" _type_error
+
+                # Create function signature and save pointer to current function
+                dup token.value + derefp create_function
+                _functions derefp list_append _functions setp
+                _functions derefp function_get_current _current_function setp
+
+                # Parse colon
+                drop tokens token_index _get_next_token
+                dup token.type + derefi TOKEN_COLON != if
+                    dup token.line + derefi
+                    "Expected colon after function name" _type_error
+
+                # Create FUNCTION opcode
+                dup token.line + derefi
+                OPCODE_FUNCTION
+                _current_function derefp function.name + derefp
+                rot
+                _opcodes derefp create_opcode _opcodes setp
+
+                drop tokens token_index _get_next_token
+
+                while dup token.type + derefi TOKEN_ARROW !=
+                    # Get argument type
+                    dup token.type + derefi TOKEN_TYPE != if
+                        dup token.line + derefi
+                        "Expected argument type in function definition" _type_error
+
+                    token.value + derefp str_to_type
+
+                    # Get argument name
+                    tokens token_index _get_next_token
+
+                    dup token.type + derefi TOKEN_IDENTIFIER != if
+                        dup token.line + derefi
+                        "Expected identifier after type" _type_error
+
+                    token.value + derefp
+
+                    # Add argument to function
+                    _current_function derefp function_add_argument
+
+                    # Parse comma if it exists
+                    tokens token_index _get_next_token
+                    dup token.type + derefi TOKEN_COMMA = if
+                        drop tokens token_index _get_next_token
+                    elif dup token.type + derefi TOKEN_ARROW !=
+                        dup token.line + derefi
+                        "Expected comma or arrow after argument(s)" _type_error
+
+                # Parse return type
+                drop tokens token_index _get_next_token
+
+                dup token.type + derefi TOKEN_TYPE != if
+                    dup token.line + derefi
+                    "Expected return type in function definition" _type_error
+
+                token.value + derefp str_to_type
+                _current_function derefp function_set_return_type
+
+                # Parse code block
+                tokens token_index _get_next_token
+
+                dup token.type + derefi TOKEN_BLOCK_START != if
+                    dup token.line + derefi
+                    "Expected code block after function definition" _type_error
+
+                filename tokens token_index TOKEN_BLOCK_END _parse drop
+
+                # Create RETURN opcode
+                dup token.line + derefi
+                OPCODE_RETURN
+                NULL
+                rot
+                _opcodes derefp create_opcode _opcodes setp
+
+                # Type check returned type
+                _current_function derefp function.return_type + derefi
+                dup TYPE_VOID != if
+                    over token.line + derefi _pop_type over != if
+                        over token.line + derefi
+                        "Function "
+                        _current_function derefp function.name + derefp concat
+                        " returned incorrect type" concat
+                        _type_error
+                drop
+
+                # Empty type stack
+                0 _type_stack derefp list.len + seti
+
+                # Set current function to NULL
+                NULL _current_function setp
             else
                 "Unknown keyword: " over token.value + derefp concat "\n" concat raise
         elif dup token.type + derefi TOKEN_TYPE =
@@ -711,7 +806,7 @@ def parse: ptr filename, ptr tokens -> ptr
         OPCODE_SIZE new_list _opcodes setp
 
     _functions derefp NULL = if
-        FUNCTION_SIZE new_list _opcodes setp
+        FUNCTION_SIZE new_list _functions setp
 
     _files derefp NULL = if
         PTR_SIZE new_list _files setp
