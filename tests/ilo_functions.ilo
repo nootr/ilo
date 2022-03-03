@@ -18,8 +18,8 @@ def main: int argc, ptr argv -> int
     "bar" create_function
     _functions derefp list_append _functions setp
 
-    "arg1" TYPE_INT _functions derefp function_get_current function_add_argument
-    "arg2" TYPE_PTR _functions derefp function_get_current function_add_argument
+    TYPE_INT "arg1" _functions derefp function_get_current function_add_argument
+    TYPE_PTR "arg2" _functions derefp function_get_current function_add_argument
 
     TYPE_BOOL _functions derefp function_get_current function_set_return_type
 

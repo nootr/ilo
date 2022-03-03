@@ -29,7 +29,7 @@ def create_function: ptr name -> ptr
     TYPE_VOID               over function.return_type + seti
 
 
-def function_add_argument: ptr name, int type, ptr func -> void
+def function_add_argument: int type, ptr name, ptr func -> void
     # Adds an argument to a function
     ARGUMENT_SIZE malloc
     name  over argument.name + setp
