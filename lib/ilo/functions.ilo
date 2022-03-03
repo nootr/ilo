@@ -1,0 +1,45 @@
+import lib.std
+import lib.ilo.types
+
+
+## Structs
+
+# FUNCTION
+# A function signature containing information about its arguments and return type.
+
+const function.name         0   # ptr
+const function.args         8   # ptr to list of arguments
+const function.return_type  16  # int
+const FUNCTION_SIZE         24
+
+
+# ARGUMENT
+# Contains information about an argument and its index.
+
+const argument.name  0  # ptr
+const argument.index 8  # int
+const argument.type  16 # int
+const ARGUMENT_SIZE  24
+
+
+def create_function: ptr name -> ptr
+    # Creates a function and returns its pointer
+    FUNCTION_SIZE malloc
+    name                    over function.name +        setp
+    ARGUMENT_SIZE new_list  over function.args +        setp
+    TYPE_VOID               over function.return_type + seti
+
+
+def function_add_argument: ptr name, int type, ptr func -> void
+    # Adds an argument to a function
+    ARGUMENT_SIZE malloc
+    name                                          over argument.name +  setp
+    func function.args + derefp list.len + derefi over argument.index + seti
+    type                                          over argument.type +  seti
+    func function.args + derefp list_append
+    func function.args + setp
+
+
+def function_set_return_type: int type, ptr func -> void
+    # Sets a function's return type
+    type func function.return_type + seti

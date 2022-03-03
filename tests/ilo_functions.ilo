@@ -1,0 +1,37 @@
+# Description:ilo.constants - Functions
+# Exit code:0
+# Stdout:
+# Stderr:
+
+import lib.std
+import lib.ilo.functions
+import lib.ilo.types
+
+
+buffer _function 8  # ptr
+
+
+def main: int argc, ptr argv -> int
+    "foo" create_function _function setp
+
+    "arg1" TYPE_INT _function derefp function_add_argument
+    "arg2" TYPE_PTR _function derefp function_add_argument
+
+    TYPE_BOOL _function derefp function_set_return_type
+
+    _function derefp function.name + derefp "foo" streq \
+        "Function should be named foo" assert
+    _function derefp function.args + derefp list.len + derefi 2 = \
+        "Function should have 2 arguments" assert
+    _function derefp function.return_type + derefi TYPE_BOOL = \
+        "Function should return bool" assert
+
+    0 _function derefp function.args + derefp list_fetch argument.name + derefp \
+        "arg1" streq "First argument should be arg1" assert
+    0 _function derefp function.args + derefp list_fetch argument.type + derefi \
+        TYPE_INT = "First argument should be int" assert
+    1 _function derefp function.args + derefp list_fetch argument.name + derefp \
+        "arg2" streq "Second argument should be arg2" assert
+    1 _function derefp function.args + derefp list_fetch argument.type + derefi \
+        TYPE_PTR = "Second argument should be ptr" assert
+    0
