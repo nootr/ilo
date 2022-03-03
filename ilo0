@@ -726,7 +726,6 @@ def parse(
                     token_index += 1
 
                 next_type, return_type, _ = tokens[token_index]
-                returns = return_type != "void"
                 token_index += 1
                 if next_type != TokenType.TYPE:
                     raise SyntaxError(
