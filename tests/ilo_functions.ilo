@@ -34,4 +34,11 @@ def main: int argc, ptr argv -> int
         "arg2" streq "Second argument should be arg2" assert
     1 _function derefp function.args + derefp list_fetch argument.type + derefi \
         TYPE_PTR = "Second argument should be ptr" assert
+
+    "arg1" _function derefp function_get_arg_offset 40 = \
+        "First argument should have a memory offset of 40" assert
+    "arg2" _function derefp function_get_arg_offset 32 = \
+        "Second argument should have a memory offset of 32" assert
+    "arg3" _function derefp function_get_arg_offset 0 1 - = \
+        "Unknown argument should return offset -1" assert
     0
