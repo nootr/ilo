@@ -18,7 +18,8 @@ const FUNCTION_SIZE         24
 
 const argument.name  0  # ptr
 const argument.type  8  # int
-const ARGUMENT_SIZE  16
+const argument.index 16 # int
+const ARGUMENT_SIZE  24
 
 
 def create_function: ptr name -> ptr
@@ -32,8 +33,9 @@ def create_function: ptr name -> ptr
 def function_add_argument: int type, ptr name, ptr func -> void
     # Adds an argument to a function
     ARGUMENT_SIZE malloc
-    name  over argument.name + setp
-    type  over argument.type + seti
+    name                                          over argument.name + setp
+    type                                          over argument.type + seti
+    func function.args + derefp list.len + derefi over argument.index + seti
 
     func function.args + derefp list_append
     func function.args + setp
@@ -64,18 +66,26 @@ def function_get_current: ptr list -> ptr
     list list_peek
 
 
-def function_get_arg_offset: ptr name, ptr func -> int
-    # Returns the memory offset of a given argument, returns -1 if not found
-    0 1 - # argument offset
+def function_get_arg: ptr name, ptr func -> ptr
+    # Returns a given argument, returns NULL if not found
+    NULL  # argument
     0     # index
     while dup func function.args + derefp list.len + derefi <
         dup func function.args + derefp list_fetch
-        argument.name + derefp name streq if
-            swap drop
-            func function.args + derefp list.len + derefi
-            over -
-            3 +
-            8 *
-            swap
+        dup argument.name + derefp name streq if
+            rot drop swap over
+        drop
         1 +
     drop
+
+
+def function_get_arg_offset: ptr name, ptr func -> int
+    # Returns the memory offset of a given argument, returns -1 if not found
+    name func function_get_arg
+    dup NULL = if
+        0 1 -
+    else
+        func function.args + derefp list.len + derefi
+        over argument.index + derefi -
+        3 +
+        8 *
