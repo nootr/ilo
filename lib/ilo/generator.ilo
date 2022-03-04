@@ -1,0 +1,40 @@
+import lib.std
+
+
+buffer _text 8  # ptr
+buffer _data 8  # ptr
+buffer _bss  8  # ptr
+
+
+def _format: ptr l, ptr r -> ptr
+    # Formats a line of assembly code into two columns
+    l " " concat
+    while dup strlen 10 <=
+        " " concat
+    r concat "\n" concat
+
+
+def _append: ptr l, ptr r, ptr buf -> void
+    # Append to a given buffer
+    buf derefp l r _format concat buf setp
+
+
+def generate_code_x86_64_linux: ptr opcodes -> ptr
+    # Takes a list of opcodes and converts it into x86_64 NASM assembly as string
+
+    # Initialize buffers
+    "" _text setp
+    "" _data setp
+    "" _bss setp
+
+    "" "global _start"      _text _append
+    "" "section .text"      _text _append
+    "" "section .data"      _data _append
+    "s_tb:" "db \`\\n\`, 0" _data _append
+    "" "section .bss"       _bss _append
+
+    # Concatenate buffers
+    _text derefp _data derefp concat _bss derefp concat
+    _text derefp free
+    _data derefp free
+    _bss derefp free

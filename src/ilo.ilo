@@ -1,4 +1,5 @@
 import lib.std
+import lib.ilo.generator
 import lib.ilo.lexer
 import lib.ilo.parser
 
@@ -17,9 +18,8 @@ def main: ptr argv, int argc -> int
     argv 1 get_argument
     dup read_file
     tokenize
-    dup dump_tokens
     parse
-    dup dump_opcodes
-    drop  # TODO: Implement code generator
+    generate_code_x86_64_linux
+    puts
 
     0
