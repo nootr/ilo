@@ -1,3 +1,5 @@
+# TODO: Free concat'ed strings
+
 import lib.std
 import lib.ilo.constants
 import lib.ilo.functions
