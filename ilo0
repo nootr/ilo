@@ -676,7 +676,7 @@ def parse(
                         )
                 opcodes.append((Opcode.LABEL, end_identifier, line_no))
                 stack = if_stack
-            elif value == "def":
+            elif value == "def":  # DONE
                 name_type, function_name, _ = tokens[token_index]
                 token_index += 1
                 if name_type != TokenType.IDENTIFIER:
@@ -888,7 +888,7 @@ def parse(
             elif value in constants:  # DONE
                 opcodes.append((Opcode.PUSH_INT, constants[value], line_no))
                 stack.append(Type.INT)
-            elif value in args:
+            elif value in args:  # DONE
                 raw_index, arg_type = args[value]
                 index = len(args) - raw_index + 3
                 opcodes.append((Opcode.GET_ARG, index, line_no))

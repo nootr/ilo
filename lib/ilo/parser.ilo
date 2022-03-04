@@ -20,6 +20,14 @@ buffer _functions           8  # ptr
 buffer _current_function    8  # ptr
 
 
+def _current_function_contains_arg: ptr name -> bool
+    # Returns True if there is a current function and it contains a given argument
+    _current_function NULL = if
+        False
+    else
+        name _current_function derefp function_get_arg NULL !=
+
+
 def _type_error: int line, ptr message -> void
     # Raises a type error
     "Type error on line " error
@@ -766,6 +774,16 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 _opcodes derefp create_opcode _opcodes setp
 
                 TYPE_PTR _push_type
+            elif dup token.value + derefp _current_function_contains_arg
+                dup token.value + derefp
+                _current_function derefp function_get_arg_offset itos
+                over token.line + derefi
+                OPCODE_GET_ARG rot rot
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup token.value + derefp
+                _current_function derefp function_get_arg argument.type + derefi
+                _push_type
             else
                 dup token.line + derefi over token.value + derefp
                 "Unknown identifier: " swap concat _type_error
