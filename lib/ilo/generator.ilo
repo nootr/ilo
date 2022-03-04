@@ -1,4 +1,5 @@
 import lib.std
+import lib.ilo.opcodes
 
 
 buffer _text 8  # ptr
@@ -32,6 +33,55 @@ def generate_code_x86_64_linux: ptr opcodes -> ptr
     "" "section .data"      _data _append
     "s_tb:" "db \`\\n\`, 0" _data _append
     "" "section .bss"       _bss _append
+
+    # Generate assembly
+    0
+    while dup opcodes list.len + derefi <
+        dup opcodes list_fetch
+
+        # Add opcode info comment
+        "; "
+        over opcode.line + derefi itos            concat
+        ": "                                      concat
+        over opcode.opcode + derefi opcode_to_str concat
+        "" swap _text _append
+
+        dup opcode.opcode + derefi OPCODE_PUSH_INT = if
+            "mov rax, " over opcode.operand + derefp concat "" swap _text _append
+            "" "push rax"                                           _text _append
+        elif dup opcode.opcode + derefi OPCODE_FUNCTION =
+            dup opcode.operand + derefp ":" concat "" _text _append
+            "" "push rbp"                             _text _append
+            "" "mov rbp, rsp"                         _text _append
+        elif dup opcode.opcode + derefi OPCODE_ADD =
+            "" "pop rax"      _text _append
+            "" "pop rbx"      _text _append
+            "" "add rbx, rax" _text _append
+            "" "push rbx"     _text _append
+        elif dup opcode.opcode + derefi OPCODE_RETURN =
+            "" "pop rax"      _text _append
+            "" "mov rsp, rbp" _text _append
+            "" "pop rbp"      _text _append
+            "" "ret"          _text _append
+        else
+            "Unknown opcode: "
+            over opcode.opcode + derefi opcode_to_str
+            concat "\n" concat raise
+
+        drop
+        1 +
+
+    # Add entrypoint
+    "_start:" ""        _text _append
+    "" "mov rax, s_tb"  _text _append
+    "" "push rax"       _text _append
+    "" "mov rax, 0"     _text _append
+    "" "push rax"       _text _append
+    "" "call main"      _text _append
+    "_end:" ""          _text _append
+    "" "mov rdi, rax"   _text _append
+    "" "mov rax, 60"    _text _append
+    "" "syscall"        _text _append
 
     # Concatenate buffers
     _text derefp _data derefp concat _bss derefp concat
