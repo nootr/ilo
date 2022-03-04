@@ -115,7 +115,7 @@ def opcode_to_str: int opcode -> ptr
     elif dup OPCODE_PUSH_STRING =
         "push string"
     elif dup OPCODE_RETURN =
-        "push return"
+        "return"
     elif dup OPCODE_ROT =
         "rot"
     elif dup OPCODE_SET_B =

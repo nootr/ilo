@@ -1,13 +1,10 @@
 # Description:While loop
-# Exit code:0
-# Stdout:AAAAAAAAAA
+# Exit code:10
+# Stdout:
 # Stderr:
 
-import lib.std
 
 def main: int argc, ptr argv -> int
     0 # Accumulator
     while dup 10 <
-        "A" puts
         1 +
-    0

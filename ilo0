@@ -907,7 +907,7 @@ def parse(
 
 
 def output(a, b, c, to_string=False):
-    string = f"{a:10} {b:10} {c}".rstrip()
+    string = f"{a:10} {b} {c}".rstrip()
     if to_string:
         return string + "\n"
     else:
@@ -953,42 +953,42 @@ def generate_code():
                 to_string=True,
             )
             string_index += 1
-        elif opcode == Opcode.ADD:
+        elif opcode == Opcode.ADD:  # DONE
             output("", "pop", "rax")
             output("", "pop", "rbx")
             output("", "add", "rbx, rax")
             output("", "push", "rbx")
-        elif opcode == Opcode.SUBTRACT:
+        elif opcode == Opcode.SUBTRACT:  # DONE
             output("", "pop", "rax")
             output("", "pop", "rbx")
             output("", "sub", "rbx, rax")
             output("", "push", "rbx")
-        elif opcode == Opcode.MULTIPLY:
+        elif opcode == Opcode.MULTIPLY:  # DONE
             output("", "pop", "rax")
             output("", "pop", "rbx")
             output("", "imul", "rbx, rax")
             output("", "push", "rbx")
-        elif opcode == Opcode.BITWISE_AND:
+        elif opcode == Opcode.BITWISE_AND:  # DONE
             output("", "pop", "rax")
             output("", "pop", "rbx")
             output("", "and", "rbx, rax")
             output("", "push", "rbx")
-        elif opcode == Opcode.BITWISE_OR:
+        elif opcode == Opcode.BITWISE_OR:  # DONE
             output("", "pop", "rax")
             output("", "pop", "rbx")
             output("", "or", "rbx, rax")
             output("", "push", "rbx")
-        elif opcode == Opcode.SHIFT_RIGHT:
+        elif opcode == Opcode.SHIFT_RIGHT:  # DONE
             output("", "pop", "rcx")
             output("", "pop", "rax")
             output("", "shr", "rax, cl")
             output("", "push", "rax")
-        elif opcode == Opcode.SHIFT_LEFT:
+        elif opcode == Opcode.SHIFT_LEFT:  # DONE
             output("", "pop", "rcx")
             output("", "pop", "rax")
             output("", "shl", "rax, cl")
             output("", "push", "rax")
-        elif opcode == Opcode.IS_EQUAL:
+        elif opcode == Opcode.IS_EQUAL:  # DONE
             output("", "mov", "rax, 0")
             output("", "mov", "rbx, 1")
             output("", "pop", "rcx")
@@ -996,7 +996,7 @@ def generate_code():
             output("", "cmp", "rdx, rcx")
             output("", "cmove", "rax, rbx")
             output("", "push", "rax")
-        elif opcode == Opcode.IS_NOT_EQUAL:
+        elif opcode == Opcode.IS_NOT_EQUAL:  # DONE
             output("", "mov", "rax, 0")
             output("", "mov", "rbx, 1")
             output("", "pop", "rcx")
@@ -1004,7 +1004,7 @@ def generate_code():
             output("", "cmp", "rdx, rcx")
             output("", "cmovne", "rax, rbx")
             output("", "push", "rax")
-        elif opcode == Opcode.IS_GREATER_OR_EQUAL:
+        elif opcode == Opcode.IS_GREATER_OR_EQUAL:  # DONE
             output("", "mov", "rax, 0")
             output("", "mov", "rbx, 1")
             output("", "pop", "rcx")
@@ -1012,7 +1012,7 @@ def generate_code():
             output("", "cmp", "rdx, rcx")
             output("", "cmovge", "rax, rbx")
             output("", "push", "rax")
-        elif opcode == Opcode.IS_GREATER:
+        elif opcode == Opcode.IS_GREATER:  # DONE
             output("", "mov", "rax, 0")
             output("", "mov", "rbx, 1")
             output("", "pop", "rcx")
@@ -1020,7 +1020,7 @@ def generate_code():
             output("", "cmp", "rdx, rcx")
             output("", "cmovg", "rax, rbx")
             output("", "push", "rax")
-        elif opcode == Opcode.IS_LESS_OR_EQUAL:
+        elif opcode == Opcode.IS_LESS_OR_EQUAL:  # DONE
             output("", "mov", "rax, 0")
             output("", "mov", "rbx, 1")
             output("", "pop", "rcx")
@@ -1028,7 +1028,7 @@ def generate_code():
             output("", "cmp", "rdx, rcx")
             output("", "cmovle", "rax, rbx")
             output("", "push", "rax")
-        elif opcode == Opcode.IS_LESS:
+        elif opcode == Opcode.IS_LESS:  # DONE
             output("", "mov", "rax, 0")
             output("", "mov", "rbx, 1")
             output("", "pop", "rcx")
@@ -1036,31 +1036,31 @@ def generate_code():
             output("", "cmp", "rdx, rcx")
             output("", "cmovl", "rax, rbx")
             output("", "push", "rax")
-        elif opcode == Opcode.DUP:
+        elif opcode == Opcode.DUP:  # DONE
             output("", "pop", "rax")
             output("", "push", "rax")
             output("", "push", "rax")
-        elif opcode == Opcode.DROP:
+        elif opcode == Opcode.DROP:  # DONE
             output("", "pop", "rax")
-        elif opcode == Opcode.SWAP:
-            output("", "pop", "rax")
-            output("", "pop", "rbx")
-            output("", "push", "rax")
-            output("", "push", "rbx")
-        elif opcode == Opcode.OVER:
+        elif opcode == Opcode.SWAP:  # DONE
             output("", "pop", "rax")
             output("", "pop", "rbx")
+            output("", "push", "rax")
+            output("", "push", "rbx")
+        elif opcode == Opcode.OVER:  # DONE
+            output("", "pop", "rax")
+            output("", "pop", "rbx")
             output("", "push", "rbx")
             output("", "push", "rax")
             output("", "push", "rbx")
-        elif opcode == Opcode.ROT:
+        elif opcode == Opcode.ROT:  # DONE
             output("", "pop", "rax")
             output("", "pop", "rbx")
             output("", "pop", "rcx")
             output("", "push", "rbx")
             output("", "push", "rax")
             output("", "push", "rcx")
-        elif opcode == Opcode.SYSCALL:
+        elif opcode == Opcode.SYSCALL:  # DONE
             output("",  "pop", "rax")
             if operand > 6:
                 raise ValueError("Syscall should have 1-6 arguments")
@@ -1077,13 +1077,13 @@ def generate_code():
             output("",  "pop", "rdi")
             output("",  "syscall", "")
             output("",  "push", "rax")
-        elif opcode == Opcode.IF:
+        elif opcode == Opcode.IF:  # DONE
             output("", "pop", "rax")
             output("", "test", "rax, rax")
             output("", "jz", operand)
-        elif opcode == Opcode.LABEL:
+        elif opcode == Opcode.LABEL:  # DONE
             output(f"{operand}:", "", "")
-        elif opcode == Opcode.JUMP:
+        elif opcode == Opcode.JUMP:  # DONE
             output("", "jmp", operand)
         elif opcode == Opcode.FUNCTION:
             output(f"{operand}:", "", "")
@@ -1101,49 +1101,49 @@ def generate_code():
                 output("", "pop", "rbx")
             if ret != Type.VOID:
                 output("", "push", "rax")
-        elif opcode == Opcode.GET_ARG:
+        elif opcode == Opcode.GET_ARG:  # DONE
             output("", "mov", "rax, rbp")
             output("", "add", f"rax, {operand*8}")
             output("", "mov", "rbx, [rax]")
             output("", "push", "rbx")
-        elif opcode == Opcode.DEREF_B:
+        elif opcode == Opcode.DEREF_B:  # DONE
             output("", "pop", "rax")
             output("", "xor", "rbx, rbx")
             output("", "mov", "bl, [rax]")
             output("", "push", "rbx")
-        elif opcode == Opcode.DEREF_C:
+        elif opcode == Opcode.DEREF_C:  # DONE
             output("", "pop", "rax")
             output("", "xor", "rbx, rbx")
             output("", "mov", "bl, [rax]")
             output("", "push", "rbx")
-        elif opcode == Opcode.DEREF_I:
+        elif opcode == Opcode.DEREF_I:  # DONE
             output("", "pop", "rax")
             output("", "mov", "rbx, [rax]")
             output("", "push", "rbx")
-        elif opcode == Opcode.DEREF_P:
+        elif opcode == Opcode.DEREF_P:  # DONE
             output("", "pop", "rax")
             output("", "mov", "rbx, [rax]")
             output("", "push", "rbx")
-        elif opcode == Opcode.SET_B:
+        elif opcode == Opcode.SET_B:  # DONE
             output("", "pop", "rax")
             output("", "pop", "rbx")
             output("", "mov", "[rax], bl")
-        elif opcode == Opcode.SET_C:
+        elif opcode == Opcode.SET_C:  # DONE
             output("", "pop", "rax")
             output("", "pop", "rbx")
             output("", "mov", "[rax], bl")
-        elif opcode == Opcode.SET_I:
+        elif opcode == Opcode.SET_I:  # DONE
             output("", "pop", "rax")
             output("", "pop", "rbx")
             output("", "mov", "[rax], rbx")
-        elif opcode == Opcode.SET_P:
+        elif opcode == Opcode.SET_P:  # DONE
             output("", "pop", "rax")
             output("", "pop", "rbx")
             output("", "mov", "[rax], rbx")
-        elif opcode == Opcode.GET_BUFFER:
+        elif opcode == Opcode.GET_BUFFER:  # DONE
             output("", "mov", f"rax, {operand}")
             output("", "push", "rax")
-        elif opcode == Opcode.CREATE_BUFFER:
+        elif opcode == Opcode.CREATE_BUFFER:  # DONE
             buffer_name, buffer_size = operand
             bss += output(
                 f"{buffer_name}:",

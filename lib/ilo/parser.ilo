@@ -9,6 +9,7 @@ import lib.ilo.tokens
 import lib.ilo.types
 
 
+buffer functions            8  # ptr
 buffer _if_index            8  # int
 buffer _while_index         8  # int
 buffer _type_stack          8  # ptr
@@ -18,7 +19,6 @@ buffer _buffers             8  # ptr
 buffer _constants           8  # ptr
 buffer _opcodes             8  # ptr
 buffer _files               8  # ptr
-buffer _functions           8  # ptr
 buffer _current_function    8  # ptr
 
 
@@ -300,8 +300,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                     dup token.line + derefi
                     "Traceback needs string as argument" _type_error
             elif dup token.value + derefp "import" streq
-                drop
-                tokens token_index _get_next_token
+                drop tokens token_index _get_next_token
                 dup token.type + derefi TOKEN_IDENTIFIER != if
                     dup token.line + derefi
                     "Expected identifier after import keyword" _type_error
@@ -312,7 +311,10 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                     # TODO: The malloc below is a memory leak, it could be fixed when we
                     # are able to reference `parse` instead of `_parse`, but we need
                     # function declarations to do that.
-                    dup dup read_file tokenize 8 malloc return_on _parse drop
+                    dup dup
+                    read_file
+                    tokenize
+                    8 malloc dup 0 swap seti return_on _parse drop
                 drop
             elif dup token.value + derefp "location" streq
                 # TODO: Implement this as soon as we've got a better int to str function
@@ -369,12 +371,18 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 NULL swap
                 _opcodes derefp create_opcode _opcodes setp
 
+                dup token.line + derefi _pop_type TYPE_PTR != if
+                    dup token.line + derefi "Need pointer to dereference" _type_error
+
                 TYPE_BOOL _push_type
             elif dup token.value + derefp "derefc" streq
                 OPCODE_DEREF_C
                 over token.line + derefi
                 NULL swap
                 _opcodes derefp create_opcode _opcodes setp
+
+                dup token.line + derefi _pop_type TYPE_PTR != if
+                    dup token.line + derefi "Need pointer to dereference" _type_error
 
                 TYPE_CHAR _push_type
             elif dup token.value + derefp "derefi" streq
@@ -383,12 +391,18 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 NULL swap
                 _opcodes derefp create_opcode _opcodes setp
 
+                dup token.line + derefi _pop_type TYPE_PTR != if
+                    dup token.line + derefi "Need pointer to dereference" _type_error
+
                 TYPE_INT _push_type
             elif dup token.value + derefp "derefp" streq
                 OPCODE_DEREF_P
                 over token.line + derefi
                 NULL swap
                 _opcodes derefp create_opcode _opcodes setp
+
+                dup token.line + derefi _pop_type TYPE_PTR != if
+                    dup token.line + derefi "Need pointer to dereference" _type_error
 
                 TYPE_PTR _push_type
             elif dup token.value + derefp "setb" streq
@@ -492,7 +506,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 rot rot
                 _opcodes derefp create_opcode _opcodes setp
 
-                dup token.value + derefp stoi
+                dup token.value + derefp stoi 1 +
                 while dup 0 >
                     over token.line + derefi _pop_type drop
                     1 -
@@ -616,7 +630,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                     over token.line + derefi
                     over
                     OPCODE_IF swap rot
-                    _opcodes derefp create_opcode _opcodes setp  # <-- SEGFAULT
+                    _opcodes derefp create_opcode _opcodes setp
 
                     # Parse elif body
                     filename tokens token_index TOKEN_BLOCK_END _parse drop
@@ -653,13 +667,15 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
 
                     # Compare type stack after else body with after if body
                     _type_stack derefp _type_stack_after derefp list_eq False = if
-                        over token.line + derefi
+                        _type_stack derefp list.len + derefi puti " vs " puts
+                        _type_stack_after derefp list.len + derefi puti "\n" puts
+                        dup token.line + derefi
                         "else-body has different stack than if" _type_error
                 else
                     # Check type stack after if body
                     _type_stack_before derefp
                     _type_stack_after  derefp list_eq False = if
-                        over token.line + derefi
+                        dup token.line + derefi
                         "If block without else should not alter types" _type_error
 
                 # Create LABEL opcode
@@ -684,8 +700,8 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
 
                 # Create function signature and save pointer to current function
                 dup token.value + derefp create_function
-                _functions derefp list_append _functions setp
-                _functions derefp function_get_current _current_function setp
+                functions derefp list_append functions setp
+                functions derefp function_get_current _current_function setp
 
                 # Parse colon
                 drop tokens token_index _get_next_token
@@ -802,7 +818,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 _current_function derefp function_get_arg argument.type + derefi
                 _push_type
             elif dup token.value + derefp \
-                    _functions derefp function_get_from_list NULL !=
+                    functions derefp function_get_from_list NULL !=
                 # Check if function call is global
                 _current_function derefp NULL = if
                     dup token.line + derefi
@@ -815,7 +831,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 over token.line + derefi itos                   concat
                 " in "                                          concat
                 _current_function derefp function.name + derefp concat
-                "\n"                                            concat
+                "\\n"                                            concat
                 over token.line + derefi
                 OPCODE_PUSH_STRING rot rot
                 _opcodes derefp create_opcode _opcodes setp
@@ -830,7 +846,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
 
                 # Type check input arguments
                 dup token.line + derefi
-                over token.value + derefp _functions derefp function_get_from_list
+                over token.value + derefp functions derefp function_get_from_list
                 swap over function.args + derefp
                 _pop_args
 
@@ -879,8 +895,8 @@ def parse: ptr filename, ptr tokens -> ptr
     _opcodes derefp NULL = if
         OPCODE_SIZE new_list _opcodes setp
 
-    _functions derefp NULL = if
-        FUNCTION_SIZE new_list _functions setp
+    functions derefp NULL = if
+        FUNCTION_SIZE new_list functions setp
 
     _files derefp NULL = if
         PTR_SIZE new_list _files setp

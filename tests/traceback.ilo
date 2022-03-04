@@ -1,7 +1,7 @@
 # Description:Print traceback
 # Exit code:1
 # Stdout:
-# Stderr:tests/traceback.ilo, line 10 in bar\ntests/traceback.ilo, line 13 in foo\ntests/traceback.ilo, line 16 in main\n\nSomething went wrong
+# Stderr:tests/traceback.ilo, line 0x0a in bar\ntests/traceback.ilo, line 0x0d in foo\ntests/traceback.ilo, line 0x10 in main\n\nSomething went wrong
 
 def baz: -> void
     "Something went wrong" traceback

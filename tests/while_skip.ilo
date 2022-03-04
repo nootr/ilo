@@ -3,9 +3,8 @@
 # Stdout:
 # Stderr:
 
-import lib.std
 
 def main: int argc, ptr argv -> int
-    while False
-        "A" puts
     0
+    while False
+        drop 1
