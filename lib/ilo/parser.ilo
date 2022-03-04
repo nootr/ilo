@@ -22,7 +22,7 @@ buffer _current_function    8  # ptr
 
 def _current_function_contains_arg: ptr name -> bool
     # Returns True if there is a current function and it contains a given argument
-    _current_function NULL = if
+    _current_function derefp NULL = if
         False
     else
         name _current_function derefp function_get_arg NULL !=
@@ -65,6 +65,21 @@ def _pop_type: int line -> int
     _type_stack derefp list.len + derefi 0 = if
         line "Not enough values on the stack" _type_error
     _type_stack derefp list_pop_int
+
+
+def _pop_args: int line, ptr args -> void
+    # Pops a list of arguments (in reversed order)
+    args list.len + derefi 1 -  # index
+    while dup 0 >=
+        dup args list_fetch argument.type + derefi line _pop_type != if
+            dup args list_fetch
+            "Expected "
+            over argument.type + derefi type_to_str concat
+            " as argument for "                     concat
+            over argument.name + derefp             concat
+            line swap _type_error
+            drop
+        1 -
 
 
 const buffer_operand_buffer_name  0   # ptr
@@ -784,6 +799,45 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 dup token.value + derefp
                 _current_function derefp function_get_arg argument.type + derefi
                 _push_type
+            elif dup token.value + derefp \
+                    _functions derefp function_get_from_list NULL !=
+                # Check if function call is global
+                _current_function derefp NULL = if
+                    dup token.line + derefi
+                    "Global function calls are not supported" _type_error
+
+                # Create PUSH_STRING, PUSH_BOOL and CALL opcodes
+                verify_memory
+                filename ", line "                              concat
+                verify_memory
+                over token.line + derefi itos                   concat
+                " in "                                          concat
+                _current_function derefp function.name + derefp concat
+                "\n"                                            concat
+                over token.line + derefi
+                OPCODE_PUSH_STRING rot rot
+                _opcodes derefp create_opcode _opcodes setp
+
+                "1" over token.line + derefi OPCODE_PUSH_BOOL rot rot
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup token.value + derefp
+                over token.line + derefi
+                OPCODE_CALL rot rot
+                _opcodes derefp create_opcode _opcodes setp
+
+                # Type check input arguments
+                dup token.line + derefi
+                over token.value + derefp _functions derefp function_get_from_list
+                swap over function.args + derefp
+                _pop_args
+
+                # Append return type to type stack (when not void)
+                function.return_type + derefi
+                dup TYPE_VOID != if
+                    _push_type
+                else
+                    drop
             else
                 dup token.line + derefi over token.value + derefp
                 "Unknown identifier: " swap concat _type_error

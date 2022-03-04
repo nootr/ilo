@@ -858,7 +858,7 @@ def parse(
         elif token_type == TokenType.TYPE:  # DONE
             raise SyntaxError(f"Unexpected type on line {line_no}")
         elif token_type == TokenType.IDENTIFIER:
-            if value in functions:
+            if value in functions:  # DONE
                 if not current_function:
                     raise SyntaxError(f"Global function calls are not supported")
 

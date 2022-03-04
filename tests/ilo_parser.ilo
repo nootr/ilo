@@ -51,6 +51,8 @@ def main: int argc, ptr argv -> int
     "def o: int x -> bool_" \
                       dup 20 + 10  castc swap setc concat
     "    x 1 =_"      dup 9  + 10  castc swap setc concat
+    "def p: -> void_" dup 14 + 10  castc swap setc concat
+    "    1 o_"        dup 7  + 10  castc swap setc concat
 
     tokenize
     parse
@@ -185,11 +187,21 @@ def main: int argc, ptr argv -> int
     OPCODE_SIZE 3 * +
     dup opcode.opcode  + derefi OPCODE_RETURN =        "Op 34 should be return" assert
     dup opcode.line    + derefi 28 =                   "Op 34 should be on line 28" assert
-    _functions derefp list.len + derefi 1 =            "There should be 1 func" assert
-    _functions derefp function_get_current function.name + derefp "o" streq \
-                                                       "Func should be o" assert
+    _functions derefp list.len + derefi 2 =            "There should be 1 func" assert
+    _functions derefp function_get_current function.name + derefp "p" streq \
+                                                       "Cur. func should be p" assert
     "o" _functions derefp function_get_from_list function.args + derefp \
         list.len + derefi 1 =                          "Func should have 1 arg" assert
     "o" _functions derefp function_get_from_list function.return_type + derefi \
         TYPE_BOOL =                                    "Func should return bool" assert
+    OPCODE_SIZE 3 * +
+    dup opcode.opcode  + derefi OPCODE_PUSH_STRING =   "Op 35 should be push str" assert
+    dup opcode.line    + derefi 30 =                   "Op 35 should be on line 30" assert
+    OPCODE_SIZE +
+    dup opcode.opcode  + derefi OPCODE_PUSH_BOOL =     "Op 36 should be push bool" assert
+    dup opcode.line    + derefi 30 =                   "Op 36 should be on line 30" assert
+    OPCODE_SIZE +
+    dup opcode.opcode  + derefi OPCODE_CALL =          "Op 37 should be call" assert
+    dup opcode.operand + derefp "o" streq              "Op 37 should be o" assert
+    dup opcode.line    + derefi 30 =                   "Op 37 should be on line 30" assert
     0
