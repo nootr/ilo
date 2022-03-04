@@ -189,11 +189,11 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 dup TYPE_INT != over TYPE_BOOL != and if
                     over token.line + derefi
                     "Need integers or booleans for bitwise and" _type_error
-                over token.line + derefi _pop_type != if
-                    dup token.line + derefi
+                over token.line + derefi _pop_type dup rot != if
+                    over token.line + derefi
                     "Bitwise and needs two similar types as input" _type_error
 
-                TYPE_BOOL _push_type
+                _push_type
             elif dup token.value + derefp "or" streq
                 OPCODE_BITWISE_OR
                 over token.line + derefi
@@ -204,11 +204,11 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 dup TYPE_INT != over TYPE_BOOL != and if
                     over token.line + derefi
                     "Need integers or booleans for bitwise or" _type_error
-                over token.line + derefi _pop_type != if
-                    dup token.line + derefi
+                over token.line + derefi _pop_type dup rot != if
+                    over token.line + derefi
                     "Bitwise or needs two similar types as input" _type_error
 
-                TYPE_BOOL _push_type
+                _push_type
             elif dup token.value + derefp "shr" streq
                 OPCODE_SHIFT_RIGHT
                 over token.line + derefi
