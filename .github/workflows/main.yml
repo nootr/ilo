@@ -23,4 +23,4 @@ jobs:
         sudo apt install -y nasm
     - name: Functional tests
       run: |
-        ./test.sh
+        make test
