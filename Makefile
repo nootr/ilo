@@ -1,4 +1,4 @@
-.PHONY: clean
+.PHONY: clean test
 
 ilo.asm: src/ilo.ilo
 	./ilo0 src/ilo.ilo > ilo.asm
@@ -8,6 +8,9 @@ ilo.o: ilo.asm
 
 ilo: ilo.o
 	ld ilo.o -o ilo
+
+test: ilo
+	./test.sh
 
 clean:
 	rm ilo.asm ilo.o ilo
