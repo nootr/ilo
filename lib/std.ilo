@@ -615,31 +615,28 @@ def free: ptr block_data -> void
     verify_memory
 
 
-def puti: int i -> void
-    # Prints a number to STDOUT
+def itos: int i -> ptr
+    # Converts an integer to string
     i 255 <= i 0 >= and if
         5 malloc
         dup i swap i8tohex
-        dup puts
-        free
     else
         19 malloc
         dup i swap i64tohex
-        dup puts
-        free
+
+
+def puti: int i -> void
+    # Prints a number to STDOUT
+    i itos
+    dup puts
+    free
+
 
 def errori: int i -> void
     # Prints a number to STDERR
-    i 255 <= i 0 >= and if
-        5 malloc
-        dup i swap i8tohex
-        dup error
-        free
-    else
-        19 malloc
-        dup i swap i64tohex
-        dup error
-        free
+    i itos
+    dup error
+    free
 
 
 def concat: ptr a, ptr b -> ptr
