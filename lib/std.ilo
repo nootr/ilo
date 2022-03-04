@@ -645,7 +645,7 @@ def concat: ptr a, ptr b -> ptr
     a strlen b strlen + 1 + malloc
     a swap strcpy
     dup a strlen + b swap strcpy drop
-    dup a strlen + b strlen + 1 + 0 castc swap setc
+    dup a strlen + b strlen + 0 castc swap setc
 
 
 def stoi: ptr s -> int
