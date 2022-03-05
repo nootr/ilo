@@ -1,3 +1,6 @@
+import lib.std
+
+
 const TYPE_UNKNOWN  0
 const TYPE_BOOL     1
 const TYPE_CHAR     2
