@@ -13,8 +13,8 @@ def _format: ptr l, ptr r -> ptr
     # Formats a line of assembly code into two columns
     l " " concat
     while dup strlen 10 <=
-        " " concat
-    r concat "\n" concat
+        " " concatfl
+    r concatfl "\n" concatfl
 
 
 def _append: ptr l, ptr r, ptr buf -> void
@@ -44,9 +44,9 @@ def generate_code_x86_64_linux: ptr opcodes -> ptr
 
         # Add opcode info comment
         "; "
-        over opcode.line + derefi itos            concat
-        ": "                                      concat
-        over opcode.opcode + derefi opcode_to_str concat
+        over opcode.line + derefi itos            concatfr
+        ": "                                      concatfl
+        over opcode.opcode + derefi opcode_to_str concatfl
         "" swap _text _append
 
         dup opcode.opcode + derefi OPCODE_DUP = if
@@ -92,8 +92,8 @@ def generate_code_x86_64_linux: ptr opcodes -> ptr
         elif dup opcode.opcode + derefi OPCODE_PUSH_STRING =
             # Create string label and increment string index
             _string_index derefi
-            dup 1 + _string_index seti
-            itos "s_" swap concat
+            1 + dup _string_index seti
+            itos "s_" swap concatfr
 
             "mov rax, " over concat "" swap _text _append
             "" "push rax"                   _text _append
@@ -281,15 +281,15 @@ def generate_code_x86_64_linux: ptr opcodes -> ptr
         elif dup opcode.opcode + derefi OPCODE_WHILE_START =
             "" "pop rax"        _text _append
             "" "test rax, rax"  _text _append
-            "jz " over opcode.operand + derefp concat "_end" concat "" swap \
+            "jz " over opcode.operand + derefp concat "_end" concatfl "" swap \
                                 _text _append
         elif dup opcode.opcode + derefi OPCODE_WHILE_END =
             "jmp " over opcode.operand + derefp concat "" swap  _text _append
-            dup opcode.operand + derefp "_end:" concat ""        _text _append
+            dup opcode.operand + derefp "_end:" concat ""       _text _append
         else
             "Unknown opcode: "
             over opcode.opcode + derefi opcode_to_str
-            concat "\n" concat raise
+            concat "\n" concatfl raise
 
         drop
         1 +
@@ -355,7 +355,7 @@ def generate_code_x86_64_linux: ptr opcodes -> ptr
     "" "syscall"        _text _append
 
     # Concatenate buffers
-    _text derefp _data derefp concat _bss derefp concat
+    _text derefp _data derefp concat _bss derefp concatfl
     _text derefp free
     _data derefp free
     _bss derefp free

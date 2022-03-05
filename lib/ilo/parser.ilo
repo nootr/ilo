@@ -1,8 +1,7 @@
-# TODO: Free concat'ed strings
-
 import lib.std
 import lib.ilo.constants
 import lib.ilo.functions
+import lib.ilo.helpers
 import lib.ilo.lexer
 import lib.ilo.opcodes
 import lib.ilo.tokens
@@ -30,16 +29,6 @@ def _current_function_contains_arg: ptr name -> bool
         name _current_function derefp function_get_arg NULL !=
 
 
-def _type_error: int line, ptr message -> void
-    # Raises a type error
-    "Type error on line " error
-    line                  errori
-    ": "                  error
-    message               error
-    "\n"                  error
-    1 exit
-
-
 def _peek_next_token: ptr tokens, ptr index -> ptr
     # Returns the next token without increasing the token index
     index derefi tokens list.len + derefi < if
@@ -65,7 +54,7 @@ def _push_type: int type -> void
 def _pop_type: int line -> int
     # Pops and returns a type from the type stack
     _type_stack derefp list.len + derefi 0 = if
-        line "Not enough values on the stack" _type_error
+        line "Not enough values on the stack" syntax_error
     _type_stack derefp list_pop_int
 
 
@@ -77,9 +66,9 @@ def _pop_args: int line, ptr args -> void
             dup args list_fetch
             "Expected "
             over argument.type + derefi type_to_str concat
-            " as argument for "                     concat
-            over argument.name + derefp             concat
-            line swap _type_error
+            " as argument for "                     concatfl
+            over argument.name + derefp             concatfl
+            line swap syntax_error
             drop
         1 -
 
@@ -97,7 +86,6 @@ def _create_buffer_operand: ptr buf_name, ptr buf_size -> ptr
 
 def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
     # Parses a given tokenlist and returns a list of opcodes
-
     while tokens token_index _peek_next_token token.type + derefi return_on !=
         tokens token_index _get_next_token
 
@@ -139,12 +127,12 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 dup token.line + derefi _pop_type
                 dup TYPE_INT != over TYPE_PTR != and if
                     over token.line + derefi
-                    "Only integers and pointers could be added" _type_error
+                    "Only integers and pointers could be added" syntax_error
 
                 over token.line + derefi _pop_type
                 dup TYPE_INT != over TYPE_PTR != and if
                     rot token.line + derefi
-                    "Only integers and pointers could be added" _type_error
+                    "Only integers and pointers could be added" syntax_error
                     NULL rot rot
 
                 TYPE_PTR = swap TYPE_PTR = or if
@@ -159,12 +147,12 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
 
                 dup token.line + derefi _pop_type TYPE_INT != if
                     dup token.line + derefi
-                    "Second type in subtract must be an integer" _type_error
+                    "Second type in subtract must be an integer" syntax_error
 
                 dup token.line + derefi _pop_type
                 dup dup TYPE_INT != swap TYPE_PTR != and if
                     over token.line + derefi
-                    "Only integers and pointers can be subtracted" _type_error
+                    "Only integers and pointers can be subtracted" syntax_error
 
                 _push_type
             elif dup token.value + derefp "*" streq
@@ -176,7 +164,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 dup  token.line + derefi _pop_type TYPE_INT !=
                 over token.line + derefi _pop_type TYPE_INT != or if
                     dup token.line + derefi
-                    "Can't multiply non-integer" _type_error
+                    "Can't multiply non-integer" syntax_error
 
                 TYPE_INT _push_type
             elif dup token.value + derefp "and" streq
@@ -188,10 +176,10 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 dup token.line + derefi _pop_type
                 dup TYPE_INT != over TYPE_BOOL != and if
                     over token.line + derefi
-                    "Need integers or booleans for bitwise and" _type_error
+                    "Need integers or booleans for bitwise and" syntax_error
                 over token.line + derefi _pop_type dup rot != if
                     over token.line + derefi
-                    "Bitwise and needs two similar types as input" _type_error
+                    "Bitwise and needs two similar types as input" syntax_error
 
                 _push_type
             elif dup token.value + derefp "or" streq
@@ -203,10 +191,10 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 dup token.line + derefi _pop_type
                 dup TYPE_INT != over TYPE_BOOL != and if
                     over token.line + derefi
-                    "Need integers or booleans for bitwise or" _type_error
+                    "Need integers or booleans for bitwise or" syntax_error
                 over token.line + derefi _pop_type dup rot != if
                     over token.line + derefi
-                    "Bitwise or needs two similar types as input" _type_error
+                    "Bitwise or needs two similar types as input" syntax_error
 
                 _push_type
             elif dup token.value + derefp "shr" streq
@@ -218,7 +206,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 dup  token.line + derefi _pop_type TYPE_INT !=
                 over token.line + derefi _pop_type TYPE_INT != or if
                     dup token.line + derefi
-                    "Can't shift non-integer" _type_error
+                    "Can't shift non-integer" syntax_error
 
                 TYPE_INT _push_type
             elif dup token.value + derefp "shl" streq
@@ -230,12 +218,12 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 dup  token.line + derefi _pop_type TYPE_INT !=
                 over token.line + derefi _pop_type TYPE_INT != or if
                     dup token.line + derefi
-                    "Can't shift non-integer" _type_error
+                    "Can't shift non-integer" syntax_error
 
                 TYPE_INT _push_type
             else
                 "Unknown value for arithmetic token: "
-                over token.value + derefp concat "\n" concat
+                over token.value + derefp concat "\n" concatfl
                 raise
         elif dup token.type + derefi TOKEN_COMPARISON =
             dup token.value + derefp "=" streq if
@@ -270,13 +258,13 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 _opcodes derefp create_opcode _opcodes setp
             else
                 "Unknown comparison token: "
-                over token.value + derefp concat "\n" concat
+                over token.value + derefp concat "\n" concatfl
                 raise
 
             dup token.line + derefi _pop_type
             over token.line + derefi _pop_type != if
                 dup token.line + derefi
-                "Comparison between different types" _type_error
+                "Comparison between different types" syntax_error
 
             TYPE_BOOL _push_type
         elif dup token.type + derefi TOKEN_KEYWORD =
@@ -298,12 +286,12 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
 
                 dup token.line + derefi _pop_type TYPE_PTR != if
                     dup token.line + derefi
-                    "Traceback needs string as argument" _type_error
+                    "Traceback needs string as argument" syntax_error
             elif dup token.value + derefp "import" streq
                 drop tokens token_index _get_next_token
                 dup token.type + derefi TOKEN_IDENTIFIER != if
                     dup token.line + derefi
-                    "Expected identifier after import keyword" _type_error
+                    "Expected identifier after import keyword" syntax_error
 
                 dup token.value + derefp '.' '/' replace ".ilo" concat
                 dup _files derefp list_contains_string False = if
@@ -314,7 +302,8 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                     dup dup
                     read_file
                     tokenize
-                    8 malloc dup 0 swap seti return_on _parse drop
+                    8 malloc dup 0 swap seti return_on _parse
+                    drop
                 drop
             elif dup token.value + derefp "location" streq
                 # TODO: Implement this as soon as we've got a better int to str function
@@ -335,7 +324,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 tokens token_index _get_next_token
                 dup token.type + derefi TOKEN_IDENTIFIER != if
                     dup token.line + derefi
-                    "Expected identifier as buffer name" _type_error
+                    "Expected identifier as buffer name" syntax_error
                 token.value + derefp
 
                 dup _buffers derefp list_append_ptr _buffers setp
@@ -343,7 +332,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 tokens token_index _get_next_token
                 dup token.type + derefi TOKEN_INT != if
                     dup token.line + derefi
-                    "Expected integer as buffer size" _type_error
+                    "Expected integer as buffer size" syntax_error
                 token.value + derefp
 
                 _create_buffer_operand
@@ -355,13 +344,13 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 tokens token_index _get_next_token
                 dup token.type + derefi TOKEN_IDENTIFIER != if
                     dup token.line + derefi
-                    "Expected identifier as const key" _type_error
+                    "Expected identifier as const key" syntax_error
                 token.value + derefp
 
                 tokens token_index _get_next_token
                 dup token.type + derefi TOKEN_INT != if
                     dup token.line + derefi
-                    "Expected integer as const value" _type_error
+                    "Expected integer as const value" syntax_error
                 token.value + derefp
 
                 _constants derefp create_constant _constants setp
@@ -372,7 +361,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 _opcodes derefp create_opcode _opcodes setp
 
                 dup token.line + derefi _pop_type TYPE_PTR != if
-                    dup token.line + derefi "Need pointer to dereference" _type_error
+                    dup token.line + derefi "Need pointer to dereference" syntax_error
 
                 TYPE_BOOL _push_type
             elif dup token.value + derefp "derefc" streq
@@ -382,7 +371,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 _opcodes derefp create_opcode _opcodes setp
 
                 dup token.line + derefi _pop_type TYPE_PTR != if
-                    dup token.line + derefi "Need pointer to dereference" _type_error
+                    dup token.line + derefi "Need pointer to dereference" syntax_error
 
                 TYPE_CHAR _push_type
             elif dup token.value + derefp "derefi" streq
@@ -392,7 +381,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 _opcodes derefp create_opcode _opcodes setp
 
                 dup token.line + derefi _pop_type TYPE_PTR != if
-                    dup token.line + derefi "Need pointer to dereference" _type_error
+                    dup token.line + derefi "Need pointer to dereference" syntax_error
 
                 TYPE_INT _push_type
             elif dup token.value + derefp "derefp" streq
@@ -402,7 +391,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 _opcodes derefp create_opcode _opcodes setp
 
                 dup token.line + derefi _pop_type TYPE_PTR != if
-                    dup token.line + derefi "Need pointer to dereference" _type_error
+                    dup token.line + derefi "Need pointer to dereference" syntax_error
 
                 TYPE_PTR _push_type
             elif dup token.value + derefp "setb" streq
@@ -412,10 +401,10 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 _opcodes derefp create_opcode _opcodes setp
 
                 dup token.line + derefi _pop_type TYPE_PTR != if
-                    dup token.line + derefi "Need pointer to set" _type_error
+                    dup token.line + derefi "Need pointer to set" syntax_error
 
                 dup token.line + derefi _pop_type TYPE_BOOL != if
-                    dup token.line + derefi "Need boolean to set" _type_error
+                    dup token.line + derefi "Need boolean to set" syntax_error
             elif dup token.value + derefp "setc" streq
                 OPCODE_SET_C
                 over token.line + derefi
@@ -423,10 +412,10 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 _opcodes derefp create_opcode _opcodes setp
 
                 dup token.line + derefi _pop_type TYPE_PTR != if
-                    dup token.line + derefi "Need pointer to set" _type_error
+                    dup token.line + derefi "Need pointer to set" syntax_error
 
                 dup token.line + derefi _pop_type TYPE_CHAR != if
-                    dup token.line + derefi "Need character to set" _type_error
+                    dup token.line + derefi "Need character to set" syntax_error
             elif dup token.value + derefp "seti" streq
                 OPCODE_SET_I
                 over token.line + derefi
@@ -434,10 +423,10 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 _opcodes derefp create_opcode _opcodes setp
 
                 dup token.line + derefi _pop_type TYPE_PTR != if
-                    dup token.line + derefi "Need pointer to set" _type_error
+                    dup token.line + derefi "Need pointer to set" syntax_error
 
                 dup token.line + derefi _pop_type TYPE_INT != if
-                    dup token.line + derefi "Need integer to set" _type_error
+                    dup token.line + derefi "Need integer to set" syntax_error
             elif dup token.value + derefp "setp" streq
                 OPCODE_SET_P
                 over token.line + derefi
@@ -445,10 +434,10 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 _opcodes derefp create_opcode _opcodes setp
 
                 dup token.line + derefi _pop_type TYPE_PTR != if
-                    dup token.line + derefi "Need pointer to set" _type_error
+                    dup token.line + derefi "Need pointer to set" syntax_error
 
                 dup token.line + derefi _pop_type TYPE_PTR != if
-                    dup token.line + derefi "Need pointer to set" _type_error
+                    dup token.line + derefi "Need pointer to set" syntax_error
             elif dup token.value + derefp "dup" streq
                 OPCODE_DUP
                 over token.line + derefi
@@ -498,7 +487,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 dup token.type + derefi TOKEN_INT != if
                     dup token.line + derefi
                     "Syscall is missing argument count"
-                    _type_error
+                    syntax_error
 
                 dup dup token.value + derefp
                 swap token.line + derefi
@@ -531,7 +520,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 filename tokens token_index TOKEN_BLOCK_START _parse drop
                 over token.line + derefi _pop_type TYPE_BOOL != if
                     over token.line + derefi
-                    "Expected boolean result" _type_error
+                    "Expected boolean result" syntax_error
 
                 # Create copy of type stack
                 _type_stack derefp list_copy
@@ -548,7 +537,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 # Compare type stacks before and after while body
                 rot dup _type_stack derefp list_eq False = if
                     over token.line + derefi
-                    "While body should not change types" _type_error
+                    "While body should not change types" syntax_error
                 free
 
                 # Create WHILE_END opcode
@@ -559,7 +548,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 # Type check
                 dup token.line + derefi _pop_type TYPE_BOOL != if
                     dup token.line + derefi
-                    "Expected boolean result" _type_error
+                    "Expected boolean result" syntax_error
 
                 # Create copy of type stack
                 _type_stack derefp list_copy _type_stack_before setp
@@ -585,7 +574,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 drop tokens token_index _get_next_token
                 dup token.type + derefi TOKEN_BLOCK_START != if
                     dup token.line + derefi
-                    "Expected code block after if keyword" _type_error
+                    "Expected code block after if keyword" syntax_error
 
                 filename tokens token_index TOKEN_BLOCK_END _parse drop
 
@@ -619,12 +608,12 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                     # Type check
                     dup token.line + derefi _pop_type TYPE_BOOL != if
                         dup token.line + derefi
-                        "Expected boolean result" _type_error
+                        "Expected boolean result" syntax_error
 
                     # Compare type stacks before and after elif condition
                     _type_stack derefp _type_stack_before derefp list_eq False = if
                         over token.line + derefi
-                        "elif-condition should not change types" _type_error
+                        "elif-condition should not change types" syntax_error
 
                     # Create IF opcode
                     over token.line + derefi
@@ -638,7 +627,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                     # Compare type stack after elif body with after if body
                     _type_stack derefp _type_stack_after derefp list_eq False = if
                         over token.line + derefi
-                        "elif-body has different stack than if" _type_error
+                        "elif-body has different stack than if" syntax_error
 
                     # Create JUMP and LABEL opcodes
                     rot rot
@@ -661,7 +650,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                     drop tokens token_index _get_next_token
                     dup token.type + derefi TOKEN_BLOCK_START != if
                         dup token.line + derefi
-                        "Expected code block after else keyword" _type_error
+                        "Expected code block after else keyword" syntax_error
 
                     filename tokens token_index TOKEN_BLOCK_END _parse drop
 
@@ -670,13 +659,13 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                         _type_stack derefp list.len + derefi puti " vs " puts
                         _type_stack_after derefp list.len + derefi puti "\n" puts
                         dup token.line + derefi
-                        "else-body has different stack than if" _type_error
+                        "else-body has different stack than if" syntax_error
                 else
                     # Check type stack after if body
                     _type_stack_before derefp
                     _type_stack_after  derefp list_eq False = if
                         dup token.line + derefi
-                        "If block without else should not alter types" _type_error
+                        "If block without else should not alter types" syntax_error
 
                 # Create LABEL opcode
                 dup token.line + derefi rot
@@ -696,7 +685,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 drop tokens token_index _get_next_token
                 dup token.type + derefi TOKEN_IDENTIFIER != if
                     dup token.line + derefi
-                    "Expected identifier as function name" _type_error
+                    "Expected identifier as function name" syntax_error
 
                 # Create function signature and save pointer to current function
                 dup token.value + derefp create_function
@@ -707,7 +696,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 drop tokens token_index _get_next_token
                 dup token.type + derefi TOKEN_COLON != if
                     dup token.line + derefi
-                    "Expected colon after function name" _type_error
+                    "Expected colon after function name" syntax_error
 
                 # Create FUNCTION opcode
                 dup token.line + derefi
@@ -722,7 +711,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                     # Get argument type
                     dup token.type + derefi TOKEN_TYPE != if
                         dup token.line + derefi
-                        "Expected argument type in function definition" _type_error
+                        "Expected argument type in function definition" syntax_error
 
                     token.value + derefp str_to_type
 
@@ -731,7 +720,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
 
                     dup token.type + derefi TOKEN_IDENTIFIER != if
                         dup token.line + derefi
-                        "Expected identifier after type" _type_error
+                        "Expected identifier after type" syntax_error
 
                     token.value + derefp
 
@@ -744,14 +733,14 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                         drop tokens token_index _get_next_token
                     elif dup token.type + derefi TOKEN_ARROW !=
                         dup token.line + derefi
-                        "Expected comma or arrow after argument(s)" _type_error
+                        "Expected comma or arrow after argument(s)" syntax_error
 
                 # Parse return type
                 drop tokens token_index _get_next_token
 
                 dup token.type + derefi TOKEN_TYPE != if
                     dup token.line + derefi
-                    "Expected return type in function definition" _type_error
+                    "Expected return type in function definition" syntax_error
 
                 token.value + derefp str_to_type
                 _current_function derefp function_set_return_type
@@ -761,7 +750,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
 
                 dup token.type + derefi TOKEN_BLOCK_START != if
                     dup token.line + derefi
-                    "Expected code block after function definition" _type_error
+                    "Expected code block after function definition" syntax_error
 
                 filename tokens token_index TOKEN_BLOCK_END _parse drop
 
@@ -779,8 +768,8 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                         over token.line + derefi
                         "Function "
                         _current_function derefp function.name + derefp concat
-                        " returned incorrect type" concat
-                        _type_error
+                        " returned incorrect type" concatfl
+                        syntax_error
                 drop
 
                 # Empty type stack
@@ -789,9 +778,9 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 # Set current function to NULL
                 NULL _current_function setp
             else
-                "Unknown keyword: " over token.value + derefp concat "\n" concat raise
+                "Unknown keyword: " over token.value + derefp concat "\n" concatfl raise
         elif dup token.type + derefi TOKEN_TYPE =
-            dup token.line + derefi "Unexpected type" _type_error
+            dup token.line + derefi "Unexpected type" syntax_error
         elif dup token.type + derefi TOKEN_IDENTIFIER =
             dup token.value + derefp _constants derefp get_value NULL != if
                 OPCODE_PUSH_INT
@@ -822,16 +811,14 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 # Check if function call is global
                 _current_function derefp NULL = if
                     dup token.line + derefi
-                    "Global function calls are not supported" _type_error
+                    "Global function calls are not supported" syntax_error
 
                 # Create PUSH_STRING, PUSH_BOOL and CALL opcodes
-                verify_memory
                 filename ", line "                              concat
-                verify_memory
-                over token.line + derefi itos                   concat
-                " in "                                          concat
-                _current_function derefp function.name + derefp concat
-                "\\n"                                            concat
+                over token.line + derefi itos                   concatf
+                " in "                                          concatfl
+                _current_function derefp function.name + derefp concatfl
+                "\\n"                                           concatfl
                 over token.line + derefi
                 OPCODE_PUSH_STRING rot rot
                 _opcodes derefp create_opcode _opcodes setp
@@ -858,7 +845,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                     drop
             else
                 dup token.line + derefi over token.value + derefp
-                "Unknown identifier: " swap concat _type_error
+                "Unknown identifier: " swap concat syntax_error
         else
             "Unknown token type: "
             over token.type + derefi token_to_str concat

@@ -13,8 +13,9 @@ def _tokenize: ptr source, ptr tokens -> ptr
     # Initialize variables
     TOKEN_SIZE new_list tokens setp
 
-    _indent_stack derefp NULL = if
-        0 INT_SIZE new_list list_append_int _indent_stack setp
+    _indent_stack derefp NULL != if
+        _indent_stack derefp free
+    0 INT_SIZE new_list list_append_int _indent_stack setp
 
     True _at_start setb
 

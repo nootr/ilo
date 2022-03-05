@@ -648,6 +648,25 @@ def concat: ptr a, ptr b -> ptr
     dup a strlen + b strlen + 0 castc swap setc
 
 
+def concatfl: ptr a, ptr b -> ptr
+    # Concatenates two strings and frees the first
+    a b concat
+    a free
+
+
+def concatfr: ptr a, ptr b -> ptr
+    # Concatenates two strings and frees the second
+    a b concat
+    b free
+
+
+def concatf: ptr a, ptr b -> ptr
+    # Concatenates two strings and frees them
+    a b concat
+    a free
+    b free
+
+
 def stoi: ptr s -> int
     # Converts a string to an integer
     s 0
