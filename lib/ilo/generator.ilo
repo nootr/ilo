@@ -20,16 +20,16 @@ def _format: ptr l, ptr r -> ptr
 
 def _append: ptr l, ptr r, ptr buf -> void
     # Append to a given buffer
-    buf derefp l r _format concat buf setp
+    buf derefp l r _format concatf buf setp
 
 
 def generate_code_x86_64_linux: ptr opcodes -> ptr
     # Takes a list of opcodes and converts it into x86_64 NASM assembly as string
 
     # Initialize buffers
-    "" _text setp
-    "" _data setp
-    "" _bss setp
+    1 malloc dup _text setp 0 castc swap setc
+    1 malloc dup _data setp 0 castc swap setc
+    1 malloc dup _bss setp  0 castc swap setc
     0 _string_index seti
 
     "" "global _start"      _text _append
