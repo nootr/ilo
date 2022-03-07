@@ -168,6 +168,30 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                     "Can't multiply non-integer" syntax_error
 
                 TYPE_INT _push_type
+            elif dup token.value + derefp "/" streq
+                OPCODE_DIVIDE
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup  token.line + derefi _pop_type TYPE_INT !=
+                over token.line + derefi _pop_type TYPE_INT != or if
+                    dup token.line + derefi
+                    "Can't divide non-integer" syntax_error
+
+                TYPE_INT _push_type
+            elif dup token.value + derefp "%" streq
+                OPCODE_MOD
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup  token.line + derefi _pop_type TYPE_INT !=
+                over token.line + derefi _pop_type TYPE_INT != or if
+                    dup token.line + derefi
+                    "Can't mod non-integer" syntax_error
+
+                TYPE_INT _push_type
             elif dup token.value + derefp "and" streq
                 OPCODE_BITWISE_AND
                 over token.line + derefi

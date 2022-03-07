@@ -434,14 +434,14 @@ def parse(
                         f"Non-integer multiplied on line {line_no}"
                     )
                 stack.append(Type.INT)
-            elif value == "/":
+            elif value == "/":  # DONE
                 opcodes.append((Opcode.DIVIDE, 0, line_no))
                 if pop(line_no) != Type.INT or pop(line_no) != Type.INT:
                     raise TypeError(
                         f"Non-integer divided on line {line_no}"
                     )
                 stack.append(Type.INT)
-            elif value == "%":
+            elif value == "%":  # DONE
                 opcodes.append((Opcode.MOD, 0, line_no))
                 if pop(line_no) != Type.INT or pop(line_no) != Type.INT:
                     raise TypeError(
@@ -984,13 +984,13 @@ def generate_code():
             output("", "pop", "rbx")
             output("", "imul", "rbx, rax")
             output("", "push", "rbx")
-        elif opcode == Opcode.DIVIDE:
+        elif opcode == Opcode.DIVIDE:  # DONE
             output("", "xor", "rdx, rdx")
             output("", "pop", "rbx")
             output("", "pop", "rax")
             output("", "div", "rbx")
             output("", "push", "rax")
-        elif opcode == Opcode.MOD:
+        elif opcode == Opcode.MOD:  # DONE
             output("", "xor", "rdx, rdx")
             output("", "pop", "rbx")
             output("", "pop", "rax")

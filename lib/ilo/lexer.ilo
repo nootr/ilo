@@ -121,6 +121,10 @@ def _tokenize: ptr source, ptr tokens -> ptr
             over TOKEN_ARITHMETIC "/"
             tokens derefp create_token tokens setp
             1 +
+        elif dup derefc '%' =
+            over TOKEN_ARITHMETIC "%"
+            tokens derefp create_token tokens setp
+            1 +
         elif dup "and" is_word
             over TOKEN_ARITHMETIC "and"
             tokens derefp create_token tokens setp

@@ -137,6 +137,18 @@ def generate_code_x86_64_linux: ptr opcodes -> ptr
             "" "pop rbx"        _text _append
             "" "imul rbx, rax"  _text _append
             "" "push rbx"       _text _append
+        elif dup opcode.opcode + derefi OPCODE_DIVIDE =
+            "" "xor rdx, rdx"   _text _append
+            "" "pop rbx"        _text _append
+            "" "pop rax"        _text _append
+            "" "div rbx"        _text _append
+            "" "push rax"       _text _append
+        elif dup opcode.opcode + derefi OPCODE_MOD =
+            "" "xor rdx, rdx"   _text _append
+            "" "pop rbx"        _text _append
+            "" "pop rax"        _text _append
+            "" "div rbx"        _text _append
+            "" "push rdx"       _text _append
         elif dup opcode.opcode + derefi OPCODE_RETURN =
             "" "pop rax"      _text _append
             "" "mov rsp, rbp" _text _append

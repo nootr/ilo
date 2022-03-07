@@ -14,39 +14,41 @@ const OPCODE_DEREF_B              7
 const OPCODE_DEREF_C              8
 const OPCODE_DEREF_I              9
 const OPCODE_DEREF_P              10
-const OPCODE_DROP                 11
-const OPCODE_DUP                  12
-const OPCODE_FUNCTION             13
-const OPCODE_GET_ARG              14
-const OPCODE_GET_BUFFER           15
-const OPCODE_IF                   16
-const OPCODE_IS_EQUAL             17
-const OPCODE_IS_GREATER           18
-const OPCODE_IS_GREATER_OR_EQUAL  19
-const OPCODE_IS_LESS              20
-const OPCODE_IS_LESS_OR_EQUAL     21
-const OPCODE_IS_NOT_EQUAL         22
-const OPCODE_JUMP                 23
-const OPCODE_LABEL                24
-const OPCODE_MULTIPLY             25
-const OPCODE_OVER                 26
-const OPCODE_PUSH_BOOL            27
-const OPCODE_PUSH_CHAR            28
-const OPCODE_PUSH_INT             29
-const OPCODE_PUSH_STRING          30
-const OPCODE_RETURN               31
-const OPCODE_ROT                  32
-const OPCODE_SET_B                33
-const OPCODE_SET_C                34
-const OPCODE_SET_I                35
-const OPCODE_SET_P                36
-const OPCODE_SHIFT_LEFT           37
-const OPCODE_SHIFT_RIGHT          38
-const OPCODE_SUBTRACT             39
-const OPCODE_SWAP                 40
-const OPCODE_SYSCALL              41
-const OPCODE_WHILE_END            42
-const OPCODE_WHILE_START          43
+const OPCODE_DIVIDE               11
+const OPCODE_DROP                 12
+const OPCODE_DUP                  13
+const OPCODE_FUNCTION             14
+const OPCODE_GET_ARG              15
+const OPCODE_GET_BUFFER           16
+const OPCODE_IF                   17
+const OPCODE_IS_EQUAL             18
+const OPCODE_IS_GREATER           19
+const OPCODE_IS_GREATER_OR_EQUAL  20
+const OPCODE_IS_LESS              21
+const OPCODE_IS_LESS_OR_EQUAL     22
+const OPCODE_IS_NOT_EQUAL         23
+const OPCODE_JUMP                 24
+const OPCODE_LABEL                25
+const OPCODE_MULTIPLY             26
+const OPCODE_MOD                  27
+const OPCODE_OVER                 28
+const OPCODE_PUSH_BOOL            29
+const OPCODE_PUSH_CHAR            30
+const OPCODE_PUSH_INT             31
+const OPCODE_PUSH_STRING          32
+const OPCODE_RETURN               33
+const OPCODE_ROT                  34
+const OPCODE_SET_B                35
+const OPCODE_SET_C                36
+const OPCODE_SET_I                37
+const OPCODE_SET_P                38
+const OPCODE_SHIFT_LEFT           39
+const OPCODE_SHIFT_RIGHT          40
+const OPCODE_SUBTRACT             41
+const OPCODE_SWAP                 42
+const OPCODE_SYSCALL              43
+const OPCODE_WHILE_END            44
+const OPCODE_WHILE_START          45
 
 
 def opcode_to_str: int opcode -> ptr
@@ -74,6 +76,8 @@ def opcode_to_str: int opcode -> ptr
         "dereference integer"
     elif dup OPCODE_DEREF_P =
         "dereference pointer"
+    elif dup OPCODE_DIVIDE =
+        "divide"
     elif dup OPCODE_DROP =
         "drop"
     elif dup OPCODE_DUP =
@@ -102,6 +106,8 @@ def opcode_to_str: int opcode -> ptr
         "jump"
     elif dup OPCODE_LABEL =
         "label"
+    elif dup OPCODE_MOD =
+        "mod"
     elif dup OPCODE_MULTIPLY =
         "multiply"
     elif dup OPCODE_OVER =
