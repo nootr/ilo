@@ -5,7 +5,7 @@ import lib.std
 # A hashmap to achieve O(1) lookup and insert times. It will use the sdbm hashing
 # algorithm [1] and linear probing [2] as collision resolving.
 #
-# The dictionary capacity will double when the items-bucket ratio exceeds 50%.
+# The dictionary capacity will double when the items-bucket ratio exceeds 33%.
 #
 # [1] www.cse.yorku.ca/~oz/hash.html
 # [2] Linear Probing - Wikipedia: https://en.wikipedia.org/wiki/Linear_probing
@@ -72,7 +72,7 @@ def dict_fetch: ptr key, ptr dict -> ptr
 def dict_insert: ptr key, ptr value, ptr dict -> ptr
     # Adds a key-value pair to the dictionary and returns a pointer to the dictionary
     # Check if the dictionary needs to be expanded
-    dict dict.inserts + derefi 2 * dict dict.buckets + derefi > if
+    dict dict.inserts + derefi 3 * dict dict.buckets + derefi > if
         # Create a dictionary with twice the capacity
         dict dict.buckets + derefi 2 * create_dict
 
