@@ -537,6 +537,16 @@ def malloc: int size -> ptr
     verify_memory
 
 
+def zalloc: int size -> ptr
+    # Allocates a zero-initialized memory block of given size and returns its address
+    size malloc # buf
+    0           # index
+    while dup size <
+        over over + 0 castc swap setc
+        1 +
+    drop
+
+
 def memcpy: ptr src, ptr dest, int num -> void
     # Copies a given amount of bytes from src to dest
     0
