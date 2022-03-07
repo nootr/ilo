@@ -157,7 +157,7 @@ def fetch_tokens(program):
         elif is_word("shl", program):  # DONE
             tokens.append((TokenType.ARITHMETIC, "shl", line_no))
             program = program[3:]
-        elif program[0] in "+-*/":  # DONE
+        elif program[0] in "+-*/%":  # DONE
             tokens.append((TokenType.ARITHMETIC, program[0], line_no))
             program = program[1:]
         elif program[0] in "=<>":  # DONE
@@ -307,6 +307,7 @@ class Opcode:
     DEREF_C = "dereference pointer to character"
     DEREF_I = "dereference pointer to integer"
     DEREF_P = "dereference pointer to pointer"
+    DIVIDE = "divide"
     DROP = "drop"
     DUP = "dup"
     FUNCTION = "function definition"
@@ -321,6 +322,7 @@ class Opcode:
     IS_NOT_EQUAL = "is not equal?"
     JUMP = "jump"
     LABEL = "label"
+    MOD = "mod"
     MULTIPLY = "multiply"
     OVER = "over"
     PUSH_BOOL = "push bool"
@@ -430,6 +432,20 @@ def parse(
                 if pop(line_no) != Type.INT or pop(line_no) != Type.INT:
                     raise TypeError(
                         f"Non-integer multiplied on line {line_no}"
+                    )
+                stack.append(Type.INT)
+            elif value == "/":
+                opcodes.append((Opcode.DIVIDE, 0, line_no))
+                if pop(line_no) != Type.INT or pop(line_no) != Type.INT:
+                    raise TypeError(
+                        f"Non-integer divided on line {line_no}"
+                    )
+                stack.append(Type.INT)
+            elif value == "%":
+                opcodes.append((Opcode.MOD, 0, line_no))
+                if pop(line_no) != Type.INT or pop(line_no) != Type.INT:
+                    raise TypeError(
+                        f"Non-integer mod'ed on line {line_no}"
                     )
                 stack.append(Type.INT)
             elif value == "and":  # DONE
@@ -968,6 +984,18 @@ def generate_code():
             output("", "pop", "rbx")
             output("", "imul", "rbx, rax")
             output("", "push", "rbx")
+        elif opcode == Opcode.DIVIDE:
+            output("", "xor", "rdx, rdx")
+            output("", "pop", "rbx")
+            output("", "pop", "rax")
+            output("", "div", "rbx")
+            output("", "push", "rax")
+        elif opcode == Opcode.MOD:
+            output("", "xor", "rdx, rdx")
+            output("", "pop", "rbx")
+            output("", "pop", "rax")
+            output("", "div", "rbx")
+            output("", "push", "rdx")
         elif opcode == Opcode.BITWISE_AND:  # DONE
             output("", "pop", "rax")
             output("", "pop", "rbx")

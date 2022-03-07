@@ -1,0 +1,7 @@
+# Description:Modulo
+# Exit code:2
+# Stdout:
+# Stderr:
+
+def main: int argc, ptr argv -> int
+    5 3 %
