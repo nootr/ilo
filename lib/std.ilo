@@ -212,7 +212,11 @@ def startswith: ptr s, ptr q -> bool
 
 def streq: ptr s, ptr q -> bool
     # Returns True if str s is equal to string q
-    q strlen s strlen = if
+    s NULL = q NULL = and if
+        True
+    elif s NULL = q NULL = or
+        False
+    elif q strlen s strlen =
         False # found_difference
         0     # index
         while dup q + derefc 0 castc !=
