@@ -1,6 +1,6 @@
 import lib.std
+import lib.std.dict
 import lib.std.list
-import lib.ilo.constants
 import lib.ilo.functions
 import lib.ilo.helpers
 import lib.ilo.lexer
@@ -378,7 +378,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                     "Expected integer as const value" syntax_error
                 token.value + derefp
 
-                _constants derefp create_constant _constants setp
+                _constants derefp dict_insert _constants setp
             elif dup token.value + derefp "derefb" streq
                 OPCODE_DEREF_B
                 over token.line + derefi
@@ -807,9 +807,9 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
         elif dup token.type + derefi TOKEN_TYPE =
             dup token.line + derefi "Unexpected type" syntax_error
         elif dup token.type + derefi TOKEN_IDENTIFIER =
-            dup token.value + derefp _constants derefp get_value NULL != if
+            dup token.value + derefp _constants derefp dict_fetch NULL != if
                 OPCODE_PUSH_INT
-                over dup token.value + derefp _constants derefp get_value
+                over dup token.value + derefp _constants derefp dict_fetch
                 swap token.line + derefi
                 _opcodes derefp create_opcode _opcodes setp
 
@@ -902,7 +902,7 @@ def parse: ptr filename, ptr tokens -> ptr
         PTR_SIZE new_list _buffers setp
 
     _constants derefp NULL = if
-        CONSTANT_SIZE new_list _constants setp
+        new_dict _constants setp
 
     _opcodes derefp NULL = if
         OPCODE_SIZE new_list _opcodes setp
