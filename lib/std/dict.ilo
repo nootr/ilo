@@ -1,0 +1,118 @@
+import lib.std
+
+
+# DICT
+# A hashmap to achieve O(1) lookup and insert times. It will use the sdbm hashing
+# algorithm [1] and linear probing [2] as collision resolving.
+#
+# The dictionary capacity will double when the items-bucket ratio exceeds 50%.
+#
+# [1] www.cse.yorku.ca/~oz/hash.html
+# [2] Linear Probing - Wikipedia: https://en.wikipedia.org/wiki/Linear_probing
+
+
+const dict.inserts        0  # int
+const dict.buckets        8  # int
+const DICT_METADATA_SIZE  16
+
+const dict_bucket.key     0  # ptr
+const dict_bucket.value   8  # ptr
+const dict_bucket.taken   16 # bool
+const DICT_BUCKET_SIZE    17
+
+
+def hash: ptr s, int size -> int
+    # An implementation of the sdbm hashing algorithm
+    0 # hash
+    0 # index
+    while dup size <
+        dup s + derefc casti
+        # hash index char
+        rot
+        # index char hash
+        dup 6 shl
+        # index char hash hash<<6
+        over 16 shl +
+        # index char hash hash<<6+hash<<16
+        swap - +
+        # index char+hash<<6+hash<<16-hash
+        swap
+        1 +
+    drop
+
+
+def create_dict: int buckets -> ptr
+    # Initializes a dictionary with a given number of buckets and returns its pointer
+    buckets DICT_BUCKET_SIZE * DICT_METADATA_SIZE + zalloc
+    0       over dict.inserts + seti
+    buckets over dict.buckets + seti
+
+
+def new_dict: -> ptr
+    # Creates a new dictionary and returns its pointer
+    2 create_dict
+
+
+def dict_fetch: ptr key, ptr dict -> ptr
+    # Looks up a key in a given dictionary and return a pointer to the value (or NULL)
+    key dup strlen hash dict dict.buckets + derefi %
+    dict DICT_METADATA_SIZE + over DICT_BUCKET_SIZE * +
+    while dup dict_bucket.taken + derefb \
+          over dict_bucket.key + derefp key streq False = and
+        drop
+        1 + dict dict.buckets + derefi %
+        dict DICT_METADATA_SIZE + over DICT_BUCKET_SIZE * +
+
+    dup dict_bucket.taken + derefb if
+        dup dict_bucket.value + derefp
+    else
+        NULL
+
+
+def dict_insert: ptr key, ptr value, ptr dict -> ptr
+    # Adds a key-value pair to the dictionary and returns a pointer to the dictionary
+    # Check if the dictionary needs to be expanded
+    dict dict.inserts + derefi 2 * dict dict.buckets + derefi > if
+        # Create a dictionary with twice the capacity
+        dict dict.buckets + derefi 2 * create_dict
+
+        # Re-hash dictionary
+        0  # bucket index
+        while dup dict dict.buckets + derefi <
+            dup DICT_BUCKET_SIZE * DICT_METADATA_SIZE + dict +
+
+            # Re-hash bucket if it's filled
+            dup dict_bucket.taken + derefb if
+                rot dup rot
+                dup  dict_bucket.key + derefp
+                swap dict_bucket.value + derefp
+                rot
+                dict_insert drop
+                swap
+            else
+                drop
+
+            1 +
+        drop
+    else
+        dict
+
+    # Hash key
+    key dup strlen hash
+    over dict.buckets + derefi %
+
+    # Find first empty bucket
+    over DICT_METADATA_SIZE + over DICT_BUCKET_SIZE * +
+    while dup dict_bucket.taken + derefb
+        drop
+        1 + over dict.buckets + derefi %
+        over DICT_METADATA_SIZE + over DICT_BUCKET_SIZE * +
+
+    # Fill bucket
+    key   over dict_bucket.key + setp
+    value over dict_bucket.value + setp
+    True  over dict_bucket.taken + setb
+
+    # Increment dictionary inserts count
+    drop drop
+    dup dict.inserts + derefi 1 + over dict.inserts + seti

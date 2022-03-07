@@ -1,0 +1,23 @@
+# Description:Standard library - Dictionary
+# Exit code:0
+# Stdout:
+# Stderr:
+
+import lib.std.dict
+
+
+def main: -> int
+    new_dict
+
+    "foo" "bar" rot dict_insert
+    "baz" "qwe" rot dict_insert
+    "asd" "zxc" rot dict_insert
+    "zxc" "zxc" rot dict_insert
+
+    "foo" over dict_fetch "bar" streq "foo -> bar" assert
+    "baz" over dict_fetch "qwe" streq "baz -> qwe" assert
+    "asd" over dict_fetch "zxc" streq "asd -> zxc" assert
+    "zxc" over dict_fetch "zxc" streq "zxc -> zxc" assert
+    "huh" over dict_fetch NULL =      "huh -> NULL" assert
+
+    0
