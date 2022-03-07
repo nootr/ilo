@@ -94,6 +94,9 @@ def dict_insert: ptr key, ptr value, ptr dict -> ptr
 
             1 +
         drop
+
+        # Free old dictionary
+        dict free
     else
         dict
 
