@@ -561,6 +561,27 @@ def memcpy: ptr src, ptr dest, int num -> void
     verify_memory
 
 
+def merge_blocks: ptr a, ptr b -> void
+    # Merges two freed blocks
+
+    a block.free + derefb b block.free + derefb and "Blocks should be free" assert
+
+    # Add b.size and sizeof(metadata) to a.size
+    a block.size + derefi
+    b block.size + derefi +
+    BLOCK_METADATA_SIZE +
+    a block.size + seti
+
+    # Set b.next.prev to a
+    b block.next + derefp NULL != if
+        a
+        b block.next + derefp block.prev + setp
+
+    # Set a.next to b.next
+    b block.next + derefp
+    a block.next + setp
+
+
 def free: ptr block_data -> void
     # Frees a given block
 
@@ -574,31 +595,12 @@ def free: ptr block_data -> void
     dup block.next + derefp NULL != if
         dup block.next + derefp block.free + derefb if
             # Next block is free; merge
-            dup block.next + derefp block.size + derefi BLOCK_METADATA_SIZE +
-            swap dup rot swap block.size + derefi +
-            swap dup rot swap block.size + seti
-
-            dup block.next + derefp block.next + derefp
-            swap dup rot swap block.next + setp
-
-            dup block.prev + derefp NULL !=
-            over block.next + derefp NULL != and if
-                dup
-                dup block.next + derefp block.prev + setp # <--
+            dup dup block.next + derefp merge_blocks
 
     dup block.prev + derefp NULL != if
         dup block.prev + derefp block.free + derefb if
             # Previous block is free; merge
-            dup block.prev + derefp block.size + derefi
-            swap dup rot swap block.size + derefi + BLOCK_METADATA_SIZE +
-            swap dup rot swap block.prev + derefp block.size + seti
-
-            dup block.next + derefp
-            swap dup rot swap block.prev + derefp block.next + setp
-
-            dup block.next + derefp NULL != if
-                dup block.prev + derefp
-                swap dup rot swap block.next + derefp block.prev + setp
+            dup block.prev + derefp over merge_blocks
 
     # Find the first block
     while dup block.prev + derefp NULL !=
