@@ -304,7 +304,8 @@ const block.free          24  # boolean
 const block.data          25  # data
 const BLOCK_METADATA_SIZE 25
 
-buffer root_page 8
+buffer current_page 8
+buffer root_page    8
 
 
 buffer VERIFY_MEMORY 1  # Set to True to verify memory
@@ -499,27 +500,30 @@ def _malloc_block_is_available_or_NULL: ptr block, int size -> bool
 def malloc: int size -> ptr
     # Allocates a memory block of given size and returns its address
 
-    root_page NULL != "Root page should exist\n" assert
+    # Set current page to root if this is the initial malloc
+    current_page derefp NULL = if
+        root_page current_page setp
+
     size 0 = if
         "Size should be greater than zero\n" raise
 
-    root_page   # var: current_page
-    NULL        # var: available_block
-
     # Find the next available block
+    NULL  # available_block
     while dup NULL =
         drop
 
-        # current_page = get_next_page()
+        # Fetch next page
+        current_page derefp
         size PAGE_METADATA_SIZE + BLOCK_METADATA_SIZE + \
             PAGE_SIZE max _malloc_get_next_page
+        dup current_page setp
 
         root_page page.next + derefp NULL != "First page should be set\n" assert
         dup root_page != "Page should not be root page\n" assert
         dup NULL != "Next page should be set\n" assert
 
-        # current_block = current_page.blocks[0]
-        dup page.blocks +
+        # Find available block
+        page.blocks +
 
         dup block.size + derefi 0 != "Block size should be greater than zero\n" assert
 
@@ -536,6 +540,12 @@ def malloc: int size -> ptr
     else
         # The block not is a perfect fit, split into a taken and a free block
         dup block.size + derefi size _malloc_split_block
+
+    # Set current page to root page if it's the last page
+    current_page derefp page.next + derefp NULL = if
+        root_page current_page setp
+    else
+        current_page derefp page.prev + derefp current_page setp
 
     block.data +
     verify_memory
