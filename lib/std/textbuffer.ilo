@@ -1,0 +1,49 @@
+import lib.std
+
+
+# TEXTBUFFER
+# An array of characters which is optimized to append strings to.
+
+const textbuffer.len            0  # int
+const textbuffer.capacity       8  # int
+const textbuffer.content        16
+const TEXTBUFFER_METADATA_SIZE  16
+
+
+def textbuffer_create: int capacity -> ptr
+    # Initializes an empty textbuffer with a given capacity and returns its pointer
+    capacity TEXTBUFFER_METADATA_SIZE + malloc
+    capacity  over textbuffer.capacity  + seti
+    0         over textbuffer.len       + seti
+    0 castc   over textbuffer.content   + setc
+
+
+def new_textbuffer: -> ptr
+    # Returns a pointer to an empty textbuffer
+    1 textbuffer_create
+
+
+def textbuffer_append: ptr s, ptr buf -> ptr
+    # Copies a string into the buffer
+
+    # Check if string fits in buffer
+    s strlen
+    buf
+    while over over textbuffer.len + derefi + over textbuffer.capacity + derefi >=
+        # The buffer is too small; double its capacity
+        dup textbuffer.capacity + derefi 2 * textbuffer_create
+
+        # Copy content and metadata
+        over textbuffer.content + over textbuffer.content + strcpy drop
+        over textbuffer.len + derefi over textbuffer.len + seti
+
+        # Free old buffer
+        swap free
+
+    # Copy string to buffer
+    s
+    over dup textbuffer.len + derefi + TEXTBUFFER_METADATA_SIZE +
+    strcpy drop
+
+    # Update textbuffer.len
+    swap over textbuffer.len + derefi + over textbuffer.len + seti

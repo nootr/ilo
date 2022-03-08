@@ -1,0 +1,22 @@
+# Description:Standard library - Textbuffer
+# Exit code:0
+# Stdout:Hello, world!
+# Stderr:
+
+import lib.std
+import lib.std.textbuffer
+
+def main: ptr argv, int argc -> int
+    new_textbuffer
+
+    "Hello, " swap textbuffer_append
+    dup textbuffer.capacity + derefi 8 = "Buffer should have cap. 8" assert
+    dup textbuffer.len +      derefi 7 = "Buffer should have len 7" assert
+
+    "world!"  swap textbuffer_append
+    dup textbuffer.capacity + derefi 16 = "Buffer should have cap. 16" assert
+    dup textbuffer.len +      derefi 13 = "Buffer should have len 13" assert
+
+    dup textbuffer.content + puts
+    free
+    0
