@@ -13,8 +13,6 @@ buffer functions            8  # ptr
 buffer _if_index            8  # int
 buffer _while_index         8  # int
 buffer _type_stack          8  # ptr
-buffer _type_stack_before   8  # ptr
-buffer _type_stack_after    8  # ptr
 buffer _buffers             8  # ptr
 buffer _constants           8  # ptr
 buffer _opcodes             8  # ptr
@@ -85,7 +83,13 @@ def _create_buffer_operand: ptr buf_name, ptr buf_size -> ptr
     buf_size over buffer_operand_buffer_size + setp
 
 
-def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
+def _parse:
+ptr filename,
+ptr tokens,
+ptr token_index,
+ptr type_stack_before,
+ptr type_stack_after,
+int return_on -> ptr
     # Parses a given tokenlist and returns a list of opcodes
     while tokens token_index _peek_next_token token.type + derefi return_on !=
         tokens token_index _get_next_token
@@ -327,7 +331,10 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                     dup dup
                     read_file
                     tokenize
-                    8 malloc dup 0 swap seti return_on _parse
+                    8 malloc dup 0 swap seti
+                    8 malloc
+                    8 malloc
+                    return_on _parse
                     drop
                 drop
             elif dup token.value + derefp "location" streq
@@ -542,7 +549,8 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 _opcodes derefp create_opcode _opcodes setp swap
 
                 # Parse while condition
-                filename tokens token_index TOKEN_BLOCK_START _parse drop
+                filename tokens token_index 8 malloc 8 malloc TOKEN_BLOCK_START _parse
+                drop
                 over token.line + derefi _pop_type TYPE_BOOL != if
                     over token.line + derefi
                     "Expected boolean result" syntax_error
@@ -557,7 +565,8 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 _opcodes derefp create_opcode _opcodes setp
 
                 # Parse while body
-                filename tokens token_index TOKEN_BLOCK_END _parse drop
+                filename tokens token_index 8 malloc 8 malloc TOKEN_BLOCK_END _parse
+                drop
 
                 # Compare type stacks before and after while body
                 rot dup _type_stack derefp list_eq False = if
@@ -576,7 +585,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                     "Expected boolean result" syntax_error
 
                 # Create copy of type stack
-                _type_stack derefp list_copy _type_stack_before setp
+                _type_stack derefp list_copy type_stack_before setp
 
                 # Create end label
                 23 malloc
@@ -601,7 +610,8 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                     dup token.line + derefi
                     "Expected code block after if keyword" syntax_error
 
-                filename tokens token_index TOKEN_BLOCK_END _parse drop
+                filename tokens token_index 8 malloc 8 malloc TOKEN_BLOCK_END _parse
+                drop
 
                 # Create JUMP and LABEL opcodes
                 rot over token.line + derefi over swap
@@ -613,8 +623,8 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                 _opcodes derefp create_opcode _opcodes setp
 
                 # Restore stack to before if-body and keep copy of stack after if-body
-                _type_stack derefp _type_stack_after setp
-                _type_stack_before derefp list_copy _type_stack setp
+                _type_stack derefp type_stack_after setp
+                type_stack_before derefp list_copy _type_stack setp
 
                 # Parse `elif` statements
                 while tokens token_index _peek_next_token \
@@ -628,7 +638,8 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                     _if_index derefi 1 + _if_index seti
 
                     # Parse elif condition
-                    filename tokens token_index TOKEN_BLOCK_START _parse drop
+                    filename tokens token_index 8 malloc 8 malloc TOKEN_BLOCK_START
+                    _parse drop
 
                     # Type check
                     dup token.line + derefi _pop_type TYPE_BOOL != if
@@ -636,7 +647,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                         "Expected boolean result" syntax_error
 
                     # Compare type stacks before and after elif condition
-                    _type_stack derefp _type_stack_before derefp list_eq False = if
+                    _type_stack derefp type_stack_before derefp list_eq False = if
                         over token.line + derefi
                         "elif-condition should not change types" syntax_error
 
@@ -647,10 +658,11 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                     _opcodes derefp create_opcode _opcodes setp
 
                     # Parse elif body
-                    filename tokens token_index TOKEN_BLOCK_END _parse drop
+                    filename tokens token_index 8 malloc 8 malloc TOKEN_BLOCK_END _parse
+                    drop
 
                     # Compare type stack after elif body with after if body
-                    _type_stack derefp _type_stack_after derefp list_eq False = if
+                    _type_stack derefp type_stack_after derefp list_eq False = if
                         over token.line + derefi
                         "elif-body has different stack than if" syntax_error
 
@@ -666,7 +678,7 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
 
                     # Restore type stack from before if-body
                     _type_stack derefp free
-                    _type_stack_before derefp list_copy _type_stack setp
+                    type_stack_before derefp list_copy _type_stack setp
 
                 tokens token_index _peek_next_token token.value + derefp "else" streq if
                     drop tokens token_index _get_next_token
@@ -677,18 +689,19 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                         dup token.line + derefi
                         "Expected code block after else keyword" syntax_error
 
-                    filename tokens token_index TOKEN_BLOCK_END _parse drop
+                    filename tokens token_index 8 malloc 8 malloc TOKEN_BLOCK_END _parse
+                    drop
 
                     # Compare type stack after else body with after if body
-                    _type_stack derefp _type_stack_after derefp list_eq False = if
+                    _type_stack derefp type_stack_after derefp list_eq False = if
                         _type_stack derefp list.len + derefi puti " vs " puts
-                        _type_stack_after derefp list.len + derefi puti "\n" puts
+                        type_stack_after derefp list.len + derefi puti "\n" puts
                         dup token.line + derefi
                         "else-body has different stack than if" syntax_error
                 else
                     # Check type stack after if body
-                    _type_stack_before derefp
-                    _type_stack_after  derefp list_eq False = if
+                    type_stack_before derefp
+                    type_stack_after  derefp list_eq False = if
                         dup token.line + derefi
                         "If block without else should not alter types" syntax_error
 
@@ -699,8 +712,8 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
 
                 # Clean up stacks
                 _type_stack derefp free
-                _type_stack_before derefp free
-                _type_stack_after derefp _type_stack setp
+                type_stack_before derefp free
+                type_stack_after derefp _type_stack setp
             elif dup token.value + derefp "def" streq
                 # Verify function definition is global
                 _current_function derefp NULL != if
@@ -777,7 +790,8 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
                     dup token.line + derefi
                     "Expected code block after function definition" syntax_error
 
-                filename tokens token_index TOKEN_BLOCK_END _parse drop
+                filename tokens token_index 8 malloc 8 malloc TOKEN_BLOCK_END _parse
+                drop
 
                 # Create RETURN opcode
                 dup token.line + derefi
@@ -884,6 +898,9 @@ def _parse: ptr filename, ptr tokens, ptr token_index, int return_on -> ptr
     tokens token_index _get_next_token token.type + derefi return_on = \
         "Last token should be return_on" assert
 
+    type_stack_before free
+    type_stack_after free
+
     _opcodes derefp
 
 
@@ -916,5 +933,8 @@ def parse: ptr filename, ptr tokens -> ptr
 
     8 malloc
     dup 0 swap seti
-    dup filename tokens rot TOKEN_END _parse
+    dup filename tokens rot
+    8 malloc
+    8 malloc
+    TOKEN_END _parse
     swap free
