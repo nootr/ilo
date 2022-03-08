@@ -20,6 +20,5 @@ def main: ptr argv, int argc -> int
     tokenize
     parse
     generate_code_x86_64_linux
-    puts
 
     0

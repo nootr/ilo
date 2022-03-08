@@ -1,35 +1,46 @@
 import lib.std
 import lib.std.list
+import lib.std.textbuffer
 import lib.ilo.opcodes
 import lib.ilo.parser
 
 
-buffer _text          8   # ptr
-buffer _data          8   # ptr
-buffer _bss           8   # ptr
-buffer _string_index  8   # int
+buffer _text          8     # ptr
+buffer _data          8     # ptr
+buffer _bss           8     # ptr
+buffer _string_index  8     # int
+buffer _format_buffer 1024  # array of characters
 
 
 def _format: ptr l, ptr r -> ptr
     # Formats a line of assembly code into two columns
-    l " " concat
-    while dup strlen 10 <=
-        " " concatfl
-    r concatfl "\n" concatfl
+    l _format_buffer strcpy drop
+    l strlen
+    ' ' over _format_buffer + setc
+    1 +
+    while dup 10 <
+        ' ' over _format_buffer + setc
+        1 +
+    r over _format_buffer + strcpy drop
+    r strlen + _format_buffer +
+    10 castc over setc
+    0 castc over 1 + setc
+    _format_buffer
 
 
 def _append: ptr l, ptr r, ptr buf -> void
     # Append to a given buffer
-    buf derefp l r _format concatf buf setp
+    l r _format
+    buf derefp textbuffer_append buf setp
 
 
-def generate_code_x86_64_linux: ptr opcodes -> ptr
-    # Takes a list of opcodes and converts it into x86_64 NASM assembly as string
+def generate_code_x86_64_linux: ptr opcodes -> void
+    # Takes a list of opcodes and converts it into x86_64 NASM assembly
 
     # Initialize buffers
-    1 malloc dup _text setp 0 castc swap setc
-    1 malloc dup _data setp 0 castc swap setc
-    1 malloc dup _bss setp  0 castc swap setc
+    128000 textbuffer_create _text setp
+    new_textbuffer _data setp
+    new_textbuffer _bss setp
     0 _string_index seti
 
     "" "global _start"      _text _append
@@ -259,11 +270,11 @@ def generate_code_x86_64_linux: ptr opcodes -> ptr
             "" "push rbx"       _text _append
         elif dup opcode.opcode + derefi OPCODE_DEREF_I =
             "" "pop rax"        _text _append
-            "" "mov rbx, [rax]"  _text _append
+            "" "mov rbx, [rax]" _text _append
             "" "push rbx"       _text _append
         elif dup opcode.opcode + derefi OPCODE_DEREF_P =
             "" "pop rax"        _text _append
-            "" "mov rbx, [rax]"  _text _append
+            "" "mov rbx, [rax]" _text _append
             "" "push rbx"       _text _append
         elif dup opcode.opcode + derefi OPCODE_SET_B =
             "" "pop rax"        _text _append
@@ -367,8 +378,15 @@ def generate_code_x86_64_linux: ptr opcodes -> ptr
     "" "mov rax, 60"    _text _append
     "" "syscall"        _text _append
 
-    # Concatenate buffers
-    _text derefp _data derefp concat _bss derefp concatfl
-    _text derefp free
-    _data derefp free
-    _bss derefp free
+    # Output buffers
+    _text derefp
+    dup textbuffer.content + puts
+    free
+
+    _data derefp
+    dup textbuffer.content + puts
+    free
+
+    _bss derefp
+    dup textbuffer.content + puts
+    free
