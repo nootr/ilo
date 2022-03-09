@@ -359,7 +359,7 @@ int return_on -> ptr
                     "Expected identifier as buffer name" syntax_error
                 token.value + derefp
 
-                dup _buffers derefp list_append_ptr _buffers setp
+                dup "" _buffers derefp dict_insert _buffers setp
 
                 tokens token_index _get_next_token
                 dup token.type + derefi TOKEN_INT != if
@@ -831,7 +831,7 @@ int return_on -> ptr
                 _opcodes derefp create_opcode _opcodes setp
 
                 TYPE_INT _push_type
-            elif dup token.value + derefp _buffers derefp list_contains_string
+            elif dup token.value + derefp _buffers derefp dict_fetch NULL !=
                 OPCODE_GET_BUFFER
                 over dup token.value + derefp
                 swap token.line + derefi
@@ -918,7 +918,7 @@ def parse: ptr filename, ptr tokens -> ptr
         INT_SIZE new_list _type_stack setp
 
     _buffers derefp NULL = if
-        PTR_SIZE new_list _buffers setp
+        new_dict _buffers setp
 
     _constants derefp NULL = if
         new_dict _constants setp
