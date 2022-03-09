@@ -20,7 +20,7 @@ def textbuffer_create: int capacity -> ptr
 
 def new_textbuffer: -> ptr
     # Returns a pointer to an empty textbuffer
-    1 textbuffer_create
+    90 textbuffer_create
 
 
 def textbuffer_append: ptr s, ptr buf -> ptr
