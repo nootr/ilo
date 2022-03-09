@@ -110,6 +110,9 @@ def fetch_tokens(program):
                 if startswith("\\\"", program):
                     string += "\\\""
                     program = program[2:]
+                elif startswith("\\\\", program):
+                    string += "\\\\"
+                    program = program[2:]
                 else:
                     string += program[0]
                     program = program[1:]
