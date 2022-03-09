@@ -924,7 +924,7 @@ def parse: ptr filename, ptr tokens -> ptr
         new_dict _constants setp
 
     _opcodes derefp NULL = if
-        OPCODE_SIZE new_list _opcodes setp
+        1024 OPCODE_SIZE list_create _opcodes setp
 
     functions derefp NULL = if
         new_dict functions setp
