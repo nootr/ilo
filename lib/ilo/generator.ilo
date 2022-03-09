@@ -44,6 +44,7 @@ def _append_opcode_info: int line, int opcode -> void
     " "                   swap textbuffer_append
     opcode opcode_to_str  swap textbuffer_append
     "" over textbuffer.content + _text _append
+    _textbuffer setp
 
 
 def generate_code_x86_64_linux: ptr opcodes -> void
