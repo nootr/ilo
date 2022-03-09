@@ -50,7 +50,7 @@ def create_dict: int buckets -> ptr
 
 def new_dict: -> ptr
     # Creates a new dictionary and returns its pointer
-    2 create_dict
+    50 create_dict
 
 
 def dict_fetch: ptr key, ptr dict -> ptr
