@@ -9,6 +9,7 @@ buffer _text          8     # ptr
 buffer _data          8     # ptr
 buffer _bss           8     # ptr
 buffer _string_index  8     # int
+buffer _textbuffer    8     # ptr
 buffer _format_buffer 1024  # array of characters
 
 
@@ -36,14 +37,13 @@ def _append: ptr l, ptr r, ptr buf -> void
 
 def _append_opcode_info: int line, int opcode -> void
     # Print comment with opcode info
-    new_textbuffer
+    _textbuffer derefp textbuffer_clear
     "; "                  swap textbuffer_append
     line itos             dup rot textbuffer_append
     swap free
     " "                   swap textbuffer_append
     opcode opcode_to_str  swap textbuffer_append
     "" over textbuffer.content + _text _append
-    free
 
 
 def generate_code_x86_64_linux: ptr opcodes -> void
@@ -53,6 +53,7 @@ def generate_code_x86_64_linux: ptr opcodes -> void
     512000 textbuffer_create _text setp
     512000 textbuffer_create _data setp
     new_textbuffer _bss setp
+    new_textbuffer _textbuffer setp
     0 _string_index seti
 
     "" "global _start"      _text _append
@@ -96,21 +97,21 @@ def generate_code_x86_64_linux: ptr opcodes -> void
             "" "push rax" _text _append
             "" "push rcx" _text _append
         elif dup opcode.opcode + derefi OPCODE_PUSH_INT =
-            new_textbuffer
+            _textbuffer derefp textbuffer_clear
             "mov rax, "                   swap textbuffer_append
             over opcode.operand + derefp  swap textbuffer_append
             "" over textbuffer.content +  _text _append
             "" "push rax"                 _text _append
-            free
+            _textbuffer setp
         elif dup opcode.opcode + derefi OPCODE_PUSH_BOOL =
-            new_textbuffer
+            _textbuffer derefp textbuffer_clear
             "mov rax, "                   swap textbuffer_append
             over opcode.operand + derefp  swap textbuffer_append
             "" over textbuffer.content +  _text _append
             "" "push rax"                 _text _append
-            free
+            _textbuffer setp
         elif dup opcode.opcode + derefi OPCODE_PUSH_CHAR =
-            new_textbuffer
+            _textbuffer derefp textbuffer_clear
             "mov rax, " swap textbuffer_append
 
             over opcode.operand + derefc '\'' = if
@@ -124,22 +125,22 @@ def generate_code_x86_64_linux: ptr opcodes -> void
 
             "" over textbuffer.content +  _text _append
             "" "push rax"                 _text _append
-            free
+            _textbuffer setp
         elif dup opcode.opcode + derefi OPCODE_PUSH_STRING =
             # Create string label and increment string index
             _string_index derefi
             1 + _string_index seti
 
-            new_textbuffer
+            _textbuffer derefp textbuffer_clear
             "mov rax, "                   swap textbuffer_append
             "s_"                          swap textbuffer_append
             _string_index derefi itos     dup rot textbuffer_append
             swap free
             "" over textbuffer.content +  _text _append
             "" "push rax"                 _text _append
-            free
+            _textbuffer setp
 
-            new_textbuffer
+            _textbuffer derefp textbuffer_clear
             "s_"                          swap textbuffer_append
             _string_index derefi itos     dup rot textbuffer_append
             swap free
@@ -147,21 +148,21 @@ def generate_code_x86_64_linux: ptr opcodes -> void
             over opcode.operand + derefp  swap textbuffer_append
             "\`, 0"                       swap textbuffer_append
             dup textbuffer.content + "" _data _append
-            free
+            _textbuffer setp
         elif dup opcode.opcode + derefi OPCODE_FUNCTION =
-            new_textbuffer
+            _textbuffer derefp textbuffer_clear
             over opcode.operand + derefp  swap textbuffer_append
             ":"                           swap textbuffer_append
             dup textbuffer.content + ""   _text _append
             "" "push rbp"                 _text _append
             "" "mov rbp, rsp"             _text _append
-            free
+            _textbuffer setp
         elif dup opcode.opcode + derefi OPCODE_CALL =
-            new_textbuffer
+            _textbuffer derefp textbuffer_clear
             "call "                       swap textbuffer_append
             over opcode.operand + derefp  swap textbuffer_append
             "" over textbuffer.content +  _text _append
-            free
+            _textbuffer setp
 
             dup opcode.operand + derefp functions derefp function_get_from_list
             0
@@ -173,11 +174,11 @@ def generate_code_x86_64_linux: ptr opcodes -> void
                 "" "push rax" _text _append
         elif dup opcode.opcode + derefi OPCODE_GET_ARG =
             "" "mov rax, rbp"                                       _text _append
-            new_textbuffer
+            _textbuffer derefp textbuffer_clear
             "add rax, "                   swap textbuffer_append
             over opcode.operand + derefp  swap textbuffer_append
             "" over textbuffer.content +                            _text _append
-            free
+            _textbuffer setp
             "" "mov rbx, [rax]"                                     _text _append
             "" "push rbx"                                           _text _append
         elif dup opcode.opcode + derefi OPCODE_ADD =
@@ -223,14 +224,14 @@ def generate_code_x86_64_linux: ptr opcodes -> void
             "" "or rbx, rax" _text _append
             "" "push rbx"     _text _append
         elif dup opcode.opcode + derefi OPCODE_GET_BUFFER =
-            new_textbuffer
+            _textbuffer derefp textbuffer_clear
             "mov rax, "                   swap textbuffer_append
             over opcode.operand + derefp  swap textbuffer_append
             "" over textbuffer.content +  _text _append
             "" "push rax"                 _text _append
-            free
+            _textbuffer setp
         elif dup opcode.opcode + derefi OPCODE_CREATE_BUFFER =
-            new_textbuffer
+            _textbuffer derefp textbuffer_clear
             over opcode.operand + derefp buffer_operand_buffer_name + derefp \
                       swap textbuffer_append
             ": resb " swap textbuffer_append
@@ -238,7 +239,7 @@ def generate_code_x86_64_linux: ptr opcodes -> void
                       swap textbuffer_append
 
             dup textbuffer.content + "" _bss _append
-            free
+            _textbuffer setp
         elif dup opcode.opcode + derefi OPCODE_IS_EQUAL =
             "" "mov rax, 0"     _text _append
             "" "mov rbx, 1"     _text _append
@@ -290,23 +291,23 @@ def generate_code_x86_64_linux: ptr opcodes -> void
         elif dup opcode.opcode + derefi OPCODE_IF =
             "" "pop rax"                                      _text _append
             "" "test rax, rax"                                _text _append
-            new_textbuffer
+            _textbuffer derefp textbuffer_clear
             "jz "                         swap textbuffer_append
             over opcode.operand + derefp  swap textbuffer_append
             "" over textbuffer.content +  _text _append
-            free
+            _textbuffer setp
         elif dup opcode.opcode + derefi OPCODE_LABEL =
-            new_textbuffer
+            _textbuffer derefp textbuffer_clear
             over opcode.operand + derefp  swap textbuffer_append
             ":"                           swap textbuffer_append
             dup textbuffer.content + ""   _text _append
-            free
+            _textbuffer setp
         elif dup opcode.opcode + derefi OPCODE_JUMP =
-            new_textbuffer
+            _textbuffer derefp textbuffer_clear
             "jmp "                        swap textbuffer_append
             over opcode.operand + derefp  swap textbuffer_append
             "" over textbuffer.content +  _text _append
-            free
+            _textbuffer setp
         elif dup opcode.opcode + derefi OPCODE_SYSCALL =
             "" "pop rax" _text _append
             dup opcode.operand + derefp stoi
@@ -373,30 +374,30 @@ def generate_code_x86_64_linux: ptr opcodes -> void
         elif dup opcode.opcode + derefi OPCODE_WHILE_START =
             "" "pop rax"        _text _append
             "" "test rax, rax"  _text _append
-            new_textbuffer
+            _textbuffer derefp textbuffer_clear
             "jz "                         swap textbuffer_append
             over opcode.operand + derefp  swap textbuffer_append
             "_end"                        swap textbuffer_append
             "" over textbuffer.content +  _text _append
-            free
+            _textbuffer setp
         elif dup opcode.opcode + derefi OPCODE_WHILE_END =
-            new_textbuffer
+            _textbuffer derefp textbuffer_clear
             "jmp "                        swap textbuffer_append
             over opcode.operand + derefp  swap textbuffer_append
             "" over textbuffer.content +  _text _append
-            0 over textbuffer.len + seti
+            textbuffer_clear
 
             over opcode.operand + derefp  swap textbuffer_append
             "_end:"                       swap textbuffer_append
             dup textbuffer.content + ""   _text _append
-            free
+            _textbuffer setp
         else
-            new_textbuffer
+            _textbuffer derefp textbuffer_clear
             "Unknown opcode: "                        swap textbuffer_append
             over opcode.opcode + derefi opcode_to_str swap textbuffer_append
             "\n"                                      swap textbuffer_append
             dup textbuffer.content + raise
-            free
+            _textbuffer setp
 
         drop
         1 +
@@ -464,12 +465,9 @@ def generate_code_x86_64_linux: ptr opcodes -> void
     # Output buffers
     _text derefp
     dup textbuffer.content + puts
-    free
 
     _data derefp
     dup textbuffer.content + puts
-    free
 
     _bss derefp
     dup textbuffer.content + puts
-    free

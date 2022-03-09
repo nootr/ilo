@@ -23,6 +23,12 @@ def new_textbuffer: -> ptr
     90 textbuffer_create
 
 
+def textbuffer_clear: ptr buf -> ptr
+    # Resets the textbuffer and returns its pointer
+    0 buf textbuffer.len + seti
+    buf
+
+
 def textbuffer_append: ptr s, ptr buf -> ptr
     # Copies a string into the buffer
 
