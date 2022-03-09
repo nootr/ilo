@@ -3,7 +3,7 @@
 # Stdout:
 # Stderr:
 
-import lib.std
+import lib.std.list
 
 def main: ptr argv, int argc -> int
     INT_SIZE new_list

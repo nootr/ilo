@@ -3,7 +3,7 @@
 # Stdout:
 # Stderr:
 
-import lib.std
+import lib.std.list
 
 const foo.a    0  # int
 const foo.b    8  # int

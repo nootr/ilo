@@ -7,7 +7,7 @@ import lib.std
 import lib.std.textbuffer
 
 def main: ptr argv, int argc -> int
-    new_textbuffer
+    1 textbuffer_create
 
     "Hello, " swap textbuffer_append
     dup textbuffer.capacity + derefi 8 = "Buffer should have cap. 8" assert

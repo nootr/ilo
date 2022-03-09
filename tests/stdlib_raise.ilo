@@ -1,7 +1,7 @@
 # Description:Standard library - raise
 # Exit code:1
 # Stdout:
-# Stderr:tests/stdlib_raise.ilo, line 9 in main\n\nFoo bar baz
+# Stderr:tests/stdlib_raise.ilo, line 0x09 in main\n\nFoo bar baz
 
 import lib.std
 

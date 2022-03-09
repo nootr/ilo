@@ -4,6 +4,7 @@
 # Stderr:
 
 import lib.std
+import lib.std.list
 import lib.ilo.functions
 import lib.ilo.types
 
