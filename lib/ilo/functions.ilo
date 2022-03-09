@@ -46,26 +46,6 @@ def function_set_return_type: int type, ptr func -> void
     type func function.return_type + seti
 
 
-def function_get_from_list: ptr name, ptr list -> ptr
-    # Returns a function if it's in the given list, otherwise returns NULL
-    NULL  # function
-    0     # index
-    while dup list list.len + derefi <
-        dup list list_fetch
-        dup function.name + derefp name streq if
-            # result index function
-            rot drop dup rot rot
-            # function index function
-        drop
-        1 +
-    drop
-
-
-def function_get_current: ptr list -> ptr
-    # Returns the current function
-    list list_peek
-
-
 def function_get_arg: ptr name, ptr func -> ptr
     # Returns a given argument, returns NULL if not found
     NULL  # argument

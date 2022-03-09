@@ -726,9 +726,12 @@ int return_on -> ptr
                     "Expected identifier as function name" syntax_error
 
                 # Create function signature and save pointer to current function
-                dup token.value + derefp create_function
-                functions derefp list_append functions setp
-                functions derefp function_get_current _current_function setp
+                dup token.value + derefp
+                dup create_function dup
+                rot swap
+                functions derefp dict_insert functions setp
+
+                _current_function setp
 
                 # Parse colon
                 drop tokens token_index _get_next_token
@@ -845,8 +848,7 @@ int return_on -> ptr
                 dup token.value + derefp
                 _current_function derefp function_get_arg argument.type + derefi
                 _push_type
-            elif dup token.value + derefp \
-                    functions derefp function_get_from_list NULL !=
+            elif dup token.value + derefp functions derefp dict_fetch NULL !=
                 # Check if function call is global
                 _current_function derefp NULL = if
                     dup token.line + derefi
@@ -872,7 +874,7 @@ int return_on -> ptr
 
                 # Type check input arguments
                 dup token.line + derefi
-                over token.value + derefp functions derefp function_get_from_list
+                over token.value + derefp functions derefp dict_fetch
                 swap over function.args + derefp
                 _pop_args
 
@@ -925,7 +927,7 @@ def parse: ptr filename, ptr tokens -> ptr
         OPCODE_SIZE new_list _opcodes setp
 
     functions derefp NULL = if
-        FUNCTION_SIZE new_list functions setp
+        new_dict functions setp
 
     _files derefp NULL = if
         PTR_SIZE new_list _files setp
