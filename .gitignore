@@ -1,5 +1,6 @@
 ilo
 !lib/ilo
+ilo_bt
 *.o
 *.asm
 *.pyc
