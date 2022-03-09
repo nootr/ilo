@@ -188,12 +188,12 @@ def main: int argc, ptr argv -> int
     OPCODE_SIZE 3 * +
     dup opcode.opcode  + derefi OPCODE_RETURN =        "Op 34 should be return" assert
     dup opcode.line    + derefi 28 =                   "Op 34 should be on line 28" assert
-    _functions derefp list.len + derefi 2 =            "There should be 1 func" assert
-    _functions derefp function_get_current function.name + derefp "p" streq \
+    functions derefp list.len + derefi 2 =            "There should be 1 func" assert
+    functions derefp function_get_current function.name + derefp "p" streq \
                                                        "Cur. func should be p" assert
-    "o" _functions derefp function_get_from_list function.args + derefp \
+    "o" functions derefp function_get_from_list function.args + derefp \
         list.len + derefi 1 =                          "Func should have 1 arg" assert
-    "o" _functions derefp function_get_from_list function.return_type + derefi \
+    "o" functions derefp function_get_from_list function.return_type + derefi \
         TYPE_BOOL =                                    "Func should return bool" assert
     OPCODE_SIZE 3 * +
     dup opcode.opcode  + derefi OPCODE_PUSH_STRING =   "Op 35 should be push str" assert
