@@ -88,7 +88,9 @@ def _tokenize: ptr source, ptr tokens -> ptr
             # Find length of string
             0
             over
-            while dup derefc '"' = over 1 - derefc '\\' != and False =
+            while dup derefc '"' !=
+                dup derefc '\\' = if
+                    1 + swap 1 + swap
                 1 + swap 1 + swap
 
             # Separate string
