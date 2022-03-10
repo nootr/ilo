@@ -5,6 +5,10 @@ import lib.ilo.lexer
 import lib.ilo.parser
 
 
+buffer DUMP_TOKENS  1  # bool
+buffer DUMP_OPCODES 1  # bool
+
+
 def main: ptr argv, int argc -> int
     # Parse arguments
     argv argc parse_args
@@ -13,6 +17,10 @@ def main: ptr argv, int argc -> int
         VERIFY_MEMORY setb
     "--dump-memory" over args.kwargs + derefp dict_fetch NULL != \
         DUMP_MEMORY setb
+    "--dump-tokens" over args.kwargs + derefp dict_fetch NULL != \
+        DUMP_TOKENS setb
+    "--dump-opcodes" over args.kwargs + derefp dict_fetch NULL != \
+        DUMP_OPCODES setb
 
     dup args.posargs + derefp list.len + derefi 1 !=
     over args.kwargs + derefp "--help" swap dict_fetch NULL != or if
@@ -24,7 +32,15 @@ def main: ptr argv, int argc -> int
     0 over args.posargs + derefp list_fetch_ptr
     dup read_file
     tokenize
+
+    DUMP_TOKENS derefb if
+        dup dump_tokens
+
     parse
+
+    DUMP_OPCODES derefb if
+        dup dump_opcodes
+
     generate_code_x86_64_linux
 
     0
