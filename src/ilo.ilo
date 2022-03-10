@@ -1,21 +1,27 @@
 import lib.std
+import lib.std.argparse
 import lib.ilo.generator
 import lib.ilo.lexer
 import lib.ilo.parser
 
 
 def main: ptr argv, int argc -> int
-    # Debug flags
-    True  VERIFY_MEMORY setb
-    False DUMP_MEMORY   setb
+    # Parse arguments
+    argv argc parse_args
 
-    argc 2 != if
-        "Usage: "           puts
-        argv 0 get_argument puts
-        " FILENAME\n"       puts
+    "--verify-memory" over args.kwargs + derefp dict_fetch NULL != \
+        VERIFY_MEMORY setb
+    "--dump-memory" over args.kwargs + derefp dict_fetch NULL != \
+        DUMP_MEMORY setb
+
+    dup args.posargs + derefp list.len + derefi 1 !=
+    over args.kwargs + derefp "--help" swap dict_fetch NULL != or if
+        "Usage: "                                                 puts
+        argv 0 argc get_argument                                  puts
+        " [--verify-memory True] [--dump-memory True] FILENAME\n" puts
         1 exit
 
-    argv 1 get_argument
+    0 over args.posargs + derefp list_fetch_ptr
     dup read_file
     tokenize
     parse

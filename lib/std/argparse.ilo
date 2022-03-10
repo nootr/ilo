@@ -16,7 +16,7 @@ buffer _parsed_args 8  # ptr
 def get_argument: ptr argv, int n, int argc -> ptr
     # Takes an array of arguments argv and returns the n'th argument
     n argc >= if
-        "Could not parse arguments due to index error" raise
+        "Could not parse arguments due to index error\n" raise
 
     argv 0 while dup n <
         swap dup strlen + 1 + swap
