@@ -21,6 +21,9 @@ jobs:
     - name: Set up nasm
       run: |
         sudo apt install -y nasm
+    - name: Build ilo
+      run: |
+        make ilo
     - name: Functional tests
       run: |
         make test
