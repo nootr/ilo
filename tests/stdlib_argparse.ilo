@@ -1,0 +1,20 @@
+# Description:Standard library - Argument parser
+# Exit code:0
+# Args:foo bar --asdf baz
+# Stdout:
+# Stderr:
+
+import lib.std.argparse
+
+def main: ptr argv, int argc -> int
+    argv argc parse_args
+
+    dup args.posargs + derefp list.len + derefi 2 = "2 positional args" assert
+    0 over args.posargs + derefp list_fetch_ptr "foo" streq "foo arg" assert
+    1 over args.posargs + derefp list_fetch_ptr "bar" streq "bar arg" assert
+
+    "--asdf" over args.kwargs + derefp dict_fetch "baz" streq "baz arg" assert
+
+    free
+
+    0
