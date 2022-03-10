@@ -4,13 +4,33 @@ import lib.std.dict
 
 
 # ARGS
-# Contains a list with positional arguments and a dictionary with keyword arguments.
+# Contains a list with positional arguments and a dictionary of optional  keyword
+# arguments/flags.
 
-const args.posargs 0  # ptr
-const args.kwargs  8  # ptr
-const ARGS_SIZE    16
+
+const ARG_TYPE_POSITIONAL 0
+const ARG_TYPE_FLAG       1
+const ARG_TYPE_OPTIONAL   2
+
+const arg.type            0  # int
+const arg.value           8  # ptr
+const arg.description     16 # ptr
+const ARG_SIZE            24
+
+const args.posargs        0  # ptr
+const args.kwargs         8  # ptr
+const ARGS_SIZE           16
+
 
 buffer _parsed_args 8  # ptr
+
+
+def init_parser: -> void
+    # Initialize args object
+    ARGS_SIZE malloc
+    PTR_SIZE new_list over args.posargs + setp
+    new_dict          over args.kwargs + setp
+    _parsed_args setp
 
 
 def get_argument: ptr argv, int n, int argc -> ptr
@@ -24,14 +44,22 @@ def get_argument: ptr argv, int n, int argc -> ptr
     drop
 
 
+def parser_add_argument: ptr name, int arg_type, ptr description -> void
+    # Adds an argument and sets it value to NULL
+    name
+
+    ARG_SIZE malloc
+    arg_type    over arg.type + seti
+    NULL        over arg.value + setp
+    description over arg.description + setp
+
+    _parsed_args derefp args.kwargs + derefp
+    dict_insert
+    _parsed_args derefp args.kwargs + setp
+
+
 def parse_args: ptr argv, int argc -> ptr
     # Parses arguments and returns an args object
-
-    # Initialize args object
-    ARGS_SIZE malloc
-    PTR_SIZE new_list over args.posargs + setp
-    new_dict          over args.kwargs + setp
-    _parsed_args setp
 
     # Parse arguments
     1
@@ -39,17 +67,26 @@ def parse_args: ptr argv, int argc -> ptr
         argv over argc get_argument
 
         dup "-" startswith if
-            swap 1 +
-            argv over argc get_argument
-            rot swap
-            _parsed_args derefp args.kwargs + derefp
-            dict_insert
-            _parsed_args derefp args.kwargs + setp
+            dup _parsed_args derefp args.kwargs + derefp dict_fetch
+            dup NULL = if
+                swap dup
+                "Unknown argument: " swap concat raise
+                swap
+
+            swap drop
+
+            dup arg.type + derefi ARG_TYPE_OPTIONAL = if
+                swap 1 +
+                argv over argc get_argument
+                rot arg.value + setp
+            elif dup arg.type + derefi ARG_TYPE_FLAG =
+                "SET" swap arg.value + setp
+            else
+                drop
         else
             _parsed_args derefp args.posargs + derefp
             list_append_ptr
             _parsed_args derefp args.posargs + setp
-
         1 +
 
     _parsed_args derefp

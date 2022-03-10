@@ -1,19 +1,32 @@
 # Description:Standard library - Argument parser
 # Exit code:0
-# Args:foo bar --asdf baz
+# Args:foo bar --asdf --qwerty baz
 # Stdout:
 # Stderr:
 
 import lib.std.argparse
 
 def main: ptr argv, int argc -> int
+    init_parser
+
+    "--asdf" ARG_TYPE_FLAG "Lorem" parser_add_argument
+    "--qwerty" ARG_TYPE_OPTIONAL "Ipsum" parser_add_argument
+    "--null" ARG_TYPE_OPTIONAL "NULL" parser_add_argument
+
     argv argc parse_args
 
     dup args.posargs + derefp list.len + derefi 2 = "2 positional args" assert
     0 over args.posargs + derefp list_fetch_ptr "foo" streq "foo arg" assert
     1 over args.posargs + derefp list_fetch_ptr "bar" streq "bar arg" assert
 
-    "--asdf" over args.kwargs + derefp dict_fetch "baz" streq "baz arg" assert
+    "--asdf" over args.kwargs + derefp dict_fetch arg.value + derefp NULL != \
+        "--asdf arg" assert
+
+    "--qwerty" over args.kwargs + derefp dict_fetch arg.value + derefp "baz" streq \
+        "--qwerty arg" assert
+
+    "--null" over args.kwargs + derefp dict_fetch arg.value + derefp NULL = \
+        "--null arg" assert
 
     free
 

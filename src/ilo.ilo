@@ -11,22 +11,39 @@ buffer DUMP_OPCODES 1  # bool
 
 def main: ptr argv, int argc -> int
     # Parse arguments
+    init_parser
+
+    "--verify-memory" ARG_TYPE_FLAG "Verify the dynamically allocated memory"
+    parser_add_argument
+    "--dump-memory" ARG_TYPE_FLAG "Print the dynamically allocated memory"
+    parser_add_argument
+    "--dump-tokens" ARG_TYPE_FLAG "Print the tokens"
+    parser_add_argument
+    "--dump-opcodes" ARG_TYPE_FLAG "Print the opcodes"
+    parser_add_argument
+    "filename" ARG_TYPE_POSITIONAL "Source code filename"
+    parser_add_argument
+
     argv argc parse_args
 
-    "--verify-memory" over args.kwargs + derefp dict_fetch NULL != \
+    "--verify-memory" over args.kwargs + derefp dict_fetch arg.value + derefp NULL != \
         VERIFY_MEMORY setb
-    "--dump-memory" over args.kwargs + derefp dict_fetch NULL != \
+    "--dump-memory" over args.kwargs + derefp dict_fetch arg.value + derefp NULL != \
         DUMP_MEMORY setb
-    "--dump-tokens" over args.kwargs + derefp dict_fetch NULL != \
+    "--dump-tokens" over args.kwargs + derefp dict_fetch arg.value + derefp NULL != \
         DUMP_TOKENS setb
-    "--dump-opcodes" over args.kwargs + derefp dict_fetch NULL != \
+    "--dump-opcodes" over args.kwargs + derefp dict_fetch arg.value + derefp NULL != \
         DUMP_OPCODES setb
 
     dup args.posargs + derefp list.len + derefi 1 !=
     over args.kwargs + derefp "--help" swap dict_fetch NULL != or if
-        "Usage: "                                                 puts
-        argv 0 argc get_argument                                  puts
-        " [--verify-memory True] [--dump-memory True] FILENAME\n" puts
+        "Usage: "                 puts
+        argv 0 argc get_argument  puts
+        " [--verify-memory]" puts
+        " [--dump-memory]"   puts
+        " [--dump-tokens]"   puts
+        " [--dump-opcodes]"  puts
+        " FILENAME\n"             puts
         1 exit
 
     0 over args.posargs + derefp list_fetch_ptr
