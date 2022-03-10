@@ -45,6 +45,8 @@ def is_word: ptr s, ptr q -> bool
     # Returns True if str s starts with substring q, followed by a non-alphabet char
     s strlen q strlen = if
         True
+    elif s strlen q strlen <
+        False
     else
         s q strlen + derefc is_alphanumeric False =
     s q startswith and
