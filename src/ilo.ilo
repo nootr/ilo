@@ -35,17 +35,6 @@ def main: ptr argv, int argc -> int
     "--dump-opcodes" over args.kwargs + derefp dict_fetch arg.value + derefp NULL != \
         DUMP_OPCODES setb
 
-    dup args.posargs + derefp list.len + derefi 1 !=
-    over args.kwargs + derefp "--help" swap dict_fetch NULL != or if
-        "Usage: "                 puts
-        argv 0 argc get_argument  puts
-        " [--verify-memory]" puts
-        " [--dump-memory]"   puts
-        " [--dump-tokens]"   puts
-        " [--dump-opcodes]"  puts
-        " FILENAME\n"             puts
-        1 exit
-
     0 over args.posargs + derefp list_fetch_ptr
     dup read_file
     tokenize

@@ -176,4 +176,6 @@ def argparse_parse_args: ptr argv, int argc -> ptr
 
     _args derefp
 
-    # TODO: Execute parser_print_help if required arguments are missing
+    dup args.posargs + derefp list.len + derefi
+    _posargs derefp list.len + derefi != if
+        argparse_print_help
