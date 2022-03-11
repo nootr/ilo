@@ -7,13 +7,15 @@
 import lib.std.argparse
 
 def main: ptr argv, int argc -> int
-    init_parser
+    argparse_init
 
-    "--asdf" ARG_TYPE_FLAG "Lorem" parser_add_argument
-    "--qwerty" ARG_TYPE_OPTIONAL "Ipsum" parser_add_argument
-    "--null" ARG_TYPE_OPTIONAL "NULL" parser_add_argument
+    "foo" ARG_TYPE_POSITIONAL "foo" argparse_add_argument
+    "bar" ARG_TYPE_POSITIONAL "bar" argparse_add_argument
+    "--asdf" ARG_TYPE_FLAG "Lorem" argparse_add_argument
+    "--qwerty" ARG_TYPE_OPTIONAL "Ipsum" argparse_add_argument
+    "--null" ARG_TYPE_OPTIONAL "NULL" argparse_add_argument
 
-    argv argc parse_args
+    argv argc argparse_parse_args
 
     dup args.posargs + derefp list.len + derefi 2 = "2 positional args" assert
     0 over args.posargs + derefp list_fetch_ptr "foo" streq "foo arg" assert
