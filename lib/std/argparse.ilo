@@ -12,25 +12,34 @@ const ARG_TYPE_POSITIONAL 0
 const ARG_TYPE_FLAG       1
 const ARG_TYPE_OPTIONAL   2
 
-const arg.type            0  # int
-const arg.value           8  # ptr
-const arg.description     16 # ptr
+const arg.type            0  # int; ARG_TYPE_*
+const arg.value           8  # ptr; string
+const arg.description     16 # ptr; string
 const ARG_SIZE            24
 
-const args.posargs        0  # ptr
-const args.kwargs         8  # ptr
-const ARGS_SIZE           16
+const args.posargs        0  # ptr; list
+const args.kwargs         8  # ptr; dict
+const args.filename       16 # ptr; string
+const ARGS_SIZE           24
 
 
-buffer _parsed_args 8  # ptr
+buffer _args    8  # ptr; args
+buffer _posargs 8  # ptr; list
+buffer _kwargs  8  # ptr; list
+buffer _flags   8  # ptr; list
 
 
-def init_parser: -> void
+def argparse_init: -> void
     # Initialize args object
     ARGS_SIZE malloc
     PTR_SIZE new_list over args.posargs + setp
     new_dict          over args.kwargs + setp
-    _parsed_args setp
+    "UNKNOWN"         over args.filename + setp
+    _args setp
+
+    PTR_SIZE new_list _posargs setp
+    PTR_SIZE new_list _kwargs setp
+    PTR_SIZE new_list _flags setp
 
 
 def get_argument: ptr argv, int n, int argc -> ptr
@@ -44,22 +53,94 @@ def get_argument: ptr argv, int n, int argc -> ptr
     drop
 
 
-def parser_add_argument: ptr name, int arg_type, ptr description -> void
+def argparse_add_argument: ptr name, int arg_type, ptr description -> void
     # Adds an argument and sets it value to NULL
-    name
-
     ARG_SIZE malloc
     arg_type    over arg.type + seti
     NULL        over arg.value + setp
     description over arg.description + setp
 
-    _parsed_args derefp args.kwargs + derefp
+    name
+    over
+    _args derefp args.kwargs + derefp
     dict_insert
-    _parsed_args derefp args.kwargs + setp
+    _args derefp args.kwargs + setp
+
+    arg_type ARG_TYPE_OPTIONAL = if
+        name _kwargs derefp list_append_ptr _kwargs setp
+    elif arg_type ARG_TYPE_FLAG =
+        name _flags derefp list_append_ptr _flags setp
+    elif arg_type ARG_TYPE_POSITIONAL =
+        name _posargs derefp list_append_ptr _posargs setp
+    else
+        "Unknown argument type\n" raise
 
 
-def parse_args: ptr argv, int argc -> ptr
+def argparse_print_help: -> void
+    # Prints the help/usage and exits with exit code 0
+    # Print usage
+    "Usage: "                           puts
+    _args derefp args.filename + derefp puts
+    " [OPTIONS]"                        puts
+
+    0
+    while dup _posargs derefp list.len + derefi <
+        " " puts dup _posargs derefp list_fetch_ptr puts
+        1 +
+    drop
+    "\n\n" puts
+
+    # Print positional argument descriptions
+    _posargs derefp list.len + derefi 0 > if
+        "Positional arguments:\n" puts
+
+    0
+    while dup _posargs derefp list.len + derefi <
+        dup _posargs derefp list_fetch_ptr
+        "    " puts dup puts "\n" puts
+
+        _args derefp args.kwargs + derefp dict_fetch
+        "        " puts arg.description + derefp puts "\n\n" puts
+
+        1 +
+    drop
+
+    # Print optional argument descriptions
+    _kwargs derefp list.len + derefi 0 > if
+        "Optional arguments:\n" puts
+
+    0
+    while dup _kwargs derefp list.len + derefi <
+        dup _kwargs derefp list_fetch_ptr
+        "    " puts dup puts "\n" puts
+
+        _args derefp args.posargs + derefp dict_fetch
+        "        " puts arg.description + derefp puts "\n\n" puts
+
+        1 +
+    drop
+
+    # Print flag descriptions
+    _flags derefp list.len + derefi 0 > if
+        "Flags:\n" puts
+
+    0
+    while dup _flags derefp list.len + derefi <
+        dup _flags derefp list_fetch_ptr
+        "    " puts dup puts "\n" puts
+
+        _args derefp args.kwargs + derefp dict_fetch
+        "        " puts arg.description + derefp puts "\n\n" puts
+
+        1 +
+    drop
+
+    0 exit
+
+
+def argparse_parse_args: ptr argv, int argc -> ptr
     # Parses arguments and returns an args object
+    argv 0 argc get_argument _args derefp args.filename + setp
 
     # Parse arguments
     1
@@ -67,7 +148,11 @@ def parse_args: ptr argv, int argc -> ptr
         argv over argc get_argument
 
         dup "-" startswith if
-            dup _parsed_args derefp args.kwargs + derefp dict_fetch
+            dup "--help" streq
+            over "-h" streq or if
+                argparse_print_help
+
+            dup _args derefp args.kwargs + derefp dict_fetch
             dup NULL = if
                 swap dup
                 "Unknown argument: " swap concat raise
@@ -84,9 +169,11 @@ def parse_args: ptr argv, int argc -> ptr
             else
                 drop
         else
-            _parsed_args derefp args.posargs + derefp
+            _args derefp args.posargs + derefp
             list_append_ptr
-            _parsed_args derefp args.posargs + setp
+            _args derefp args.posargs + setp
         1 +
 
-    _parsed_args derefp
+    _args derefp
+
+    # TODO: Execute parser_print_help if required arguments are missing

@@ -11,20 +11,20 @@ buffer DUMP_OPCODES 1  # bool
 
 def main: ptr argv, int argc -> int
     # Parse arguments
-    init_parser
+    argparse_init
 
     "--verify-memory" ARG_TYPE_FLAG "Verify the dynamically allocated memory"
-    parser_add_argument
+    argparse_add_argument
     "--dump-memory" ARG_TYPE_FLAG "Print the dynamically allocated memory"
-    parser_add_argument
+    argparse_add_argument
     "--dump-tokens" ARG_TYPE_FLAG "Print the tokens"
-    parser_add_argument
+    argparse_add_argument
     "--dump-opcodes" ARG_TYPE_FLAG "Print the opcodes"
-    parser_add_argument
+    argparse_add_argument
     "filename" ARG_TYPE_POSITIONAL "Source code filename"
-    parser_add_argument
+    argparse_add_argument
 
-    argv argc parse_args
+    argv argc argparse_parse_args
 
     "--verify-memory" over args.kwargs + derefp dict_fetch arg.value + derefp NULL != \
         VERIFY_MEMORY setb
