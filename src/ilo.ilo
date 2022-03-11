@@ -9,8 +9,8 @@ buffer DUMP_TOKENS  1  # bool
 buffer DUMP_OPCODES 1  # bool
 
 
-def main: ptr argv, int argc -> int
-    # Parse arguments
+def parse_arguments: ptr argv, int argc -> ptr
+    # Returns an args object
     argparse_init
 
     "--verify-memory" ARG_TYPE_FLAG "Verify the dynamically allocated memory"
@@ -26,6 +26,11 @@ def main: ptr argv, int argc -> int
 
     argv argc argparse_parse_args
 
+
+def main: ptr argv, int argc -> int
+    # Parse arguments
+    argv argc parse_arguments
+
     "--verify-memory" over args.kwargs + derefp dict_fetch arg.value + derefp NULL != \
         VERIFY_MEMORY setb
     "--dump-memory" over args.kwargs + derefp dict_fetch arg.value + derefp NULL != \
@@ -35,18 +40,26 @@ def main: ptr argv, int argc -> int
     "--dump-opcodes" over args.kwargs + derefp dict_fetch arg.value + derefp NULL != \
         DUMP_OPCODES setb
 
+    # Get filename
     0 over args.posargs + derefp list_fetch_ptr
+
+    # Free args object
+    swap free
+
+    # Tokenize file
     dup read_file
     tokenize
 
     DUMP_TOKENS derefb if
         dup dump_tokens
 
+    # Parse tokens
     parse
 
     DUMP_OPCODES derefb if
         dup dump_opcodes
 
+    # Generate code
     generate_code_x86_64_linux
 
     0
