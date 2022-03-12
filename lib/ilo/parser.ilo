@@ -796,7 +796,13 @@ int return_on -> ptr
                 filename tokens token_index 8 malloc 8 malloc TOKEN_BLOCK_END _parse
                 drop
 
-                # Create RETURN opcode
+                # Create RESTORE_FRAME and RETURN opcodes
+                dup token.line + derefi
+                OPCODE_RESTORE_FRAME
+                NULL
+                rot
+                _opcodes derefp create_opcode _opcodes setp
+
                 dup token.line + derefi
                 OPCODE_RETURN
                 NULL

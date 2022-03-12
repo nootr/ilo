@@ -332,6 +332,7 @@ class Opcode:
     PUSH_CHAR = "push char"
     PUSH_INT = "push int"
     PUSH_STRING = "push string"
+    RESTORE_FRAME = "restore frame"
     RETURN = "return"
     ROT = "rot"
     SET_B = "set boolean value"
@@ -766,6 +767,7 @@ def parse(
                     current_function=function_name,
                     args=fn_args,
                 )
+                opcodes.append((Opcode.RESTORE_FRAME, 0, line_no))
                 opcodes.append((Opcode.RETURN, 0, line_no))
                 if return_type != "void":
                     # TODO: Fix line number
@@ -1120,10 +1122,11 @@ def generate_code():
             output(f"{operand}:", "", "")
             output("", "push", "rbp")
             output("", "mov", "rbp, rsp")
-        elif opcode == Opcode.RETURN:
+        elif opcode == Opcode.RESTORE_FRAME:
             output("", "pop", "rax")
             output("", "mov", "rsp, rbp")
             output("", "pop", "rbp")
+        elif opcode == Opcode.RETURN:
             output("", "ret", "")
         elif opcode == Opcode.CALL:
             output("", "call", operand)

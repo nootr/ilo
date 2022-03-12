@@ -228,10 +228,11 @@ def generate_code_x86_64_linux: ptr opcodes -> void
             "" "pop rax"        _text _append
             "" "div rbx"        _text _append
             "" "push rdx"       _text _append
-        elif dup opcode.opcode + derefi OPCODE_RETURN =
+        elif dup opcode.opcode + derefi OPCODE_RESTORE_FRAME =
             "" "pop rax"      _text _append
             "" "mov rsp, rbp" _text _append
             "" "pop rbp"      _text _append
+        elif dup opcode.opcode + derefi OPCODE_RETURN =
             "" "ret"          _text _append
         elif dup opcode.opcode + derefi OPCODE_BITWISE_AND =
             "" "pop rax"      _text _append
