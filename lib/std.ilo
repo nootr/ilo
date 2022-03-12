@@ -558,10 +558,38 @@ def free: ptr block_data -> void
     verify_memory
 
 
+buffer _itos 21
+
 def itos: int i -> ptr
     # Converts an integer to string
-    19 malloc
-    dup i swap itohex
+    i 0 = if
+        "0"
+    elif i 0 <
+        "Negative numbers are not yet implemented" dup raise
+    else
+        i           # remainder
+        _itos 19 +  # index
+        while over 0 > over _itos >= and
+            # Get right-most digit
+            over 10 %
+
+            # Convert to character
+            '0' casti + castc
+
+            # Place at index
+            over setc
+
+            # Move left one character and divide remainder by 10
+            1 - swap 10 / swap
+
+        1 +
+
+        # Copy string to new memory
+        dup strlen 1 + malloc
+        strcpy
+
+        # Cleanup stack
+        swap drop
 
 
 def puti: int i -> void
