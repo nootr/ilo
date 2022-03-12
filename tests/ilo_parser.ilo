@@ -183,7 +183,8 @@ def main: int argc, ptr argv -> int
     dup opcode.line    + derefi 27 =                   "Op 33 should be on line 27" assert
     OPCODE_SIZE +
     dup opcode.opcode  + derefi OPCODE_GET_ARG =       "Op 33 should be get arg" assert
-    dup opcode.operand + derefp "0x20" streq           "Op 33 should be 32" assert
+    dup opcode.operand + derefp \
+        "0x0000000000000020" streq                     "Op 33 should be 32" assert
     dup opcode.line    + derefi 28 =                   "Op 33 should be on line 28" assert
     OPCODE_SIZE 3 * +
     dup opcode.opcode  + derefi OPCODE_RETURN =        "Op 34 should be return" assert

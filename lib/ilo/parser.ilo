@@ -537,7 +537,7 @@ int return_on -> ptr
                 # Create while label
                 25 malloc
                 "while_" over 6 memcpy
-                _while_index derefi over 6 + i64tohex
+                _while_index derefi over 6 + itohex
                 _while_index derefi 1 + _while_index seti
 
                 # Create LABEL opcode
@@ -590,12 +590,12 @@ int return_on -> ptr
                 # Create end label
                 23 malloc
                 "end_" over 4 memcpy
-                _if_index derefi over 4 + i64tohex
+                _if_index derefi over 4 + itohex
 
                 # Create if label
                 22 malloc
                 "if_" over 3 memcpy
-                _if_index derefi over 3 + i64tohex
+                _if_index derefi over 3 + itohex
 
                 _if_index derefi 1 + _if_index seti
 
@@ -634,7 +634,7 @@ int return_on -> ptr
                     # Create elif label
                     24 malloc
                     "elif_" over 5 memcpy
-                    _if_index derefi over 5 + i64tohex
+                    _if_index derefi over 5 + itohex
                     _if_index derefi 1 + _if_index seti
 
                     # Parse elif condition

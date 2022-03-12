@@ -27,7 +27,7 @@ def NULL: -> ptr
     0 castp
 
 
-def i64tohex: int x, ptr buf -> void
+def itohex: int x, ptr buf -> void
     # Converts a given 64-bit integer to its hexadecimal representation
     buf
     dup '0' swap setc 1 +
@@ -73,89 +73,6 @@ def i64tohex: int x, ptr buf -> void
         elif dup 15 =
             rot dup 'f' swap setc rot rot
         drop 4 - swap 1 + swap
-    drop 0 castc swap setc
-
-
-def i8tohex: int x, ptr buf -> void
-    # Converts a given 8-bit integer to its hexadecimal representation
-    buf
-    dup '0' swap setc 1 +
-    dup 'x' swap setc 1 +
-
-    4  # offset
-    while dup 0 >=
-        dup
-        15 swap shl
-        x and
-        swap dup rot swap shr
-
-        dup 0 = if
-            rot dup '0' swap setc rot rot
-        elif dup 1 =
-            rot dup '1' swap setc rot rot
-        elif dup 2 =
-            rot dup '2' swap setc rot rot
-        elif dup 3 =
-            rot dup '3' swap setc rot rot
-        elif dup 4 =
-            rot dup '4' swap setc rot rot
-        elif dup 5 =
-            rot dup '5' swap setc rot rot
-        elif dup 6 =
-            rot dup '6' swap setc rot rot
-        elif dup 7 =
-            rot dup '7' swap setc rot rot
-        elif dup 8 =
-            rot dup '8' swap setc rot rot
-        elif dup 9 =
-            rot dup '9' swap setc rot rot
-        elif dup 10 =
-            rot dup 'a' swap setc rot rot
-        elif dup 11 =
-            rot dup 'b' swap setc rot rot
-        elif dup 12 =
-            rot dup 'c' swap setc rot rot
-        elif dup 13 =
-            rot dup 'd' swap setc rot rot
-        elif dup 14 =
-            rot dup 'e' swap setc rot rot
-        elif dup 15 =
-            rot dup 'f' swap setc rot rot
-        drop 4 - swap 1 + swap
-    drop 0 castc swap setc
-
-
-def i64tos: int x, ptr buf -> void
-    # Converts a given 64-bit integer to string
-    buf
-    dup '0' swap setc 1 +
-    dup 'b' swap setc 1 +
-
-    1 63 shl  # Sweeping bit
-    while dup 0 !=
-        swap dup rot dup
-        x and 0 != if
-            '1' rot setc swap 1 + swap
-        else
-            '0' rot setc swap 1 + swap
-        1 shr
-    drop 0 castc swap setc
-
-
-def i8tos: int x, ptr buf -> void
-    # Converts a given 8-bit integer to string
-    buf
-    dup '0' swap setc 1 +
-    dup 'b' swap setc 1 +
-
-    1 7 shl  # Sweeping bit
-    while dup 0 >
-        swap dup rot dup
-        x and 0 != if
-            '1' rot setc swap 1 + swap
-        else
-            '0' rot setc swap 1 + swap
-        1 shr
     drop 0 castc swap setc
 
 
@@ -325,19 +242,19 @@ def verify_memory: -> void
 
             DUMP_MEMORY derefb if
                 "* Page: "                          puts
-                dup casti _vm_buf i64tohex _vm_buf  puts
+                dup casti _vm_buf itohex _vm_buf  puts
                 "\n"                                puts
 
                 "  * prev: "                                    puts
-                dup page.prev + derefi _vm_buf i64tohex _vm_buf puts
+                dup page.prev + derefi _vm_buf itohex _vm_buf puts
                 "\n"                                            puts
 
                 "  * next: "                                    puts
-                dup page.next + derefi _vm_buf i64tohex _vm_buf puts
+                dup page.next + derefi _vm_buf itohex _vm_buf puts
                 "\n"                                            puts
 
                 "  * size: "                                    puts
-                dup page.size + derefi _vm_buf i64tohex _vm_buf puts
+                dup page.size + derefi _vm_buf itohex _vm_buf puts
                 "\n"                                            puts
 
             swap over page.prev + derefp = \
@@ -356,19 +273,19 @@ def verify_memory: -> void
             while dup NULL !=
                 DUMP_MEMORY derefb if
                     "  * block: "                       puts
-                    dup casti _vm_buf i64tohex _vm_buf  puts
+                    dup casti _vm_buf itohex _vm_buf  puts
                     "\n"                                puts
 
                     "    * size: "                                   puts
-                    dup block.size + derefi _vm_buf i64tohex _vm_buf puts
+                    dup block.size + derefi _vm_buf itohex _vm_buf puts
                     "\n"                                             puts
 
                     "    * next: "                                   puts
-                    dup block.next + derefi _vm_buf i64tohex _vm_buf puts
+                    dup block.next + derefi _vm_buf itohex _vm_buf puts
                     "\n"                                             puts
 
                     "    * prev: "                                   puts
-                    dup block.prev + derefi _vm_buf i64tohex _vm_buf puts
+                    dup block.prev + derefi _vm_buf itohex _vm_buf puts
                     "\n"                                             puts
 
                     "    * free: " puts
@@ -408,7 +325,7 @@ def verify_memory: -> void
             dup 0 > if
                 DUMP_MEMORY derefb if
                     "  * unused bytes: "          puts
-                    dup _vm_buf i64tohex _vm_buf  puts
+                    dup _vm_buf itohex _vm_buf  puts
                     "\n"                          puts
                 False "Block sizes should sum up to page size\n" assert
             drop
@@ -643,12 +560,8 @@ def free: ptr block_data -> void
 
 def itos: int i -> ptr
     # Converts an integer to string
-    i 255 <= i 0 >= and if
-        5 malloc
-        dup i swap i8tohex
-    else
-        19 malloc
-        dup i swap i64tohex
+    19 malloc
+    dup i swap itohex
 
 
 def puti: int i -> void
