@@ -1,4 +1,5 @@
 import lib.std
+import lib.std.dict
 import lib.std.list
 import lib.std.textbuffer
 import lib.ilo.opcodes
@@ -10,6 +11,7 @@ buffer _data          8     # ptr
 buffer _bss           8     # ptr
 buffer _string_index  8     # int
 buffer _textbuffer    8     # ptr
+buffer _string_labels 8     # ptr
 buffer _format_buffer 1024  # array of characters
 
 
@@ -56,6 +58,7 @@ def generate_code_x86_64_linux: ptr opcodes -> void
     new_textbuffer _bss setp
     new_textbuffer _textbuffer setp
     0 _string_index seti
+    new_dict _string_labels setp
 
     "" "global _start"      _text _append
     "" "section .text"      _text _append
@@ -130,27 +133,42 @@ def generate_code_x86_64_linux: ptr opcodes -> void
             "" "push rax"                 _text _append
             _textbuffer setp
         elif dup opcode.opcode + derefi OPCODE_PUSH_STRING =
-            # Create string label and increment string index
-            _string_index derefi
-            1 + _string_index seti
+            # Lookup string label, or create if new
+            dup opcode.operand + derefp _string_labels derefp dict_fetch
+            NULL = if
+                # Increment string index
+                _string_index derefi
+                1 + dup _string_index seti
+
+                # Create label
+                itos
+                dup strlen 3 + malloc
+                "s_" over strcpy drop
+                over over 2 + strcpy drop
+                swap free
+
+                over opcode.operand + derefp swap
+                _string_labels derefp dict_insert _string_labels setp
+
+                # Define string
+                _textbuffer derefp textbuffer_clear
+                over opcode.operand + derefp
+                _string_labels derefp dict_fetch  swap textbuffer_append
+                ": db \`"                         swap textbuffer_append
+                over opcode.operand + derefp      swap textbuffer_append
+                "\`, 0"                           swap textbuffer_append
+                dup textbuffer.content + "" _data _append
+                _textbuffer setp
+
+            dup opcode.operand + derefp _string_labels derefp dict_fetch NULL != \
+                "String should have label" assert
 
             _textbuffer derefp textbuffer_clear
-            "mov rax, "                   swap textbuffer_append
-            "s_"                          swap textbuffer_append
-            _string_index derefi itos     dup rot textbuffer_append
-            swap free
-            "" over textbuffer.content +  _text _append
-            "" "push rax"                 _text _append
-            _textbuffer setp
-
-            _textbuffer derefp textbuffer_clear
-            "s_"                          swap textbuffer_append
-            _string_index derefi itos     dup rot textbuffer_append
-            swap free
-            ": db \`"                     swap textbuffer_append
-            over opcode.operand + derefp  swap textbuffer_append
-            "\`, 0"                       swap textbuffer_append
-            dup textbuffer.content + "" _data _append
+            "mov rax, "                       swap textbuffer_append
+            over opcode.operand + derefp
+            _string_labels derefp dict_fetch  swap textbuffer_append
+            "" over textbuffer.content +      _text _append
+            "" "push rax"                     _text _append
             _textbuffer setp
         elif dup opcode.opcode + derefi OPCODE_FUNCTION =
             _textbuffer derefp textbuffer_clear
