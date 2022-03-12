@@ -59,6 +59,7 @@ def main: int argc, ptr argv -> int
     parse
     list.items +
 
+    OPCODE_SIZE 56 * +  # Skip the core functions
     dup opcode.opcode  + derefi OPCODE_PUSH_INT =      "Op 1 should be integer" assert
     dup opcode.operand + derefp "6" streq              "Op 1 should be 6" assert
     dup opcode.line    + derefi 1 =                    "Op 1 should be on line 1" assert

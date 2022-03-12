@@ -41,8 +41,7 @@ def _append_opcode_info: int line, int opcode -> void
     # Print comment with opcode info
     _textbuffer derefp textbuffer_clear
     "; "                  swap textbuffer_append
-    line itos             dup rot textbuffer_append
-    swap free
+    line itos             swap textbuffer_append
     " "                   swap textbuffer_append
     opcode opcode_to_str  swap textbuffer_append
     "" over textbuffer.content + _text _append
@@ -145,7 +144,7 @@ def generate_code_x86_64_linux: ptr opcodes -> void
                 dup strlen 3 + malloc
                 "s_" over strcpy drop
                 over over 2 + strcpy drop
-                swap free
+                swap drop
 
                 over opcode.operand + derefp swap
                 _string_labels derefp dict_insert _string_labels setp

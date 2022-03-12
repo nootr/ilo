@@ -1290,6 +1290,7 @@ def run(filename):
         print("Please provide a filename to compile.")
         exit(1)
 
+    parse_file("lib/ilo/core.ilo")
     ir = parse_file(filename)
     generate_code()
 

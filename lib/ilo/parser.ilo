@@ -841,6 +841,7 @@ int return_on -> ptr
             elif dup token.value + derefp _current_function_contains_arg
                 dup token.value + derefp
                 _current_function derefp function_get_arg_offset itos
+                dup strlen 1 + malloc strcpy
                 over token.line + derefi
                 OPCODE_GET_ARG rot rot
                 _opcodes derefp create_opcode _opcodes setp
@@ -856,7 +857,7 @@ int return_on -> ptr
 
                 # Create PUSH_STRING, PUSH_BOOL and CALL opcodes
                 filename ", line "                              concat
-                over token.line + derefi itos                   concatf
+                over token.line + derefi itos                   concatfl
                 " in "                                          concatfl
                 _current_function derefp function.name + derefp concatfl
                 "\\n"                                           concatfl
@@ -906,6 +907,17 @@ int return_on -> ptr
     _opcodes derefp
 
 
+def _parse_core_functions: -> void
+    # Parse the core functions
+    "lib/ilo/core.ilo" dup
+    read_file
+    tokenize
+    8 malloc dup 0 swap seti
+    8 malloc
+    8 malloc
+    TOKEN_END _parse
+
+
 def parse: ptr filename, ptr tokens -> ptr
     # Wrapper for _parse to initialize values and set default arguments
     _if_index derefi 0 = if
@@ -932,6 +944,8 @@ def parse: ptr filename, ptr tokens -> ptr
     _files derefp NULL = if
         PTR_SIZE new_list _files setp
         filename casti _files derefp list_append_int _files setp
+
+    _parse_core_functions
 
     8 malloc
     dup 0 swap seti

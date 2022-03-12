@@ -84,13 +84,6 @@ def max: int x, int y -> int
         y
 
 
-def strlen: ptr s -> int
-    # Returns the length of a given zero-terminated string
-    0  # Counter
-    while dup s + derefc 0 castc !=
-        1 +
-
-
 def strcpy: ptr src, ptr dest -> ptr
     # Copies a string from src to dest and returns a pointer to dest
     0  # index
@@ -558,52 +551,14 @@ def free: ptr block_data -> void
     verify_memory
 
 
-buffer _itos 21
-
-def itos: int i -> ptr
-    # Converts an integer to string
-    i 0 = if
-        "0"
-    elif i 0 <
-        "Negative numbers are not yet implemented" dup raise
-    else
-        i           # remainder
-        _itos 19 +  # index
-        while over 0 > over _itos >= and
-            # Get right-most digit
-            over 10 %
-
-            # Convert to character
-            '0' casti + castc
-
-            # Place at index
-            over setc
-
-            # Move left one character and divide remainder by 10
-            1 - swap 10 / swap
-
-        1 +
-
-        # Copy string to new memory
-        dup strlen 1 + malloc
-        strcpy
-
-        # Cleanup stack
-        swap drop
-
-
 def puti: int i -> void
     # Prints a number to STDOUT
-    i itos
-    dup puts
-    free
+    i itos puts
 
 
 def errori: int i -> void
     # Prints a number to STDERR
-    i itos
-    dup error
-    free
+    i itos error
 
 
 def concat: ptr a, ptr b -> ptr

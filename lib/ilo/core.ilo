@@ -1,0 +1,41 @@
+# Core functions
+# This file is automatically included to the compiled file.
+
+
+def strlen: ptr s -> int
+    # Returns the length of a given zero-terminated string
+    0  # Counter
+    while dup s + derefc 0 castc !=
+        1 +
+
+
+buffer _itos 21
+
+def itos: int i -> ptr
+    # Converts an integer to string
+    # Please note that the _itos buffer is overwritten every time itos is executed, so
+    # make sure you copy the string to a different memory buffer if you want it to be
+    # persistent.
+    # TODO: Support negative numbers
+    i 0 = if
+        "0"
+    else
+        i           # remainder
+        _itos 19 +  # index
+        while over 0 > over _itos >= and
+            # Get right-most digit
+            over 10 %
+
+            # Convert to character
+            '0' casti + castc
+
+            # Place at index
+            over setc
+
+            # Move left one character and divide remainder by 10
+            1 - swap 10 / swap
+
+        1 +
+
+        # Cleanup stack
+        swap drop
