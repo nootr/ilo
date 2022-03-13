@@ -291,6 +291,10 @@ def _tokenize: ptr source, ptr tokens -> ptr
             over TOKEN_KEYWORD "syscall"
             tokens derefp create_token tokens setp
             7 +
+        elif dup "reff" is_word
+            over TOKEN_KEYWORD "reff"
+            tokens derefp create_token tokens setp
+            4 +
         elif dup "bool" is_word
             over TOKEN_TYPE "bool"
             tokens derefp create_token tokens setp

@@ -17,7 +17,7 @@ endif
 
 " Keywords
 syntax keyword iloFunctions strlen itos traceback
-syntax keyword iloKeywords import var def if elif else dup swap over rot drop syscall derefc derefi derefb derefp buffer setc seti setb setp const and or while castc casti castb castp location debug shl shr
+syntax keyword iloKeywords import var def if elif else dup swap over rot drop syscall derefc derefi derefb derefp buffer setc seti setb setp const and or while castc casti castb castp location debug shl shr reff
 syntax keyword iloTypes int ptr char bool void
 syntax keyword iloBoolean True False
 

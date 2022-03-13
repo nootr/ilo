@@ -347,6 +347,13 @@ def generate_code_x86_64_linux: ptr opcodes -> void
             "" "pop rdi"  _text _append
             "" "syscall"  _text _append
             "" "push rax" _text _append
+        elif dup opcode.opcode + derefi OPCODE_REF_F =
+            _textbuffer derefp textbuffer_clear
+            "mov rax, "                   swap textbuffer_append
+            over opcode.operand + derefp  swap textbuffer_append
+            "" over textbuffer.content +  _text _append
+            "" "push rax"                 _text _append
+            _textbuffer setp
         elif dup opcode.opcode + derefi OPCODE_DEREF_B =
             "" "pop rax"        _text _append
             "" "xor rbx, rbx"   _text _append

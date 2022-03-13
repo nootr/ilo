@@ -36,20 +36,21 @@ const OPCODE_PUSH_BOOL            29
 const OPCODE_PUSH_CHAR            30
 const OPCODE_PUSH_INT             31
 const OPCODE_PUSH_STRING          32
-const OPCODE_RESTORE_FRAME        33
-const OPCODE_RETURN               34
-const OPCODE_ROT                  35
-const OPCODE_SET_B                36
-const OPCODE_SET_C                37
-const OPCODE_SET_I                38
-const OPCODE_SET_P                39
-const OPCODE_SHIFT_LEFT           40
-const OPCODE_SHIFT_RIGHT          41
-const OPCODE_SUBTRACT             42
-const OPCODE_SWAP                 43
-const OPCODE_SYSCALL              44
-const OPCODE_WHILE_END            45
-const OPCODE_WHILE_START          46
+const OPCODE_REF_F                33
+const OPCODE_RESTORE_FRAME        34
+const OPCODE_RETURN               35
+const OPCODE_ROT                  36
+const OPCODE_SET_B                37
+const OPCODE_SET_C                38
+const OPCODE_SET_I                39
+const OPCODE_SET_P                40
+const OPCODE_SHIFT_LEFT           41
+const OPCODE_SHIFT_RIGHT          42
+const OPCODE_SUBTRACT             43
+const OPCODE_SWAP                 44
+const OPCODE_SYSCALL              45
+const OPCODE_WHILE_END            46
+const OPCODE_WHILE_START          47
 
 
 def opcode_to_str: int opcode -> ptr
@@ -121,6 +122,8 @@ def opcode_to_str: int opcode -> ptr
         "push integer"
     elif dup OPCODE_PUSH_STRING =
         "push string"
+    elif dup OPCODE_REF_F =
+        "reference function"
     elif dup OPCODE_RESTORE_FRAME =
         "restore frame"
     elif dup OPCODE_RETURN =

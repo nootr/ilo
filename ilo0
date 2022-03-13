@@ -196,6 +196,9 @@ def fetch_tokens(program):
         elif is_word("syscall", program):  # DONE
             tokens.append((TokenType.KEYWORD, "syscall", line_no))
             program = program[7:]
+        elif is_word("reff", program):  # DONE
+            tokens.append((TokenType.KEYWORD, "reff", line_no))
+            program = program[4:]
         elif is_word("import", program):  # DONE
             tokens.append((TokenType.KEYWORD, "import", line_no))
             program = program[6:]
@@ -329,6 +332,7 @@ class Opcode:
     PUSH_CHAR = "push char"
     PUSH_INT = "push int"
     PUSH_STRING = "push string"
+    REF_F = "reference function"
     RESTORE_FRAME = "restore frame"
     RETURN = "return"
     ROT = "rot"
@@ -560,6 +564,15 @@ def parse(
                 for _ in range(int(operand) + 1):
                     pop(line_no)
                 stack.append(Type.INT)
+            elif value == "reff":
+                operand_type, operand, line_no = tokens[token_index]
+                token_index += 1
+                if operand_type != TokenType.IDENTIFIER:
+                    raise ValueError(
+                        "Syntax error: expected identifier after reff"
+                    )
+                opcodes.append((Opcode.REF_F, operand, line_no))
+                stack.append(Type.PTR)
             elif value == "while":  # DONE
                 while_label = f"while_{while_index}"
                 while_index += 1
@@ -1089,6 +1102,9 @@ def generate_code():
             output("", "push", "rbx")
             output("", "push", "rax")
             output("", "push", "rcx")
+        elif opcode == Opcode.REF_F:
+            output("", "mov", f"rax, {operand}")
+            output("", "push", f"rax")
         elif opcode == Opcode.SYSCALL:  # DONE
             output("",  "pop", "rax")
             if operand > 6:

@@ -1,0 +1,10 @@
+# Description:Reference function
+# Exit code:1
+# Stdout:
+# Stderr:
+
+def foo: -> void
+    0
+
+def main: int argc, ptr argv -> int
+    reff foo 0 castp != casti

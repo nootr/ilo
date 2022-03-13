@@ -524,6 +524,24 @@ int return_on -> ptr
                     1 -
                 drop
                 TYPE_INT _push_type
+            elif dup token.value + derefp "reff" streq
+                drop
+                tokens token_index _get_next_token
+                dup token.type + derefi TOKEN_IDENTIFIER != if
+                    dup token.line + derefi
+                    "reff is missing function identifier"
+                    syntax_error
+
+                dup token.value + derefp
+                dup functions derefp dict_fetch NULL = if
+                    "Unknown function: " over concat raise
+
+                over token.line + derefi
+                OPCODE_REF_F
+                rot rot
+                _opcodes derefp create_opcode _opcodes setp
+
+                TYPE_PTR _push_type
             elif dup token.value + derefp "while" streq
                 # Create while label
                 25 malloc
