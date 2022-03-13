@@ -56,17 +56,52 @@ def traceback: ptr message -> void
     syscall 3
 
     0
-    while True  # Patch: PUSH_BOOL @77 -> GET_ARG 16
+    while True  # Patch: PUSH_BOOL @81 -> GET_ARG 16
         # Print function call
         2           # STDERR
-        ""          # Patch: PUSH_STRING @80 -> GET_ARG 24
+        ""          # Patch: PUSH_STRING @84 -> GET_ARG 40
         dup strlen  # String length
+        1           # SYS_WRITE
+        syscall 3
+        drop
+
+        2           # STDERR
+        ", line "   # String
+        7           # String length
+        1           # SYS_WRITE
+        syscall 3
+        drop
+
+        2           # STDERR
+        0 itos      # Patch: PUSH_INT @101 -> GET_ARG 32
+        dup strlen  # String length
+        1           # SYS_WRITE
+        syscall 3
+        drop
+
+        2           # STDERR
+        " in "      # String
+        4           # String length
+        1           # SYS_WRITE
+        syscall 3
+        drop
+
+        2           # STDERR
+        ""          # Patch: PUSH_STRING @123 -> GET_ARG 24
+        dup strlen  # String length
+        1           # SYS_WRITE
+        syscall 3
+        drop
+
+        2           # STDERR
+        "\n"        # String
+        1           # String length
         1           # SYS_WRITE
         syscall 3
         drop
 
         # Move to previous frame
         drop
-        0   # Patch: PUSH_INT @89 -> RESTORE_FRAME
+        0   # Patch: PUSH_INT @140 -> RESTORE_FRAME
 
     1 60 syscall 1

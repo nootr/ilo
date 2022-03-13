@@ -56,7 +56,7 @@ def main: int argc, ptr argv -> int
     parse
     list.items +
 
-    OPCODE_SIZE 96 * +  # Skip the core functions
+    OPCODE_SIZE 147 * +  # Skip the core functions
     dup opcode.opcode  + derefi OPCODE_PUSH_INT =      "Op 1 should be integer" assert
     dup opcode.operand + derefp "6" streq              "Op 1 should be 6" assert
     OPCODE_SIZE +
@@ -144,7 +144,7 @@ def main: int argc, ptr argv -> int
     dup opcode.operand + derefp "o" streq              "Op 33 should be o" assert
     OPCODE_SIZE +
     dup opcode.opcode  + derefi OPCODE_GET_ARG =       "Op 33 should be get arg" assert
-    dup opcode.operand + derefp "32" streq             "Op 33 should be 32" assert
+    dup opcode.operand + derefp "48" streq             "Op 33 should be 48" assert
     OPCODE_SIZE 3 * +
     dup opcode.opcode  + derefi OPCODE_RESTORE_FRAME = "Op 34 should be res.fr." assert
     OPCODE_SIZE +
@@ -156,8 +156,12 @@ def main: int argc, ptr argv -> int
     OPCODE_SIZE 3 * +
     dup opcode.opcode  + derefi OPCODE_PUSH_STRING =   "Op 36 should be push str" assert
     OPCODE_SIZE +
-    dup opcode.opcode  + derefi OPCODE_PUSH_BOOL =     "Op 37 should be push bool" assert
+    dup opcode.opcode  + derefi OPCODE_PUSH_INT =      "Op 37 should be push int" assert
     OPCODE_SIZE +
-    dup opcode.opcode  + derefi OPCODE_CALL =          "Op 38 should be call" assert
-    dup opcode.operand + derefp "o" streq              "Op 38 should be o" assert
+    dup opcode.opcode  + derefi OPCODE_PUSH_STRING =   "Op 38 should be push str" assert
+    OPCODE_SIZE +
+    dup opcode.opcode  + derefi OPCODE_PUSH_BOOL =     "Op 39 should be push bool" assert
+    OPCODE_SIZE +
+    dup opcode.opcode  + derefi OPCODE_CALL =          "Op 40 should be call" assert
+    dup opcode.operand + derefp "o" streq              "Op 40 should be o" assert
     0

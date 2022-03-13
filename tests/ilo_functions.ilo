@@ -37,10 +37,10 @@ def main: int argc, ptr argv -> int
     dup argument.type + derefi TYPE_PTR = "Second argument should be ptr" assert
     drop
 
-    "arg1" _function derefp function_get_arg_offset 40 = \
-        "First argument should have a memory offset of 40" assert
-    "arg2" _function derefp function_get_arg_offset 32 = \
-        "Second argument should have a memory offset of 32" assert
+    "arg1" _function derefp function_get_arg_offset 56 = \
+        "First argument should have a memory offset of 56" assert
+    "arg2" _function derefp function_get_arg_offset 48 = \
+        "Second argument should have a memory offset of 48" assert
     "arg3" _function derefp function_get_arg_offset 0 1 - = \
         "Unknown argument should return offset -1" assert
     0

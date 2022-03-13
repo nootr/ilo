@@ -185,7 +185,7 @@ def generate_code_x86_64_linux: ptr opcodes -> void
 
             dup opcode.operand + derefp functions derefp dict_fetch
             0
-            while over function.args + derefp list.len + derefi 2 + over >
+            while over function.args + derefp list.len + derefi 4 + over >
                 "" "pop rbx" _text _append
                 1 +
             drop
@@ -424,9 +424,10 @@ def generate_code_x86_64_linux: ptr opcodes -> void
 
     # Add entrypoint
     "_start:" ""        _text _append
-    "" "mov rax, 0"  _text _append
+    "" "xor rax, rax"   _text _append
     "" "push rax"       _text _append
-    "" "mov rax, 0"     _text _append
+    "" "push rax"       _text _append
+    "" "push rax"       _text _append
     "" "push rax"       _text _append
     "" "call main"      _text _append
     "_end:" ""          _text _append

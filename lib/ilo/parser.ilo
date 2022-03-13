@@ -852,12 +852,17 @@ int return_on -> ptr
                     dup token.line + derefi
                     "Global function calls are not supported" syntax_error
 
-                # Create PUSH_STRING, PUSH_BOOL and CALL opcodes
-                filename ", line "                              concat
-                over token.line + derefi itos                   concatfl
-                " in "                                          concatfl
-                _current_function derefp function.name + derefp concatfl
-                "\\n"                                           concatfl
+                # Create frame data and CALL opcodes
+                filename
+                over token.line + derefi
+                OPCODE_PUSH_STRING rot rot
+                _opcodes derefp create_opcode _opcodes setp
+
+                dup token.line + derefi dup itos swap
+                OPCODE_PUSH_INT rot rot
+                _opcodes derefp create_opcode _opcodes setp
+
+                _current_function derefp function.name + derefp
                 over token.line + derefi
                 OPCODE_PUSH_STRING rot rot
                 _opcodes derefp create_opcode _opcodes setp
@@ -916,18 +921,28 @@ def _parse_core_functions: -> void
 
     # Patch opcodes
     # TODO: Find a good way to define custom opcodes in core.ilo. Sorry for the hacks.
-    77 _opcodes derefp list_fetch
+    81 _opcodes derefp list_fetch
     dup opcode.opcode + derefi OPCODE_PUSH_BOOL = "Patch #1: BOOL -> GET_ARG" assert
     OPCODE_GET_ARG over opcode.opcode + seti
     "16" over opcode.operand + setp
 
-    80 _opcodes derefp list_fetch
+    84 _opcodes derefp list_fetch
     dup opcode.opcode + derefi OPCODE_PUSH_STRING = "Patch #2: STRING -> GET_ARG" assert
+    OPCODE_GET_ARG over opcode.opcode + seti
+    "40" over opcode.operand + setp
+
+    101 _opcodes derefp list_fetch
+    dup opcode.opcode + derefi OPCODE_PUSH_INT = "Patch #3: INT -> GET_ARG" assert
+    OPCODE_GET_ARG over opcode.opcode + seti
+    "32" over opcode.operand + setp
+
+    123 _opcodes derefp list_fetch
+    dup opcode.opcode + derefi OPCODE_PUSH_STRING = "Patch #4: STRING -> GET_ARG" assert
     OPCODE_GET_ARG over opcode.opcode + seti
     "24" over opcode.operand + setp
 
-    89 _opcodes derefp list_fetch
-    dup opcode.opcode + derefi OPCODE_PUSH_INT = "Patch #3: INT -> GET_ARG" assert
+    140 _opcodes derefp list_fetch
+    dup opcode.opcode + derefi OPCODE_PUSH_INT = "Patch #5: INT -> GET_ARG" assert
     OPCODE_RESTORE_FRAME over opcode.opcode + seti
 
 

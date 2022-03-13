@@ -877,7 +877,15 @@ def parse(
                 opcodes.append(
                     (
                         Opcode.PUSH_STRING,
-                        f"{filename}, line {line_no} in {current_function}\\n",
+                        filename,
+                        line_no,
+                    )
+                )
+                opcodes.append((Opcode.PUSH_INT, line_no, line_no))
+                opcodes.append(
+                    (
+                        Opcode.PUSH_STRING,
+                        current_function,
                         line_no,
                     )
                 )
@@ -902,7 +910,7 @@ def parse(
                 stack.append(Type.INT)
             elif value in args:  # DONE
                 raw_index, arg_type = args[value]
-                index = len(args) - raw_index + 3
+                index = len(args) - raw_index + 5
                 opcodes.append((Opcode.GET_ARG, index, line_no))
                 stack.append(arg_type)
             else:
@@ -1119,7 +1127,7 @@ def generate_code():
         elif opcode == Opcode.CALL:
             output("", "call", operand)
             args, ret = functions[operand]
-            for _ in range(len(args) + 2):
+            for _ in range(len(args) + 4):
                 output("", "pop", "rbx")
             if ret != Type.VOID:
                 output("", "push", "rax")
@@ -1184,9 +1192,10 @@ def generate_code():
             raise ValueError(f"Unknown opcode: {opcode}")
 
     output("_start:", "", "")
-    output("", "mov", "rax, 0")
+    output("", "xor", "rax, rax")
     output("", "push", "rax")
-    output("", "mov", "rax, 0")
+    output("", "push", "rax")
+    output("", "push", "rax")
     output("", "push", "rax")
     output("", "call", "main")
     output("_end:", "", "")
@@ -1228,9 +1237,15 @@ def run(filename):
         exit(1)
 
     parse_file("lib/ilo/core.ilo")
-    opcodes[77] = (Opcode.GET_ARG, 2, 0)
-    opcodes[80] = (Opcode.GET_ARG, 3, 0)
-    opcodes[89] = (Opcode.RESTORE_FRAME, 0, 0)
+    opcodes[81] = (Opcode.GET_ARG, 2, 0)
+    opcodes[84] = (Opcode.GET_ARG, 5, 0)
+    opcodes[101] = (Opcode.GET_ARG, 4, 0)
+    opcodes[123] = (Opcode.GET_ARG, 3, 0)
+    opcodes[140] = (Opcode.RESTORE_FRAME, 0, 0)
+
+    #from pprint import pprint
+    #pprint(opcodes)
+    #exit(0)
 
     ir = parse_file(filename)
     generate_code()

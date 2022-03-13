@@ -67,5 +67,5 @@ def function_get_arg_offset: ptr name, ptr func -> int
     else
         func function.args + derefp list.len + derefi
         over argument.index + derefi -
-        3 +
+        5 +
         8 *
