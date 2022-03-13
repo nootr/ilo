@@ -62,7 +62,6 @@ def generate_code_x86_64_linux: ptr opcodes -> void
     "" "global _start"      _text _append
     "" "section .text"      _text _append
     "" "section .data"      _data _append
-    "s_tb:" "db \`\\n\`, 0" _data _append
     "" "section .bss"       _bss _append
 
     # Generate assembly
@@ -423,57 +422,9 @@ def generate_code_x86_64_linux: ptr opcodes -> void
         drop
         1 +
 
-    # Add traceback function
-    "_tb:" ""           _text _append   # Pop message
-    "" "pop r8"         _text _append
-    "_tbpfc:" ""        _text _append   # Print function call
-    "" "mov rax, rbp"   _text _append
-    "" "add rax, 24"    _text _append
-    "" "mov rsi, [rax]" _text _append
-    "" "xor rdx, rdx"   _text _append   # counter
-    "" "mov rcx, rsi"   _text _append   # pointer
-    "_tbws:" ""         _text _append
-    "" "xor rax, rax"   _text _append
-    "" "mov al, [rcx]"  _text _append
-    "" "test rax, rax"  _text _append
-    "" "jz _tbwe"       _text _append
-    "" "inc rcx"        _text _append
-    "" "inc rdx"        _text _append
-    "" "jmp _tbws"      _text _append
-    "_tbwe:" ""         _text _append
-    "" "mov rax, 1"     _text _append
-    "" "mov rdi, 2"     _text _append
-    "" "syscall"        _text _append
-    "" "mov rax, rbp"   _text _append   # Stop if main flag == 0
-    "" "add rax, 16"    _text _append
-    "" "mov rbx, [rax]" _text _append
-    "" "test rbx, rbx"  _text _append
-    "" "jz _tbend"      _text _append
-    "" "mov rsp, rbp"   _text _append   # Move to previous frame
-    "" "pop rbp"        _text _append
-    "" "jmp _tbpfc"     _text _append
-    "_tbend:" ""        _text _append   # Print message
-    "" "mov rsi, r8"    _text _append
-    "" "xor rdx, rdx"   _text _append   # counter
-    "" "mov rcx, rsi"   _text _append   # pointer
-    "_tbews:" ""        _text _append
-    "" "xor rax, rax"   _text _append
-    "" "mov al, [rcx]"  _text _append
-    "" "test rax, rax"  _text _append
-    "" "jz _tbewe"      _text _append
-    "" "inc rcx"        _text _append
-    "" "inc rdx"        _text _append
-    "" "jmp _tbews"     _text _append
-    "_tbewe:" ""        _text _append
-    "" "mov rax, 1"     _text _append
-    "" "mov rdi, 2"     _text _append
-    "" "syscall"        _text _append
-    "" "mov rax, 1"     _text _append
-    "" "jmp _end"       _text _append
-
     # Add entrypoint
     "_start:" ""        _text _append
-    "" "mov rax, s_tb"  _text _append
+    "" "mov rax, 0"  _text _append
     "" "push rax"       _text _append
     "" "mov rax, 0"     _text _append
     "" "push rax"       _text _append

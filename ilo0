@@ -196,9 +196,6 @@ def fetch_tokens(program):
         elif is_word("syscall", program):  # DONE
             tokens.append((TokenType.KEYWORD, "syscall", line_no))
             program = program[7:]
-        elif is_word("traceback", program):
-            tokens.append((TokenType.KEYWORD, "traceback", line_no))
-            program = program[9:]
         elif is_word("import", program):  # DONE
             tokens.append((TokenType.KEYWORD, "import", line_no))
             program = program[6:]
@@ -502,12 +499,6 @@ def parse(
             if value == "debug":  # DONE
                 print(f"Stack: {stack}")
                 exit(1)
-            elif value == "traceback":  # DONE
-                if pop(line_no) != Type.PTR:
-                    raise TypeError(
-                        f"Traceback needs string as argument on line {line_no}"
-                    )
-                opcodes.append((Opcode.JUMP, "_tb", line_no))
             elif value == "location":  # DONE
                 opcodes.append(
                     (
@@ -937,10 +928,7 @@ def output(a, b, c, to_string=False):
 
 def generate_code():
     global opcodes
-    data = (
-        output("", "section", ".data", to_string=True) +
-        output("s_tb:", "db", "`\\n`, 0", to_string=True)
-    )
+    data = output("", "section", ".data", to_string=True)
     bss = output("", "section", ".bss", to_string=True)
     string_index = 1
     output("", "global", "_start")
@@ -1195,62 +1183,8 @@ def generate_code():
         else:
             raise ValueError(f"Unknown opcode: {opcode}")
 
-    output("_tb:", "", "")
-    output("", "pop", "r8")                 # Pop message
-
-    output("_tbpfc:", "", "")               # Print function call
-    output("", "mov", "rax, rbp")
-    output("", "add", "rax, 24")
-    output("", "mov", "rsi, [rax]")
-
-    output("", "xor", "rdx, rdx")           # counter
-    output("", "mov", "rcx, rsi")           # pointer
-    output("_tbws:", "", "")
-    output("", "xor", "rax, rax")
-    output("", "mov", "al, [rcx]")
-    output("", "test", "rax, rax")
-    output("", "jz", "_tbwe")
-    output("", "inc", "rcx")
-    output("", "inc", "rdx")
-    output("", "jmp", "_tbws")
-    output("_tbwe:", "", "")
-    output("", "mov", "rax, 1")
-    output("", "mov", "rdi, 2")
-    output("", "syscall", "")
-
-    output("", "mov", "rax, rbp")           # Stop if main flag == 0
-    output("", "add", "rax, 16")
-    output("", "mov", "rbx, [rax]")
-    output("", "test", "rbx, rbx")
-    output("", "jz", "_tbend")
-
-    output("", "mov", "rsp, rbp")           # Move to previous frame
-    output("", "pop", "rbp")
-    output("", "jmp", "_tbpfc")
-
-    output("_tbend:", "", "")               # Print message
-
-    output("", "mov", "rsi, r8")
-
-    output("", "xor", "rdx, rdx")           # counter
-    output("", "mov", "rcx, rsi")           # pointer
-    output("_tbews:", "", "")
-    output("", "xor", "rax, rax")
-    output("", "mov", "al, [rcx]")
-    output("", "test", "rax, rax")
-    output("", "jz", "_tbewe")
-    output("", "inc", "rcx")
-    output("", "inc", "rdx")
-    output("", "jmp", "_tbews")
-    output("_tbewe:", "", "")
-    output("", "mov", "rax, 1")
-    output("", "mov", "rdi, 2")
-    output("", "syscall", "")
-    output("", "mov", "rax, 1")
-    output("", "jmp", "_end")
-
     output("_start:", "", "")
-    output("", "mov", "rax, s_tb")
+    output("", "mov", "rax, 0")
     output("", "push", "rax")
     output("", "mov", "rax, 0")
     output("", "push", "rax")
@@ -1294,6 +1228,10 @@ def run(filename):
         exit(1)
 
     parse_file("lib/ilo/core.ilo")
+    opcodes[77] = (Opcode.GET_ARG, 2, 0)
+    opcodes[80] = (Opcode.GET_ARG, 3, 0)
+    opcodes[89] = (Opcode.RESTORE_FRAME, 0, 0)
+
     ir = parse_file(filename)
     generate_code()
 

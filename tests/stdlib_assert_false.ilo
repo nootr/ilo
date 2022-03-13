@@ -1,7 +1,7 @@
 # Description:Standard library - Assert False
 # Exit code:1
 # Stdout:
-# Stderr:tests/stdlib_assert_false.ilo, line 9 in main\n\nOK
+# Stderr:OK\nTraceback:\nlib/std.ilo, line 174 in assert\ntests/stdlib_assert_false.ilo, line 9 in main
 
 import lib.std
 

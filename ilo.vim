@@ -16,7 +16,8 @@ if exists("b:current_syntax")
 endif
 
 " Keywords
-syntax keyword iloKeywords import var def if elif else dup swap over rot drop syscall derefc derefi derefb derefp buffer setc seti setb setp const and or while castc casti castb castp location debug shl shr traceback
+syntax keyword iloFunctions strlen itos traceback
+syntax keyword iloKeywords import var def if elif else dup swap over rot drop syscall derefc derefi derefb derefp buffer setc seti setb setp const and or while castc casti castb castp location debug shl shr
 syntax keyword iloTypes int ptr char bool void
 syntax keyword iloBoolean True False
 
@@ -30,6 +31,7 @@ syntax region iloNumber start=/\s\d/ end=/[ \t\n]/
 syntax match iloEscapes display contained "\\[nr\"']"
 
 " Set highlights
+highlight default link iloFunctions Function
 highlight default link iloKeywords  Keyword
 highlight default link iloTypes     Type
 highlight default link iloBoolean   Boolean
