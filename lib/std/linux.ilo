@@ -1,0 +1,76 @@
+const STDIN  0
+const STDOUT 1
+const STDERR 2
+
+const SYS_READ   0
+const SYS_WRITE  1
+const SYS_OPEN   2
+const SYS_MMAP   9
+const SYS_MUNMAP 11
+const SYS_EXIT   60
+
+const O_RDONLY      0
+const O_WRONLY      1
+const PROT_READ     1
+const PROT_WRITE    2
+const MAP_PRIVATE   2
+const MAP_ANONYMOUS 32
+
+
+def puts: ptr s -> void
+    # Prints a string and returns the write syscall exit-code
+    STDOUT     # File descriptor
+    s          # Pointer to string
+    s strlen   # String length
+    SYS_WRITE
+    syscall 3
+
+
+def error: ptr s -> void
+    # Prints an error and returns the write syscall exit-code
+    STDERR     # File descriptor
+    s          # Pointer to string
+    s strlen   # String length
+    SYS_WRITE
+    syscall 3
+
+
+def exit: int code -> void
+    # Exits using a given exit code
+    code SYS_EXIT syscall 1
+
+
+def raise: ptr message -> void
+    # Prints a given error message and exits with exitcode 1
+    message traceback
+
+
+def assert: bool assertion, ptr message -> void
+    # Raises when assertion is False
+    assertion False = if
+        message traceback
+
+
+def open: ptr filename, char mode -> int
+    # Opens a given file in (r)ead or (w)rite mode and returns a file descriptor.
+    filename
+    0
+
+    mode 'r' = if
+        O_RDONLY or
+    mode 'w' = if
+        O_WRONLY or
+
+    0
+    SYS_OPEN
+    syscall 3
+
+    dup 0 < if
+        "Could not open file\n" raise
+
+
+def read: int fd, ptr buf, int count -> int
+    # Reads from a file descriptor and returns the number of bytes read or zero if EOF
+    fd buf count SYS_READ syscall 3
+    dup 0 < if
+        "Could not read file\n" raise
