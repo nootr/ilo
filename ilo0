@@ -1108,7 +1108,7 @@ def generate_code():
         elif opcode == Opcode.SYSCALL:  # DONE
             output("",  "pop", "rax")
             if operand > 6:
-                raise ValueError("Syscall should have 1-6 arguments")
+                raise ValueError("Syscall should have 0-6 arguments")
             if operand > 5:
                 output("",  "pop", "r9")
             if operand > 4:
@@ -1119,7 +1119,8 @@ def generate_code():
                 output("",  "pop", "rdx")
             if operand > 1:
                 output("",  "pop", "rsi")
-            output("",  "pop", "rdi")
+            if operand > 0:
+                output("",  "pop", "rdi")
             output("",  "syscall", "")
             output("",  "push", "rax")
         elif opcode == Opcode.IF:  # DONE

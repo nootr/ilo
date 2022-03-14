@@ -343,8 +343,9 @@ def generate_code_x86_64_linux: ptr opcodes -> void
                 "" "pop rdx" _text _append
             dup 1 > if
                 "" "pop rsi" _text _append
+            dup 0 > if
+                "" "pop rdi"  _text _append
             drop
-            "" "pop rdi"  _text _append
             "" "syscall"  _text _append
             "" "push rax" _text _append
         elif dup opcode.opcode + derefi OPCODE_REF_F =
