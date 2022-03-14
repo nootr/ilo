@@ -49,17 +49,17 @@ def traceback: ptr message -> void
     1           # SYS_WRITE
     syscall 3
 
-    2                   # STDERR
+    2                 # STDERR
     "\nTraceback:\n"  # Pointer to string
-    dup strlen          # String length
-    1                   # SYS_WRITE
+    dup strlen        # String length
+    1                 # SYS_WRITE
     syscall 3
 
     0
-    while True  # Patch: PUSH_BOOL @81 -> GET_ARG 16
+    while __get_arg 16 bool
         # Print function call
         2           # STDERR
-        ""          # Patch: PUSH_STRING @84 -> GET_ARG 40
+        __get_arg 40 ptr
         dup strlen  # String length
         1           # SYS_WRITE
         syscall 3
@@ -73,7 +73,7 @@ def traceback: ptr message -> void
         drop
 
         2           # STDERR
-        0 itos      # Patch: PUSH_INT @101 -> GET_ARG 32
+        __get_arg 32 int itos
         dup strlen  # String length
         1           # SYS_WRITE
         syscall 3
@@ -87,7 +87,7 @@ def traceback: ptr message -> void
         drop
 
         2           # STDERR
-        ""          # Patch: PUSH_STRING @123 -> GET_ARG 24
+        __get_arg 24 ptr
         dup strlen  # String length
         1           # SYS_WRITE
         syscall 3

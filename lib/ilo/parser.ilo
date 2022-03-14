@@ -505,6 +505,36 @@ int return_on -> ptr
                 dup token.line + derefi _pop_type
                 over token.line + derefi _pop_type
                 dup _push_type swap _push_type _push_type
+            elif dup token.value + derefp "__get_arg" streq
+                drop
+                tokens token_index _get_next_token
+                dup token.type + derefi TOKEN_INT != if
+                    dup token.line + derefi
+                    "__get_arg is missing position"
+                    syntax_error
+
+                dup token.value + derefp
+                over token.line + derefi
+                OPCODE_GET_ARG rot rot
+                _opcodes derefp create_opcode _opcodes setp
+
+                drop
+                tokens token_index _get_next_token
+                dup token.type + derefi TOKEN_TYPE != if
+                    dup token.line + derefi
+                    "__get_arg is missing type"
+                    syntax_error
+
+                dup token.value + derefp "bool" streq if
+                    TYPE_BOOL _push_type
+                elif dup token.value + derefp "char" streq
+                    TYPE_CHAR _push_type
+                elif dup token.value + derefp "int" streq
+                    TYPE_INT _push_type
+                elif dup token.value + derefp "ptr" streq
+                    TYPE_PTR _push_type
+                else
+                    "Unknown type for __get_arg\n" raise
             elif dup token.value + derefp "syscall" streq
                 drop
                 tokens token_index _get_next_token
@@ -950,28 +980,8 @@ def _parse_core_functions: -> void
 
     # Patch opcodes
     # TODO: Find a good way to define custom opcodes in core.ilo. Sorry for the hacks.
-    81 _opcodes derefp list_fetch
-    dup opcode.opcode + derefi OPCODE_PUSH_BOOL = "Patch #1: BOOL -> GET_ARG" assert
-    OPCODE_GET_ARG over opcode.opcode + seti
-    "16" over opcode.operand + setp
-
-    84 _opcodes derefp list_fetch
-    dup opcode.opcode + derefi OPCODE_PUSH_STRING = "Patch #2: STRING -> GET_ARG" assert
-    OPCODE_GET_ARG over opcode.opcode + seti
-    "40" over opcode.operand + setp
-
-    101 _opcodes derefp list_fetch
-    dup opcode.opcode + derefi OPCODE_PUSH_INT = "Patch #3: INT -> GET_ARG" assert
-    OPCODE_GET_ARG over opcode.opcode + seti
-    "32" over opcode.operand + setp
-
-    123 _opcodes derefp list_fetch
-    dup opcode.opcode + derefi OPCODE_PUSH_STRING = "Patch #4: STRING -> GET_ARG" assert
-    OPCODE_GET_ARG over opcode.opcode + seti
-    "24" over opcode.operand + setp
-
     140 _opcodes derefp list_fetch
-    dup opcode.opcode + derefi OPCODE_PUSH_INT = "Patch #5: INT -> GET_ARG" assert
+    dup opcode.opcode + derefi OPCODE_PUSH_INT = "Patch #5: INT -> RESTORE_FRAME" assert
     OPCODE_RESTORE_FRAME over opcode.opcode + seti
 
 

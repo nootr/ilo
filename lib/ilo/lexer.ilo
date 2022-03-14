@@ -323,6 +323,10 @@ def _tokenize: ptr source, ptr tokens -> ptr
             over TOKEN_KEYWORD "while"
             tokens derefp create_token tokens setp
             5 +
+        elif dup "__get_arg" is_word
+            over TOKEN_KEYWORD "__get_arg"
+            tokens derefp create_token tokens setp
+            9 +
         elif dup derefc is_alphabet
             dup
 

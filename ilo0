@@ -178,6 +178,9 @@ def fetch_tokens(program):
         elif is_word("False", program):  # DONE
             tokens.append((TokenType.BOOL, 0, line_no))
             program = program[5:]
+        elif is_word("__get_arg", program):  # DONE
+            tokens.append((TokenType.KEYWORD, "__get_arg", line_no))
+            program = program[9:]
         elif is_word("dup", program):  # DONE
             tokens.append((TokenType.KEYWORD, "dup", line_no))
             program = program[3:]
@@ -303,53 +306,54 @@ def fetch_tokens(program):
 
 
 class Opcode:
-    ADD = "add"
-    BITWISE_AND = "bitwise and"
-    BITWISE_OR = "bitwise or"
-    CALL = "call"
-    CLEANUP = "cleanup"
-    CREATE_BUFFER = "push pointer to buffer"
-    DEREF_B = "dereference pointer to boolean"
-    DEREF_C = "dereference pointer to character"
-    DEREF_I = "dereference pointer to integer"
-    DEREF_P = "dereference pointer to pointer"
-    DIVIDE = "divide"
-    DROP = "drop"
-    DUP = "dup"
-    FUNCTION = "function definition"
-    GET_ARG = "get argument"
-    GET_BUFFER = "get pointer to buffer"
-    IF = "start of if-block"
-    IS_EQUAL = "is equal?"
-    IS_GREATER = "is greater?"
-    IS_GREATER_OR_EQUAL = "is greater or equal?"
-    IS_LESS = "is less?"
-    IS_LESS_OR_EQUAL = "is less or equal?"
-    IS_NOT_EQUAL = "is not equal?"
-    JUMP = "jump"
-    LABEL = "label"
-    MOD = "mod"
-    MULTIPLY = "multiply"
-    OVER = "over"
-    PUSH_BOOL = "push bool"
-    PUSH_CHAR = "push char"
-    PUSH_INT = "push int"
-    PUSH_STRING = "push string"
-    REF_F = "reference function"
-    RESTORE_FRAME = "restore frame"
-    RETURN = "return"
-    ROT = "rot"
-    SET_B = "set boolean value"
-    SET_C = "set character value"
-    SET_I = "set integer value"
-    SET_P = "set pointer value"
-    SHIFT_LEFT = "shift left"
-    SHIFT_RIGHT = "shift right"
-    SUBTRACT = "subtract"
-    SWAP = "swap"
-    SYSCALL = "syscall"
-    WHILE_END = "end of while-loop"
-    WHILE_START = "start of while-loop"
+    NOOP                 = "0"
+    ADD                  = "1"
+    BITWISE_AND          = "2"
+    BITWISE_OR           = "3"
+    CALL                 = "4"
+    CLEANUP              = "5"
+    CREATE_BUFFER        = "6"
+    DEREF_B              = "7"
+    DEREF_C              = "8"
+    DEREF_I              = "9"
+    DEREF_P              = "10"
+    DIVIDE               = "11"
+    DROP                 = "12"
+    DUP                  = "13"
+    FUNCTION             = "14"
+    GET_ARG              = "15"
+    GET_BUFFER           = "16"
+    IF                   = "17"
+    IS_EQUAL             = "18"
+    IS_GREATER           = "19"
+    IS_GREATER_OR_EQUAL  = "20"
+    IS_LESS              = "21"
+    IS_LESS_OR_EQUAL     = "22"
+    IS_NOT_EQUAL         = "23"
+    JUMP                 = "24"
+    LABEL                = "25"
+    MULTIPLY             = "26"
+    MOD                  = "27"
+    OVER                 = "28"
+    PUSH_BOOL            = "29"
+    PUSH_CHAR            = "30"
+    PUSH_INT             = "31"
+    PUSH_STRING          = "32"
+    REF_F                = "33"
+    RESTORE_FRAME        = "34"
+    RETURN               = "35"
+    ROT                  = "36"
+    SET_B                = "37"
+    SET_C                = "38"
+    SET_I                = "39"
+    SET_P                = "40"
+    SHIFT_LEFT           = "41"
+    SHIFT_RIGHT          = "42"
+    SUBTRACT             = "43"
+    SWAP                 = "44"
+    SYSCALL              = "45"
+    WHILE_END            = "46"
+    WHILE_START          = "47"
 
 
 functions = {}
@@ -815,6 +819,24 @@ def parse(
                         f"{line_no}: Non-integer constants are unsupported"
                     )
                 constants[const_name] = value
+            elif value == "__get_arg":  # DONE
+                pos_type, pos, line_no = tokens[token_index]
+                token_index += 1
+                if pos_type != TokenType.INT:
+                    raise SyntaxError(
+                        f"{line_no}: Expected integer after `__get_arg` keyword"
+                    )
+
+                type_type, _type, line_no = tokens[token_index]
+                token_index += 1
+                if type_type != TokenType.TYPE:
+                    raise SyntaxError(
+                        f"{line_no}: Expected type after `__get_arg` keyword"
+                    )
+
+                opcodes.append((Opcode.GET_ARG, int(pos), line_no))
+
+                stack.append(_type)
             elif value == "derefb":  # DONE
                 opcodes.append((Opcode.DEREF_B, 0, line_no))
                 if pop(line_no) != Type.PTR:
@@ -931,7 +953,7 @@ def parse(
             elif value in args:  # DONE
                 raw_index, arg_type = args[value]
                 index = len(args) - raw_index + 5
-                opcodes.append((Opcode.GET_ARG, index, line_no))
+                opcodes.append((Opcode.GET_ARG, index*8, line_no))
                 stack.append(arg_type)
             else:
                 raise SyntaxError(
@@ -1157,7 +1179,7 @@ def generate_code():
                 output("", "push", "rax")
         elif opcode == Opcode.GET_ARG:  # DONE
             output("", "mov", "rax, rbp")
-            output("", "add", f"rax, {operand*8}")
+            output("", "add", f"rax, {operand}")
             output("", "mov", "rbx, [rax]")
             output("", "push", "rbx")
         elif opcode == Opcode.DEREF_B:  # DONE
@@ -1261,10 +1283,6 @@ def run(filename):
         exit(1)
 
     parse_file("lib/ilo/core.ilo")
-    opcodes[81] = (Opcode.GET_ARG, 2, 0)
-    opcodes[84] = (Opcode.GET_ARG, 5, 0)
-    opcodes[101] = (Opcode.GET_ARG, 4, 0)
-    opcodes[123] = (Opcode.GET_ARG, 3, 0)
     opcodes[140] = (Opcode.RESTORE_FRAME, 0, 0)
 
     #from pprint import pprint
