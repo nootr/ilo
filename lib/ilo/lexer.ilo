@@ -215,6 +215,10 @@ def _tokenize: ptr source, ptr tokens -> ptr
             over TOKEN_KEYWORD "def"
             tokens derefp create_token tokens setp
             3 +
+        elif dup "inline" is_word
+            over TOKEN_KEYWORD "inline"
+            tokens derefp create_token tokens setp
+            6 +
         elif dup "derefb" is_word
             over TOKEN_KEYWORD "derefb"
             tokens derefp create_token tokens setp

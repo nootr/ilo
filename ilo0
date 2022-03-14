@@ -214,6 +214,9 @@ def fetch_tokens(program):
         elif is_word("def", program):  # DONE
             tokens.append((TokenType.KEYWORD, "def", line_no))
             program = program[3:]
+        elif is_word("inline", program):  # DONE
+            tokens.append((TokenType.KEYWORD, "inline", line_no))
+            program = program[6:]
         elif is_word("int", program):  # DONE
             tokens.append((TokenType.TYPE, Type.INT, line_no))
             program = program[3:]
@@ -700,7 +703,7 @@ def parse(
                         )
                 opcodes.append((Opcode.LABEL, end_identifier, line_no))
                 stack = if_stack
-            elif value == "def":  # DONE
+            elif value == "def" or value == "inline":  # DONE
                 name_type, function_name, _ = tokens[token_index]
                 token_index += 1
                 if name_type != TokenType.IDENTIFIER:
@@ -719,7 +722,10 @@ def parse(
                         f"Expected colon after identifier on line {line_no}"
                     )
 
-                opcodes.append((Opcode.FUNCTION, function_name, line_no))
+                if value == "def":
+                    opcodes.append((Opcode.FUNCTION, function_name, line_no))
+                elif value == "inline":
+                    opcodes.append((Opcode.LABEL, function_name, line_no))
 
                 next_type, type_value, line_no = tokens[token_index]
                 token_index += 1
@@ -771,7 +777,8 @@ def parse(
                     current_function=function_name,
                     args=fn_args,
                 )
-                opcodes.append((Opcode.RESTORE_FRAME, 0, line_no))
+                if value == "def":
+                    opcodes.append((Opcode.RESTORE_FRAME, 0, line_no))
                 opcodes.append((Opcode.RETURN, 0, line_no))
                 if return_type != "void":
                     # TODO: Fix line number
@@ -956,7 +963,7 @@ def generate_code():
     output("", "section", ".text")
 
     for opcode, operand, line_no in opcodes:
-        output("", f"; {line_no}: {opcode}", "")
+        output(f"%line {line_no}; {opcode}", "", "")
         if opcode == Opcode.PUSH_INT:
             output("", "mov", f"rax, {operand}")
             output("", "push", "rax")

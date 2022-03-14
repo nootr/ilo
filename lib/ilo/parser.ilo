@@ -18,6 +18,7 @@ buffer _constants           8  # ptr
 buffer _opcodes             8  # ptr
 buffer _files               8  # ptr
 buffer _current_function    8  # ptr
+buffer _is_inline           1  # bool
 
 
 def _current_function_contains_arg: ptr name -> bool
@@ -723,7 +724,9 @@ int return_on -> ptr
                 _type_stack derefp free
                 type_stack_before derefp free
                 type_stack_after derefp _type_stack setp
-            elif dup token.value + derefp "def" streq
+            elif dup token.value + derefp "def" streq \
+                    over token.value + derefp "inline" streq or
+                dup token.value + derefp "inline" streq _is_inline setb
                 # Verify function definition is global
                 _current_function derefp NULL != if
                     "Can't define function within function" raise
@@ -748,12 +751,19 @@ int return_on -> ptr
                     dup token.line + derefi
                     "Expected colon after function name" syntax_error
 
-                # Create FUNCTION opcode
-                dup token.line + derefi
-                OPCODE_FUNCTION
-                _current_function derefp function.name + derefp
-                rot
-                _opcodes derefp create_opcode _opcodes setp
+                # Create FUNCTION or LABEL opcode
+                _is_inline derefb if
+                    dup token.line + derefi
+                    OPCODE_LABEL
+                    _current_function derefp function.name + derefp
+                    rot
+                    _opcodes derefp create_opcode _opcodes setp
+                else
+                    dup token.line + derefi
+                    OPCODE_FUNCTION
+                    _current_function derefp function.name + derefp
+                    rot
+                    _opcodes derefp create_opcode _opcodes setp
 
                 drop tokens token_index _get_next_token
 
@@ -806,11 +816,12 @@ int return_on -> ptr
                 drop
 
                 # Create RESTORE_FRAME and RETURN opcodes
-                dup token.line + derefi
-                OPCODE_RESTORE_FRAME
-                NULL
-                rot
-                _opcodes derefp create_opcode _opcodes setp
+                _is_inline derefb False = if
+                    dup token.line + derefi
+                    OPCODE_RESTORE_FRAME
+                    NULL
+                    rot
+                    _opcodes derefp create_opcode _opcodes setp
 
                 dup token.line + derefi
                 OPCODE_RETURN
