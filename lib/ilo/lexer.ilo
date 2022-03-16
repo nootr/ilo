@@ -327,6 +327,10 @@ def _tokenize: ptr source, ptr tokens -> ptr
             over TOKEN_KEYWORD "__get_arg"
             tokens derefp create_token tokens setp
             9 +
+        elif dup "__restore_frame" is_word
+            over TOKEN_KEYWORD "__restore_frame"
+            tokens derefp create_token tokens setp
+            15 +
         elif dup derefc is_alphabet
             dup
 

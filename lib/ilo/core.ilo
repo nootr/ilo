@@ -55,7 +55,6 @@ def traceback: ptr message -> void
     1                 # SYS_WRITE
     syscall 3
 
-    0
     while __get_arg 16 bool
         # Print function call
         2           # STDERR
@@ -101,7 +100,6 @@ def traceback: ptr message -> void
         drop
 
         # Move to previous frame
-        drop
-        0   # Patch: PUSH_INT @140 -> RESTORE_FRAME
+        __restore_frame
 
     1 60 syscall 1

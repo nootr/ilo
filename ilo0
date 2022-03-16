@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-
 """
                              :alert: DISCLAIMER :alert:
 
@@ -181,6 +180,9 @@ def fetch_tokens(program):
         elif is_word("__get_arg", program):  # DONE
             tokens.append((TokenType.KEYWORD, "__get_arg", line_no))
             program = program[9:]
+        elif is_word("__restore_frame", program):  # DONE
+            tokens.append((TokenType.KEYWORD, "__restore_frame", line_no))
+            program = program[15:]
         elif is_word("dup", program):  # DONE
             tokens.append((TokenType.KEYWORD, "dup", line_no))
             program = program[3:]
@@ -837,6 +839,8 @@ def parse(
                 opcodes.append((Opcode.GET_ARG, int(pos), line_no))
 
                 stack.append(_type)
+            elif value == "__restore_frame":  # DONE
+                opcodes.append((Opcode.RESTORE_FRAME, int(pos), line_no))
             elif value == "derefb":  # DONE
                 opcodes.append((Opcode.DEREF_B, 0, line_no))
                 if pop(line_no) != Type.PTR:
@@ -1283,13 +1287,7 @@ def run(filename):
         exit(1)
 
     parse_file("lib/ilo/core.ilo")
-    opcodes[140] = (Opcode.RESTORE_FRAME, 0, 0)
-
-    #from pprint import pprint
-    #pprint(opcodes)
-    #exit(0)
-
-    ir = parse_file(filename)
+    parse_file(filename)
     generate_code()
 
 

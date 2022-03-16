@@ -535,6 +535,11 @@ int return_on -> ptr
                     TYPE_PTR _push_type
                 else
                     "Unknown type for __get_arg\n" raise
+            elif dup token.value + derefp "__restore_frame" streq
+                OPCODE_RESTORE_FRAME
+                over token.line + derefi
+                NULL swap
+                _opcodes derefp create_opcode _opcodes setp
             elif dup token.value + derefp "syscall" streq
                 drop
                 tokens token_index _get_next_token
@@ -977,12 +982,6 @@ def _parse_core_functions: -> void
     8 malloc
     8 malloc
     TOKEN_END _parse
-
-    # Patch opcodes
-    # TODO: Find a good way to define custom opcodes in core.ilo. Sorry for the hacks.
-    140 _opcodes derefp list_fetch
-    dup opcode.opcode + derefi OPCODE_PUSH_INT = "Patch #5: INT -> RESTORE_FRAME" assert
-    OPCODE_RESTORE_FRAME over opcode.opcode + seti
 
 
 def parse: ptr filename, ptr tokens -> ptr
