@@ -1,18 +1,22 @@
 import lib.std
 import lib.std.argparse
+import lib.std.profiler
 import lib.ilo.generator
 import lib.ilo.lexer
 import lib.ilo.parser
 
 
-buffer DUMP_TOKENS  1  # bool
-buffer DUMP_OPCODES 1  # bool
+buffer DUMP_TOKENS      1  # bool
+buffer DUMP_OPCODES     1  # bool
+buffer ENABLE_PROFILER  1  # bool
 
 
 def parse_arguments: ptr argv, int argc -> ptr
     # Returns an args object
     argparse_init
 
+    "--profiler" ARG_TYPE_FLAG "Enable the profiler"
+    argparse_add_argument
     "--verify-memory" ARG_TYPE_FLAG "Verify the dynamically allocated memory"
     argparse_add_argument
     "--dump-memory" ARG_TYPE_FLAG "Print the dynamically allocated memory"
@@ -31,6 +35,8 @@ def main: ptr argv, int argc -> int
     # Parse arguments
     argv argc parse_arguments
 
+    "--profiler" over args.kwargs + derefp dict_fetch arg.value + derefp NULL != \
+        ENABLE_PROFILER setb
     "--verify-memory" over args.kwargs + derefp dict_fetch arg.value + derefp NULL != \
         VERIFY_MEMORY setb
     "--dump-memory" over args.kwargs + derefp dict_fetch arg.value + derefp NULL != \
@@ -39,6 +45,10 @@ def main: ptr argv, int argc -> int
         DUMP_TOKENS setb
     "--dump-opcodes" over args.kwargs + derefp dict_fetch arg.value + derefp NULL != \
         DUMP_OPCODES setb
+
+    ENABLE_PROFILER derefb if
+        # Initialize profiler
+        profiler_init
 
     # Get filename
     0 over args.posargs + derefp list_fetch_ptr
@@ -59,7 +69,12 @@ def main: ptr argv, int argc -> int
     DUMP_OPCODES derefb if
         dup dump_opcodes
 
-    # Generate code
-    generate_code_x86_64_linux
+    ENABLE_PROFILER derefb if
+        # Dump profiler samples
+        drop
+        profiler_dump
+    else
+        # Generate code
+        generate_code_x86_64_linux
 
     0

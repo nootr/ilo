@@ -1,0 +1,63 @@
+import lib.std
+import lib.std.list
+
+
+# PROFILER
+# A profiler which samples the call stack and saves it to a list. The timer and signal
+# handling code is based on an example by g0kkk[1].
+#
+# [1] https://github.com/g0kkk/SignalHandler
+
+
+# TODO: Extend profiler sample struct to contain the full call stack
+const profiler_sample.function 0  # ptr; string
+const PROFILER_SAMPLE_SIZE     8
+
+buffer _profiler_stack  8   # ptr; list
+buffer _profiler_lock   1   # bool
+
+
+inline _profiler_signal_handler: -> void
+    # Samples the call stack on a SIGALRM signal
+    _profiler_lock derefb False = if
+        True _profiler_lock setb
+
+        PROFILER_SAMPLE_SIZE malloc
+        __get_arg 24 ptr over profiler_sample.function + setp
+        _profiler_stack derefp list_append _profiler_stack setp
+
+        False _profiler_lock setb
+    else
+        "Warning: profiler lock is set\n" error
+
+def profiler_dump: -> void
+    # Outputs the list of samples
+    0
+    while dup _profiler_stack derefp list.len + derefi <
+        dup _profiler_stack derefp list_fetch_ptr
+        dup NULL != if
+            puts
+        else
+            drop "_start" puts
+        "\n" puts
+        1 +
+
+
+def profiler_init: -> void
+    # Initializes the profiler
+    # Setup signal handler
+    SIGALRM
+    reff _profiler_signal_handler
+    reff rt_sigreturn
+    setup_signal_handler drop
+
+    # Setup timer
+    0 1000 0 1000 set_timer drop
+
+    # Setup profiler
+    10      # 10 minutes
+    60 *    # in seconds
+    1000 *  # in milliseconds/samples
+    PROFILER_SAMPLE_SIZE list_create _profiler_stack setp
+
+    False _profiler_lock setb

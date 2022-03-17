@@ -2,12 +2,15 @@ const STDIN  0
 const STDOUT 1
 const STDERR 2
 
-const SYS_READ   0
-const SYS_WRITE  1
-const SYS_OPEN   2
-const SYS_MMAP   9
-const SYS_MUNMAP 11
-const SYS_EXIT   60
+const SYS_READ          0
+const SYS_WRITE         1
+const SYS_OPEN          2
+const SYS_MMAP          9
+const SYS_MUNMAP        11
+const SYS_RT_SIGACTION  13
+const SYS_RT_SIGRETURN  15
+const SYS_SETITIMER     38
+const SYS_EXIT          60
 
 const O_RDONLY      0
 const O_WRONLY      1
@@ -15,6 +18,11 @@ const PROT_READ     1
 const PROT_WRITE    2
 const MAP_PRIVATE   2
 const MAP_ANONYMOUS 32
+
+const ITIMER_REAL   0
+const SIGALRM       14
+const SA_SIGINFO    4
+const SA_RESTORER   67108864  # 0x04000000
 
 
 def puts: ptr s -> void
@@ -74,3 +82,69 @@ def read: int fd, ptr buf, int count -> int
     fd buf count SYS_READ syscall 3
     dup 0 < if
         "Could not read file\n" raise
+
+
+def rt_sigaction: int signum, ptr act, ptr oldact, int sigsetsize -> int
+    # Changes the action taken on a certain signal
+    signum act oldact sigsetsize SYS_RT_SIGACTION syscall 4
+    dup 0 != if
+        "Could not change signal action\n" raise
+
+
+inline rt_sigreturn: -> void
+    # Return from signal handler and cleanup stack frame
+    SYS_RT_SIGRETURN syscall 0
+    "RT_SIGRETURN should not return\n" raise
+
+
+const sigaction.handler   0   # ptr
+const sigaction.flags     8   # int
+const sigaction.restorer  16  # ptr
+const sigaction.mask      24  # int
+const SIGACTION_SIZE      32
+
+
+def setitimer: int which, ptr new_val, ptr old_val -> int
+    # Set the value of an interval timer
+    which new_val old_val SYS_SETITIMER syscall 3
+    dup 0 != if
+        "Could not set the timer\n" raise
+
+
+const itimerval.interval  0   # timeval
+const itimerval.value     16  # timeval
+const ITIMERVAL_SIZE      32
+
+const timeval.sec   0   # int
+const timeval.usec  8   # int
+const TIMEVAL_SIZE  16
+
+
+buffer _sigaction 32
+
+def setup_signal_handler: int signal, ptr handler, ptr restorer -> int
+    # Setup a signal handler for a certain signal
+    handler     _sigaction sigaction.handler + setp
+    0           _sigaction sigaction.mask + seti
+
+    restorer 0 castp = if
+        0       _sigaction sigaction.flags + seti
+        0 castp _sigaction sigaction.restorer + setp
+    else
+        SA_SIGINFO SA_RESTORER or \
+                    _sigaction sigaction.flags + seti
+        restorer    _sigaction sigaction.restorer + setp
+
+    signal _sigaction 0 castp 8 rt_sigaction
+
+
+buffer _itimerval 32
+
+def set_timer: int inter_secs, int inter_usecs, int val_secs, int val_usecs -> int
+    # Sets the values of the internal timer
+    inter_secs  _itimerval itimerval.interval + timeval.sec + seti
+    inter_usecs _itimerval itimerval.interval + timeval.usec + seti
+    inter_secs  _itimerval itimerval.value + timeval.sec + seti
+    inter_usecs _itimerval itimerval.value + timeval.usec + seti
+
+    ITIMER_REAL _itimerval 0 castp setitimer

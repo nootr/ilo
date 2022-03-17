@@ -1,7 +1,7 @@
 # Description:Standard library - raise
 # Exit code:1
 # Stdout:
-# Stderr:Foo bar baz\nTraceback:\nlib/std/linux.ilo, line 45 in raise\ntests/stdlib_raise.ilo, line 9 in main
+# Stderr:Foo bar baz\nTraceback:\nlib/std/linux.ilo, line 53 in raise\ntests/stdlib_raise.ilo, line 9 in main
 
 import lib.std
 
