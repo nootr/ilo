@@ -154,9 +154,7 @@ def argparse_parse_args: ptr argv, int argc -> ptr
 
             dup _args derefp args.kwargs + derefp dict_fetch
             dup NULL = if
-                swap dup
-                "Unknown argument: " swap concat raise
-                swap
+                argparse_print_help
 
             swap drop
 
