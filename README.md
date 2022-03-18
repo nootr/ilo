@@ -11,6 +11,18 @@ A programming language.
 This project has one clear goal: to write a self-hosted compiler!
 
 
+## Building the Ilo compiler
+
+Building the Ilo compiler is simple:
+
+```
+make ilo
+```
+
+Ilo currently only compiles to x86_64 assembly, but will have different target
+architectures in the future.
+
+
 ## Example code
 
 ```
