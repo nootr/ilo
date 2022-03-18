@@ -22,9 +22,8 @@ inline _profiler_signal_handler: -> void
     _profiler_lock derefb False = if
         True _profiler_lock setb
 
-        PROFILER_SAMPLE_SIZE malloc
-        __get_arg 24 ptr over profiler_sample.function + setp
-        _profiler_stack derefp list_append _profiler_stack setp
+        __get_arg 24 ptr
+        _profiler_stack derefp list_append_ptr _profiler_stack setp
 
         False _profiler_lock setb
     else
