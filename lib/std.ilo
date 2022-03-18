@@ -479,13 +479,17 @@ def errori: int i -> void
     i itos error
 
 
-def concat: ptr a, ptr b -> ptr
+def _concat: ptr a, int a_len, ptr b, int b_len -> ptr
     # Takes two string and returns them after being concatenated.
     # Note that this mallocs, so don't forget to free!
-    a strlen b strlen + 1 + malloc
+    a_len b_len + 1 + malloc
     a swap strcpy
-    dup a strlen + b swap strcpy drop
-    dup a strlen + b strlen + 0 castc swap setc
+    dup a_len + b swap strcpy drop
+
+
+def concat: ptr a, ptr b -> ptr
+    # Wrapper around _concat
+    a a strlen b b strlen _concat
 
 
 def concatfl: ptr a, ptr b -> ptr
