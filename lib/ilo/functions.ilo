@@ -21,6 +21,8 @@ const argument.type  8  # int
 const argument.index 16 # int
 const ARGUMENT_SIZE  24
 
+buffer _argument 24
+
 
 def create_function: ptr name -> ptr
     # Creates a function and returns its pointer
@@ -32,11 +34,11 @@ def create_function: ptr name -> ptr
 
 def function_add_argument: int type, ptr name, ptr func -> void
     # Adds an argument to a function
-    ARGUMENT_SIZE malloc
-    name                                          over argument.name + setp
-    type                                          over argument.type + seti
-    func function.args + derefp list.len + derefi over argument.index + seti
+    name                                          _argument argument.name + setp
+    type                                          _argument argument.type + seti
+    func function.args + derefp list.len + derefi _argument argument.index + seti
 
+    _argument
     func function.args + derefp list_append
     func function.args + setp
 

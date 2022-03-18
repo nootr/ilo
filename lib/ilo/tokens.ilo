@@ -70,14 +70,15 @@ const token.value 8  # ptr
 const token.line  16 # int
 const TOKEN_SIZE  24
 
+buffer _token 24
+
 
 def create_token: int line, int type, ptr value, ptr list -> ptr
     # Appends a token to a list and returns a pointer to the list
-    TOKEN_SIZE malloc
-    dup token.line  + line swap seti
-    dup token.type  + type swap seti
-    dup token.value + value swap setp
-    list list_append
+    line  _token token.line  + seti
+    type  _token token.type  + seti
+    value _token token.value + setp
+    _token list list_append
 
 def dump_tokens: ptr tokens -> void
     # Prints the contents of a given list to STDOUT

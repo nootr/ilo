@@ -167,14 +167,15 @@ const opcode.operand 8  # ptr
 const opcode.line    16 # int
 const OPCODE_SIZE    24
 
+buffer _opcode 24
+
 
 def create_opcode: int opcode, ptr operand, int line, ptr list -> ptr
     # Appends an opcode to a list and returns a pointer to the list
-    OPCODE_SIZE malloc
-    dup opcode.opcode  + opcode swap seti
-    dup opcode.operand + operand swap setp
-    dup opcode.line    + line swap seti
-    list list_append
+    opcode  _opcode opcode.opcode  + seti
+    operand _opcode opcode.operand + setp
+    line    _opcode opcode.line    + seti
+    _opcode list list_append
 
 
 def dump_opcodes: ptr opcodes -> void

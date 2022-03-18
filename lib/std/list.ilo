@@ -178,7 +178,6 @@ def list_peek_ptr: ptr list -> ptr
 
 def list_append: ptr item, ptr list -> ptr
     # Appends an item to a given list and return a pointer to the list
-    # Note that the original item is free'd, so make sure it's dynamically allocated!
     list list.len + derefi
     list list.capacity + derefi = if
         # Create a list with double the capacity
@@ -205,9 +204,6 @@ def list_append: ptr item, ptr list -> ptr
     item rot rot memcpy
 
     dup list.len + derefi 1 + over list.len + seti
-
-    # Free original item
-    item free
 
 
 def list_append_int: int item, ptr list -> ptr
