@@ -92,7 +92,7 @@ def replace: ptr s, char q, char r -> ptr
 def startswith: ptr s, ptr q -> bool
     # Returns True if str s starts with substring q
     0
-    while dup s + derefc over q + derefc =
+    while dup s + derefc over q + derefc = over q + derefc 0 castc != and
         1 +
     q + derefc 0 castc =
 

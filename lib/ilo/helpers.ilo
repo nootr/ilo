@@ -43,10 +43,8 @@ def count_indent: ptr s -> int
 
 def is_word: ptr s, ptr q -> bool
     # Returns True if str s starts with substring q, followed by a non-alphabet char
-    s strlen q strlen = if
-        True
-    elif s strlen q strlen <
-        False
-    else
-        s q strlen + derefc is_alphanumeric False =
-    s q startswith and
+    0
+    while dup s + derefc over q + derefc = over q + derefc 0 castc != and
+        1 +
+    dup q + derefc 0 castc =
+    swap s + derefc is_alphanumeric False = and
