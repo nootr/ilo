@@ -114,7 +114,7 @@ def argparse_print_help: -> void
         dup _kwargs derefp list_fetch_ptr
         "    " puts dup puts "\n" puts
 
-        _args derefp args.posargs + derefp dict_fetch
+        _args derefp args.kwargs + derefp dict_fetch
         "        " puts arg.description + derefp puts "\n\n" puts
 
         1 +

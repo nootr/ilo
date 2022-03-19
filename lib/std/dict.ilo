@@ -55,6 +55,8 @@ def new_dict: -> ptr
 
 def dict_fetch: ptr key, ptr dict -> ptr
     # Looks up a key in a given dictionary and return a pointer to the value (or NULL)
+    dict dict.buckets + derefi 0 > "Dict should have buckets\n" assert
+
     key dup strlen hash dict dict.buckets + derefi %
     dict DICT_METADATA_SIZE + over DICT_BUCKET_SIZE * +
     while dup dict_bucket.taken + derefb \
@@ -71,6 +73,8 @@ def dict_fetch: ptr key, ptr dict -> ptr
 
 def dict_insert: ptr key, ptr value, ptr dict -> ptr
     # Adds a key-value pair to the dictionary and returns a pointer to the dictionary
+    dict dict.buckets + derefi 0 > "Dict should have buckets" assert
+
     # Check if the dictionary needs to be expanded
     dict dict.inserts + derefi 3 * dict dict.buckets + derefi > if
         # Create a dictionary with twice the capacity
