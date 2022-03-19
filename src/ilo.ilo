@@ -1,6 +1,7 @@
 import lib.std
 import lib.std.argparse
 import lib.std.profiler
+import lib.ilo.formats
 import lib.ilo.generator
 import lib.ilo.lexer
 import lib.ilo.parser
@@ -9,12 +10,15 @@ import lib.ilo.parser
 buffer DUMP_TOKENS      1  # bool
 buffer DUMP_OPCODES     1  # bool
 buffer ENABLE_PROFILER  1  # bool
+buffer FORMAT           8  # int
 
 
 def parse_arguments: ptr argv, int argc -> ptr
     # Returns an args object
     argparse_init
 
+    "--format" ARG_TYPE_OPTIONAL "Set the output format (default: linux_x86_64)"
+    argparse_add_argument
     "--profiler" ARG_TYPE_FLAG "Enable the profiler"
     argparse_add_argument
     "--verify-memory" ARG_TYPE_FLAG "Verify the dynamically allocated memory"
@@ -34,6 +38,12 @@ def parse_arguments: ptr argv, int argc -> ptr
 def main: ptr argv, int argc -> int
     # Parse arguments
     argv argc parse_arguments
+
+    "--format" over args.kwargs + derefp dict_fetch arg.value + derefp
+    dup NULL = if
+        drop FORMAT_LINUX_X86_64 FORMAT seti
+    else
+        str_to_format FORMAT seti
 
     "--profiler" over args.kwargs + derefp dict_fetch arg.value + derefp NULL != \
         ENABLE_PROFILER setb
@@ -73,8 +83,12 @@ def main: ptr argv, int argc -> int
         # Dump profiler samples
         drop
         profiler_dump
-    else
+    elif FORMAT derefi FORMAT_LINUX_X86_64 =
         # Generate code
         generate_code_x86_64_linux
+    elif FORMAT derefi FORMAT_MAC_AARCH64 =
+        drop "AArch64 format is not implemented yet\n" raise
+    else
+        drop "Unknown format\n" raise
 
     0
