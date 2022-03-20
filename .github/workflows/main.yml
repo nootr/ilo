@@ -19,6 +19,7 @@ jobs:
         sudo apt install -y nasm ninja-build
     - name: Build ilo
       run: |
+        ./configure
         ninja
     - name: Functional tests
       run: |
