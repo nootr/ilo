@@ -16,7 +16,7 @@ This project has one clear goal: to write a self-hosted compiler!
 Building the Ilo compiler is simple:
 
 ```
-make ilo
+ninja
 ```
 
 Ilo currently only compiles to x86_64 assembly, but will have different target

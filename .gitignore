@@ -1,9 +1,3 @@
-ilo
-ilo0
-ilo1
-!lib/ilo
-*.o
-*.asm
-*.pyc
+build/
 *.swp
-__pycache__
+.ninja_log

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-ILO="./ilo"
+ILO="./build/ilo"
 
 for file in $(find tests/*.ilo -maxdepth 1 -not -type d); do
   # Compile
