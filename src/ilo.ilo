@@ -87,7 +87,7 @@ def main: ptr argv, int argc -> int
         # Generate code
         generate_code_x86_64_linux
     elif FORMAT derefi FORMAT_MAC_AARCH64 =
-        drop "AArch64 format is not implemented yet\n" raise
+        generate_code_aarch64_mac
     else
         drop "Unknown format\n" raise
 

@@ -48,6 +48,159 @@ def _append_opcode_info: int line, int opcode -> void
     _textbuffer setp
 
 
+def generate_code_aarch64_mac: ptr opcodes -> void
+    # Takes a list of opcodes and converts it into AArch64 assembly
+
+    # Initialize buffers
+    512000 textbuffer_create _text setp
+    512000 textbuffer_create _data setp
+    new_textbuffer _bss setp
+    new_textbuffer _textbuffer setp
+    0 _string_index seti
+    new_dict _string_labels setp
+
+    "" "global _start"      _text _append
+    "" "section .text"      _text _append
+    "" "section .data"      _data _append
+    "" "section .bss"       _bss _append
+
+    # Generate assembly
+    0
+    while dup opcodes list.len + derefi <
+        dup opcodes list_fetch
+
+        # Add opcode info comment
+        dup opcode.line + derefi
+        over opcode.opcode + derefi
+        _append_opcode_info
+
+        dup opcode.opcode + derefi OPCODE_DUP = if
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_DROP =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_SWAP =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_OVER =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_ROT =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_PUSH_INT =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_PUSH_BOOL =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_PUSH_CHAR =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_PUSH_STRING =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_FUNCTION =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_CALL =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_GET_ARG =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_ADD =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_SUBTRACT =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_MULTIPLY =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_DIVIDE =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_MOD =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_RESTORE_FRAME =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_RETURN =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_BITWISE_AND =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_BITWISE_OR =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_GET_BUFFER =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_CREATE_BUFFER =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_IS_EQUAL =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_IS_NOT_EQUAL =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_IS_GREATER_OR_EQUAL =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_IS_GREATER =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_IS_LESS_OR_EQUAL =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_IS_LESS =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_IF =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_LABEL =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_JUMP =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_SYSCALL =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_REF_F =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_DEREF_B =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_DEREF_C =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_DEREF_I =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_DEREF_P =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_SET_B =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_SET_C =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_SET_I =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_SET_P =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_SHIFT_LEFT =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_SHIFT_RIGHT =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_WHILE_START =
+            "Not implemented\n" raise
+        elif dup opcode.opcode + derefi OPCODE_WHILE_END =
+            "Not implemented\n" raise
+        else
+            _textbuffer derefp textbuffer_clear
+            "Unknown opcode: "                        swap textbuffer_append
+            over opcode.opcode + derefi opcode_to_str swap textbuffer_append
+            "\n"                                      swap textbuffer_append
+            dup textbuffer.content + raise
+            _textbuffer setp
+
+        drop
+        1 +
+
+    # Add entrypoint
+    "_start:" ""        _text _append
+    "" "xor rax, rax"   _text _append
+    "" "push rax"       _text _append
+    "" "push rax"       _text _append
+    "" "push rax"       _text _append
+    "" "push rax"       _text _append
+    "" "call main"      _text _append
+    "_end:" ""          _text _append
+    "" "mov rdi, rax"   _text _append
+    "" "mov rax, 60"    _text _append
+    "" "syscall"        _text _append
+
+    # Output buffers
+    _text derefp
+    dup textbuffer.content + puts
+
+    _data derefp
+    dup textbuffer.content + puts
+
+    _bss derefp
+    dup textbuffer.content + puts
+
+
 def generate_code_x86_64_linux: ptr opcodes -> void
     # Takes a list of opcodes and converts it into x86_64 NASM assembly
 
