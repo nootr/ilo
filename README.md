@@ -16,6 +16,7 @@ This project has one clear goal: to write a self-hosted compiler!
 Building the Ilo compiler is simple:
 
 ```
+./configure
 ninja
 ```
 

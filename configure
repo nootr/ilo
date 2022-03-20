@@ -1,0 +1,112 @@
+#!/usr/bin/env python3
+
+"""Script that generates a build.ninja file for Ilo."""
+
+import platform
+
+from os import walk
+from os.path import join
+from shutil import which
+
+
+class NinjaFile:
+    RULES = (
+        ("bootstrap", "cp $in $out"),
+        ("ilo", "$in --format $iloformat > $out"),
+        ("asm", "$asmtool $asmflags $in -o $out"),
+        ("bin", "$bintool $in -o $out"),
+    )
+
+    def __init__(
+        self,
+        filename="build.ninja",
+        builddir="build",
+        system=None,
+        machine=None,
+    ):
+        self.filename = filename
+        self.builddir = builddir
+        self.system = system or platform.system()
+        self.machine = machine or platform.machine()
+        self.dependencies = []
+
+    def generate(self):
+        with open(self.filename, "w") as file:
+            file.write(self.content)
+
+        for dependency in self.dependencies:
+            if not which(dependency):
+                raise ValueError(f"Please install {dependency}")
+
+    @staticmethod
+    def get_libs(libdir="lib/"):
+        return [
+            join(dirpath, filename)
+            for (dirpath, _, filenames) in walk(libdir)
+            for filename in filenames
+        ]
+
+    @property
+    def is_linux(self):
+        return self.system == "Linux"
+
+    @property
+    def is_x86_64(self):
+        return self.machine == "x86_64"
+
+    @property
+    def variables(self):
+        if self.is_linux and self.is_x86_64:
+            self.dependencies.append("nasm")
+            self.dependencies.append("ld")
+            return {
+                "asmflags": "-felf64",
+                "asmtool": "nasm",
+                "bintool": "ld",
+                "iloformat": "linux_x86_64",
+            }
+        else:
+            raise NotImplementedError(
+                f"{self.machine}-{self.system} is not supported yet"
+            )
+
+    @property
+    def builds(self):
+        yield ("../bootstrap/ilo0.asm", "ilo0.asm", "bootstrap")
+
+        for ilo_bin, ilo_name in [
+            (None, "ilo0"), ("ilo0", "ilo1"), ("ilo1", "ilo")
+        ]:
+            if ilo_bin:
+                yield (
+                    f"{ilo_bin} src/ilo.ilo | {' '.join(self.get_libs())}",
+                    f"{ilo_name}.asm",
+                    "ilo",
+                )
+            yield (f"{ilo_name}.asm", f"{ilo_name}.o", "asm")
+            yield (f"{ilo_name}.o", f"{ilo_name}", "bin")
+
+    @property
+    def content(self):
+        return "\n".join(
+            [self._format_variable("builddir", self.builddir)] +
+            [self._format_variable(k, v) for k, v in self.variables.items()] +
+            [self._format_rule(*r) for r in self.RULES] +
+            [self._format_build(*b) for b in self.builds]
+        ) + "\n"
+
+    @staticmethod
+    def _format_variable(key, value):
+        return f"{key} = {value}"
+
+    @staticmethod
+    def _format_rule(name, command):
+        return f"rule {name}\n  command = {command}"
+
+    @staticmethod
+    def _format_build(in_file, out_file, tool):
+        return f"build $builddir/{out_file}: {tool} $builddir/{in_file}"
+
+
+n = NinjaFile()
+n.generate()

@@ -1,3 +1,3 @@
 build/
+build.ninja
 *.swp
-.ninja_log
