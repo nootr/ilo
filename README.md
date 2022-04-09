@@ -15,7 +15,7 @@ This project has one clear goal: to write a self-hosted compiler!
 
 Building the Ilo compiler is simple:
 
-```
+```bash
 ./configure
 ninja
 ```
@@ -26,7 +26,7 @@ architectures in the future.
 
 ## Example code
 
-```
+```ilo
 import std
 
 # foo bar
@@ -41,3 +41,15 @@ def main: ptr argv, int argc -> int
 
     0  # Exit code
 ```
+
+
+## Compiling with Docker
+
+Currently, Ilo is only able to compile itself to Linux x86_64. Compiling in MacOS is possible using Docker:
+
+```bash
+docker buildx build -t ilo .
+docker run -it --platform=linux/x86_64 ilo bash
+```
+
+There are plans to extend the Ilo compiler to cross compile to MacOS.
