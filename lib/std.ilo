@@ -12,6 +12,14 @@ def NULL: -> ptr
     0 castp
 
 
+def sqrt: int x -> int
+    # Returns the square root of a given number
+    0 x
+    while over over - dup 1 > swap 0 swap - 1 > or
+        swap drop dup
+        x over / + 2 /
+
+
 def itohex: int x, ptr buf -> void
     # Converts a given 64-bit integer to its hexadecimal representation
     buf
