@@ -16,6 +16,10 @@ def main: ptr argv, int argc -> int
 
     10 3 create_ratio dup rtoi 3 = "10/3 = 3" assert free
 
+    42 itor
+    dup ratio.numerator + derefi  42 = "numerator of 42 : 42" assert
+    ratio.denumerator + derefi    1  = "denumerator of 1: 1" assert
+
     1 2 create_ratio 1 3 create_ratio ratio_add
     dup ratio.numerator + derefi  5 = "numerator of 1/2 + 1/3  : 5" assert
     ratio.denumerator + derefi    6 = "denumerator of 1/2 + 1/3: 6" assert

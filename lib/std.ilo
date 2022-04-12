@@ -639,6 +639,11 @@ def rtoi: ptr r -> int
     r ratio.denumerator + derefi /
 
 
+def itor: int i -> ptr
+    # Converts an integer to a ratio
+    i 1 create_ratio
+
+
 def ratio_eq: ptr a, ptr b -> bool
     # Returns True if ratio a equals ratio b
     a ratio.numerator + derefi b ratio.numerator + derefi =

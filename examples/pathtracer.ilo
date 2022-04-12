@@ -134,9 +134,9 @@ def output_color: ptr color -> void
     # Prints a given color in PPM format
     # Note that the color is freed afterwards
     color
-    dup color.r + derefp COLOR_PRECISION 1 create_ratio ratio_mul rtoi itos puts " " puts
-    dup color.g + derefp COLOR_PRECISION 1 create_ratio ratio_mul rtoi itos puts " " puts
-    dup color.b + derefp COLOR_PRECISION 1 create_ratio ratio_mul rtoi itos puts " " puts
+    dup color.r + derefp COLOR_PRECISION itor ratio_mul rtoi itos puts " " puts
+    dup color.g + derefp COLOR_PRECISION itor ratio_mul rtoi itos puts " " puts
+    dup color.b + derefp COLOR_PRECISION itor ratio_mul rtoi itos puts " " puts
     free_color
 
 
