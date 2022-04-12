@@ -633,6 +633,12 @@ def ratio_div: ptr a, ptr b -> ptr
     a ratio_simplify
 
 
+def rtoi: ptr r -> int
+    # Converts a ratio to an integer
+    r ratio.numerator + derefi
+    r ratio.denumerator + derefi /
+
+
 def ratio_eq: ptr a, ptr b -> bool
     # Returns True if ratio a equals ratio b
     a ratio.numerator + derefi b ratio.numerator + derefi =

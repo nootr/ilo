@@ -1,23 +1,33 @@
 import lib.std
 
 
-const WIDTH   320
-const HEIGHT  180
+const WIDTH           320
+const HEIGHT          180
+const COLOR_PRECISION 256
 
 
-# Pixel struct
+# Color struct
 
-const pixel.r     0
-const pixel.g     8
-const pixel.b     16
-const PIXEL_SIZE  24
+const color.r     0   # ratio
+const color.g     8   # ratio
+const color.b     16  # ratio
+const COLOR_SIZE  24
 
-def create_pixel: int r, int g, int b -> ptr
-    # Create a pixel
-    PIXEL_SIZE malloc
-    r over pixel.r + seti
-    g over pixel.g + seti
-    b over pixel.b + seti
+def create_color: ptr r, ptr g, ptr b -> ptr
+    # Create a color
+    COLOR_SIZE malloc
+    r over color.r + setp
+    g over color.g + setp
+    b over color.b + setp
+
+
+def free_color: ptr color -> void
+    # Frees a color
+    color
+    dup color.r + derefp free
+    dup color.g + derefp free
+    dup color.b + derefp free
+    free
 
 
 # Point struct
@@ -117,7 +127,17 @@ def ray_at: ptr ray, int distance -> ptr
 
 def render_pixel: int x, int y -> ptr
     # Calculate a single pixel
-    x y 64 create_pixel
+    x WIDTH create_ratio y HEIGHT create_ratio 1 4 create_ratio create_color
+
+
+def output_color: ptr color -> void
+    # Prints a given color in PPM format
+    # Note that the color is freed afterwards
+    color
+    dup color.r + derefp COLOR_PRECISION 1 create_ratio ratio_mul rtoi itos puts " " puts
+    dup color.g + derefp COLOR_PRECISION 1 create_ratio ratio_mul rtoi itos puts " " puts
+    dup color.b + derefp COLOR_PRECISION 1 create_ratio ratio_mul rtoi itos puts " " puts
+    free_color
 
 
 def main: ptr argv, int argc -> int
@@ -125,18 +145,14 @@ def main: ptr argv, int argc -> int
     "P3 " puts
     WIDTH itos puts " " puts
     HEIGHT itos puts " " puts
-    "256\n" puts
+    COLOR_PRECISION itos puts "\n" puts
 
     # Render image
     0
     while dup HEIGHT <
         0
         while dup WIDTH <
-            over over swap render_pixel
-            dup pixel.r + derefi itos puts " " puts
-            dup pixel.g + derefi itos puts " " puts
-            dup pixel.b + derefi itos puts " " puts
-            free
+            over over swap render_pixel output_color
             1 +
         drop
         1 +
