@@ -20,6 +20,21 @@ def create_pixel: int r, int g, int b -> ptr
     b over pixel.b + seti
 
 
+# Point struct
+
+const point.x     0
+const point.y     8
+const point.z     16
+const POINT_SIZE  24
+
+def create_point: int x, int y, int z -> ptr
+    # Create a point
+    POINT_SIZE malloc
+    x over point.x + seti
+    y over point.y + seti
+    z over point.z + seti
+
+
 # Vector struct
 
 const vec.x     0
