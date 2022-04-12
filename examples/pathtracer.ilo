@@ -1,23 +1,53 @@
 import lib.std
 
 
+const WIDTH   256
+const HEIGHT  256
+
+
+# Pixel struct
+
 const pixel.r     0
 const pixel.g     8
 const pixel.b     16
 const PIXEL_SIZE  24
 
 def create_pixel: int r, int g, int b -> ptr
+    # Create a pixel
     PIXEL_SIZE malloc
-    dup pixel.r + r swap seti
-    dup pixel.g + g swap seti
-    dup pixel.b + b swap seti
+    r over pixel.r + seti
+    g over pixel.g + seti
+    b over pixel.b + seti
 
 
-const WIDTH   256
-const HEIGHT  256
+# Vector struct
+
+const vec.x     0
+const vec.y     8
+const vec.z     16
+const VEC_SIZE  24
+
+def create_vec: int x, int y, int z -> ptr
+    # Create a 3D vector
+    VEC_SIZE malloc
+    x over vec.x + seti
+    y over vec.y + seti
+    z over vec.z + seti
+
+def vec_add: ptr a, ptr b -> ptr
+    # Add two 3D vectors
+    # Note that this frees or alters the given vectors!
+    a vec.x + dup derefi b vec.x + derefi + swap seti
+    a vec.y + dup derefi b vec.y + derefi + swap seti
+    a vec.z + dup derefi b vec.z + derefi + swap seti
+    b free
+    a
 
 
-def draw_pixel: int x, int y -> ptr
+# Pathtracer
+
+def render_pixel: int x, int y -> ptr
+    # Calculate a single pixel
     x y 64 create_pixel
 
 
@@ -33,7 +63,7 @@ def main: ptr argv, int argc -> int
     while dup HEIGHT <
         0
         while dup WIDTH <
-            over over swap draw_pixel
+            over over swap render_pixel
             dup pixel.r + derefi itos puts " " puts
             dup pixel.g + derefi itos puts " " puts
             dup pixel.b + derefi itos puts " " puts
