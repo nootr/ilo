@@ -49,6 +49,11 @@ def create_vec: int x, int y, int z -> ptr
     y over vec.y + seti
     z over vec.z + seti
 
+def copy_vec: ptr v -> ptr
+    # Returns a copy of a given vector
+    VEC_SIZE malloc
+    v over VEC_SIZE memcpy
+
 def vec_add: ptr a, ptr b -> ptr
     # Add two vectors
     # Note that this frees or alters the given vectors!
@@ -81,6 +86,31 @@ def vec_len_sqr: ptr v -> int
 def vec_len: ptr v -> int
     # Returns the length of a given vector
     v vec_len_sqr sqrt
+
+
+# Ray struct
+
+const ray.origin    0
+const ray.direction 8
+const RAY_SIZE      16
+
+def create_ray: ptr o, ptr d -> ptr
+    # Create a ray
+    RAY_SIZE malloc
+    o over ray.origin +     setp
+    d over ray.direction +  setp
+
+def destroy_ray: ptr ray -> void
+    # Frees a ray struct
+    ray
+    dup ray.origin +    derefp free
+    dup ray.direction + derefp free
+    free
+
+def ray_at: ptr ray, int distance -> ptr
+    # Returns the point of vector ray at a certain distance
+    ray ray.direction + derefp copy_vec distance vec_scale
+    ray ray.origin + derefp copy_vec vec_add
 
 
 # Pathtracer
