@@ -17,7 +17,7 @@ CMD ["bash"]
 
 FROM --platform=linux/x86_64 ubuntu:latest
 
-WORKDIR /tmp
+WORKDIR /app
 
 RUN apt update \
  && apt install -y binutils nasm ninja-build python3
