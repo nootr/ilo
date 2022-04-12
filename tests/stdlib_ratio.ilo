@@ -1,0 +1,32 @@
+# Description:Standard library - ratio
+# Exit code:0
+# Stdout:
+# Stderr:
+
+import lib.std
+
+
+def main: ptr argv, int argc -> int
+    25 100 create_ratio
+    dup ratio.numerator + derefi  1 = "numerator of 25/100  : 1" assert
+    ratio.denumerator + derefi    4 = "denumerator of 25/100: 4" assert
+
+    1 2 create_ratio 2 4 create_ratio ratio_eq "1/2 = 2/4" assert
+    1 2 create_ratio 1 3 create_ratio ratio_gt "1/2 > 1/3" assert
+
+    1 2 create_ratio 1 3 create_ratio ratio_add
+    dup ratio.numerator + derefi  5 = "numerator of 1/2 + 1/3  : 5" assert
+    ratio.denumerator + derefi    6 = "denumerator of 1/2 + 1/3: 6" assert
+
+    1 2 create_ratio 1 3 create_ratio ratio_sub
+    dup ratio.numerator + derefi  1 = "numerator of 1/2 - 1/3  : 1" assert
+    ratio.denumerator + derefi    6 = "denumerator of 1/2 - 1/3: 6" assert
+
+    2 3 create_ratio 5 7 create_ratio ratio_mul
+    dup ratio.numerator + derefi  10 = "numerator of 2/3 * 5/7  : 10" assert
+    ratio.denumerator + derefi    21 = "denumerator of 2/3 * 5/7: 21" assert
+
+    2 3 create_ratio 5 7 create_ratio ratio_div
+    dup ratio.numerator + derefi  14 = "numerator of 2/3 / 5/7  : 14" assert
+    ratio.denumerator + derefi    15 = "denumerator of 2/3 / 5/7: 15" assert
+    0

@@ -1,0 +1,17 @@
+# Description:Standard library - gcd
+# Exit code:0
+# Stdout:
+# Stderr:
+
+import lib.std
+
+
+def main: ptr argv, int argc -> int
+    1 1 gcd 1 =     "gcd(1,1) = 1" assert
+    2 1 gcd 1 =     "gcd(2,1) = 1" assert
+    1 2 gcd 1 =     "gcd(1,2) = 1" assert
+    2 4 gcd 2 =     "gcd(2,4) = 2" assert
+    9 3 gcd 3 =     "gcd(9,3) = 3" assert
+    0 9 - 3 gcd 3 = "gcd(-9,3) = 3" assert
+    0 3 gcd 3 =     "gcd(0,3) = 3" assert
+    0

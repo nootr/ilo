@@ -558,3 +558,88 @@ def substring: ptr s, int n -> ptr
     n 1 + malloc
     s over n memcpy
     dup n + 0 castc swap setc
+
+
+const ratio.numerator   0   # int
+const ratio.denumerator 8   # int
+const RATIO_SIZE        16
+
+
+def gcd: int x, int y -> int
+    # Returns the greatest common devisor of x and y
+    x 0 < if
+        0 x - y gcd
+    elif y 0 <
+        x 0 y - gcd
+    elif y 0 =
+        x
+    elif x y <
+        y x gcd
+    elif x y =
+        x
+    else
+        x y - y gcd
+
+
+def ratio_simplify: ptr a -> ptr
+    # Simplifies a ratio and returns its pointer
+    a ratio.denumerator + derefi a ratio.numerator + derefi gcd
+    a ratio.numerator + derefi    over / a ratio.numerator + seti
+    a ratio.denumerator + derefi  swap / a ratio.denumerator + seti
+    a
+
+
+def create_ratio: int num, int denum -> ptr
+    # Creates a ratio
+    denum 0 = if
+        "Can't divide by zero" raise
+
+    RATIO_SIZE malloc
+    num over ratio.numerator + seti
+    denum over ratio.denumerator + seti
+    ratio_simplify
+
+
+def ratio_add: ptr a, ptr b -> ptr
+    # Returns the sum of two ratios
+    # Note that the ratios are freed/altered.
+    a ratio.numerator + derefi b ratio.denumerator + derefi *
+    b ratio.numerator + derefi a ratio.denumerator + derefi * + a ratio.numerator + seti
+    a ratio.denumerator + derefi b ratio.denumerator + derefi * a ratio.denumerator + seti
+    b free
+    a ratio_simplify
+
+
+def ratio_sub: ptr a, ptr b -> ptr
+    # Returns a - b
+    # Note that the ratios are freed/altered.
+    b ratio.numerator + 0 over derefi - swap seti
+    a b ratio_add
+
+
+def ratio_mul: ptr a, ptr b -> ptr
+    # Returns the multiple of two ratios
+    a ratio.numerator + dup derefi b ratio.numerator + derefi * swap seti
+    a ratio.denumerator + dup derefi b ratio.denumerator + derefi * swap seti
+    b free
+    a ratio_simplify
+
+
+def ratio_div: ptr a, ptr b -> ptr
+    # Returns a / b
+    a ratio.numerator + dup derefi b ratio.denumerator + derefi * swap seti
+    a ratio.denumerator + dup derefi b ratio.numerator + derefi * swap seti
+    b free
+    a ratio_simplify
+
+
+def ratio_eq: ptr a, ptr b -> bool
+    # Returns True if ratio a equals ratio b
+    a ratio.numerator + derefi b ratio.numerator + derefi =
+    a ratio.denumerator + derefi b ratio.denumerator + derefi = and
+
+
+def ratio_gt: ptr a, ptr b -> bool
+    # Returns True if ratio a is greater than ratio b
+    a ratio.numerator + derefi b ratio.denumerator + derefi *
+    a ratio.denumerator + derefi b ratio.numerator + derefi * >
