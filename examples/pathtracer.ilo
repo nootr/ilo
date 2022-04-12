@@ -1,19 +1,24 @@
 import lib.std
 
 
+const pixel.r     0
+const pixel.g     8
+const pixel.b     16
+const PIXEL_SIZE  24
+
+def create_pixel: int r, int g, int b -> ptr
+    PIXEL_SIZE malloc
+    dup pixel.r + r swap seti
+    dup pixel.g + g swap seti
+    dup pixel.b + b swap seti
+
+
 const WIDTH   256
 const HEIGHT  256
 
 
-def draw_pixel: int x, int y -> void
-    # Red
-    x itos puts " " puts
-
-    # Green
-    y itos puts " " puts
-
-    # Blue
-    "64 " puts
+def draw_pixel: int x, int y -> ptr
+    x y 64 create_pixel
 
 
 def main: ptr argv, int argc -> int
@@ -29,6 +34,10 @@ def main: ptr argv, int argc -> int
         0
         while dup WIDTH <
             over over swap draw_pixel
+            dup pixel.r + derefi itos puts " " puts
+            dup pixel.g + derefi itos puts " " puts
+            dup pixel.b + derefi itos puts " " puts
+            free
             1 +
         drop
         1 +
