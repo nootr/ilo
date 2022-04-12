@@ -28,20 +28,44 @@ const vec.z     16
 const VEC_SIZE  24
 
 def create_vec: int x, int y, int z -> ptr
-    # Create a 3D vector
+    # Create a vector
     VEC_SIZE malloc
     x over vec.x + seti
     y over vec.y + seti
     z over vec.z + seti
 
 def vec_add: ptr a, ptr b -> ptr
-    # Add two 3D vectors
+    # Add two vectors
     # Note that this frees or alters the given vectors!
-    a vec.x + dup derefi b vec.x + derefi + swap seti
-    a vec.y + dup derefi b vec.y + derefi + swap seti
-    a vec.z + dup derefi b vec.z + derefi + swap seti
-    b free
     a
+    dup vec.x + dup derefi b vec.x + derefi + swap seti
+    dup vec.y + dup derefi b vec.y + derefi + swap seti
+    dup vec.z + dup derefi b vec.z + derefi + swap seti
+    b free
+
+def vec_scale: ptr v, int s -> ptr
+    # Scale a vector up
+    v
+    dup vec.x + dup derefi s * swap seti
+    dup vec.y + dup derefi s * swap seti
+    dup vec.z + dup derefi s * swap seti
+
+def vec_shrink: ptr v, int s -> ptr
+    # Scale a vector down
+    v
+    dup vec.x + dup derefi s / swap seti
+    dup vec.y + dup derefi s / swap seti
+    dup vec.z + dup derefi s / swap seti
+
+def vec_len_sqr: ptr v -> int
+    # Returns the square of the length of a given vector
+    v vec.x + derefi dup *
+    v vec.y + derefi dup * +
+    v vec.z + derefi dup * +
+
+def vec_len: ptr v -> int
+    # Returns the length of a given vector
+    v vec_len_sqr sqrt
 
 
 # Pathtracer
