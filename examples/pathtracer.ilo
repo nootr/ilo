@@ -32,32 +32,32 @@ def free_color: ptr color -> void
 
 # Point struct
 
-const point.x     0
-const point.y     8
-const point.z     16
+const point.x     0   # ratio
+const point.y     8   # ratio
+const point.z     16  # ratio
 const POINT_SIZE  24
 
-def create_point: int x, int y, int z -> ptr
+def create_point: ptr x, ptr y, ptr z -> ptr
     # Create a point
     POINT_SIZE malloc
-    x over point.x + seti
-    y over point.y + seti
-    z over point.z + seti
+    x over point.x + setp
+    y over point.y + setp
+    z over point.z + setp
 
 
 # Vector struct
 
-const vec.x     0
-const vec.y     8
-const vec.z     16
+const vec.x     0   # ratio
+const vec.y     8   # ratio
+const vec.z     16  # ratio
 const VEC_SIZE  24
 
-def create_vec: int x, int y, int z -> ptr
+def create_vec: ptr x, ptr y, ptr z -> ptr
     # Create a vector
     VEC_SIZE malloc
-    x over vec.x + seti
-    y over vec.y + seti
-    z over vec.z + seti
+    x over vec.x + setp
+    y over vec.y + setp
+    z over vec.z + setp
 
 def copy_vec: ptr v -> ptr
     # Returns a copy of a given vector
@@ -68,34 +68,34 @@ def vec_add: ptr a, ptr b -> ptr
     # Add two vectors
     # Note that this frees or alters the given vectors!
     a
-    dup vec.x + dup derefi b vec.x + derefi + swap seti
-    dup vec.y + dup derefi b vec.y + derefi + swap seti
-    dup vec.z + dup derefi b vec.z + derefi + swap seti
+    dup vec.x + dup derefp b vec.x + derefp ratio_add swap setp
+    dup vec.y + dup derefp b vec.y + derefp ratio_add swap setp
+    dup vec.z + dup derefp b vec.z + derefp ratio_add swap setp
     b free
 
-def vec_scale: ptr v, int s -> ptr
-    # Scale a vector up
+def vec_scale: ptr v, ptr s -> ptr
+    # Scale a vector up by ratio s
     v
-    dup vec.x + dup derefi s * swap seti
-    dup vec.y + dup derefi s * swap seti
-    dup vec.z + dup derefi s * swap seti
+    dup vec.x + dup derefp s ratio_mul swap setp
+    dup vec.y + dup derefp s ratio_mul swap setp
+    dup vec.z + dup derefp s ratio_mul swap setp
 
-def vec_shrink: ptr v, int s -> ptr
-    # Scale a vector down
+def vec_shrink: ptr v, ptr s -> ptr
+    # Scale a vector down by ratio s
     v
-    dup vec.x + dup derefi s / swap seti
-    dup vec.y + dup derefi s / swap seti
-    dup vec.z + dup derefi s / swap seti
+    dup vec.x + dup derefp s ratio_div swap setp
+    dup vec.y + dup derefp s ratio_div swap setp
+    dup vec.z + dup derefp s ratio_div swap setp
 
-def vec_len_sqr: ptr v -> int
-    # Returns the square of the length of a given vector
-    v vec.x + derefi dup *
-    v vec.y + derefi dup * +
-    v vec.z + derefi dup * +
+def vec_len_sqr: ptr v -> ptr
+    # Returns the square of the length of a given vector as ratio
+    v vec.x + derefp dup ratio_mul
+    v vec.y + derefp dup ratio_mul ratio_add
+    v vec.z + derefp dup ratio_mul ratio_add
 
-def vec_len: ptr v -> int
-    # Returns the length of a given vector
-    v vec_len_sqr sqrt
+def vec_len: ptr v -> ptr
+    # Returns the length of a given vector as ratio
+    v vec_len_sqr ratio_sqrt
 
 
 # Ray struct
@@ -110,14 +110,14 @@ def create_ray: ptr o, ptr d -> ptr
     o over ray.origin +     setp
     d over ray.direction +  setp
 
-def destroy_ray: ptr ray -> void
+def free_ray: ptr ray -> void
     # Frees a ray struct
     ray
     dup ray.origin +    derefp free
     dup ray.direction + derefp free
     free
 
-def ray_at: ptr ray, int distance -> ptr
+def ray_at: ptr ray, ptr distance -> ptr
     # Returns the point of vector ray at a certain distance
     ray ray.direction + derefp copy_vec distance vec_scale
     ray ray.origin + derefp copy_vec vec_add
