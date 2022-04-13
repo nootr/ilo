@@ -14,6 +14,10 @@ def main: ptr argv, int argc -> int
     1 2 create_ratio 2 4 create_ratio ratio_eq "1/2 = 2/4" assert
     1 2 create_ratio 1 3 create_ratio ratio_gt "1/2 > 1/3" assert
 
+    25 4 create_ratio ratio_sqrt
+    dup ratio.numerator + derefi  5 = "numerator of sqrt(25/4)  : 5" assert
+    ratio.denumerator + derefi    2 = "denumerator of sqrt(25/4): 2" assert
+
     10 3 create_ratio dup rtoi 3 = "10/3 = 3" assert free
 
     42 itor
