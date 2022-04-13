@@ -73,25 +73,34 @@ def vec_add: ptr a, ptr b -> ptr
     dup vec.z + dup derefp b vec.z + derefp ratio_add swap setp
     b free
 
+def vec_sub: ptr a, ptr b -> ptr
+    # Subtract two vectors
+    # Note that this frees or alters the given vectors!
+    a
+    dup vec.x + dup derefp b vec.x + derefp ratio_sub swap setp
+    dup vec.y + dup derefp b vec.y + derefp ratio_sub swap setp
+    dup vec.z + dup derefp b vec.z + derefp ratio_sub swap setp
+    b free
+
 def vec_scale: ptr v, ptr s -> ptr
     # Scale a vector up by ratio s
     v
-    dup vec.x + dup derefp s ratio_mul swap setp
-    dup vec.y + dup derefp s ratio_mul swap setp
-    dup vec.z + dup derefp s ratio_mul swap setp
+    dup vec.x + dup derefp s copy_ratio ratio_mul swap setp
+    dup vec.y + dup derefp s copy_ratio ratio_mul swap setp
+    dup vec.z + dup derefp s copy_ratio ratio_mul swap setp
 
 def vec_shrink: ptr v, ptr s -> ptr
     # Scale a vector down by ratio s
     v
-    dup vec.x + dup derefp s ratio_div swap setp
-    dup vec.y + dup derefp s ratio_div swap setp
-    dup vec.z + dup derefp s ratio_div swap setp
+    dup vec.x + dup derefp s copy_ratio ratio_div swap setp
+    dup vec.y + dup derefp s copy_ratio ratio_div swap setp
+    dup vec.z + dup derefp s copy_ratio ratio_div swap setp
 
 def vec_len_sqr: ptr v -> ptr
     # Returns the square of the length of a given vector as ratio
-    v vec.x + derefp dup ratio_mul
-    v vec.y + derefp dup ratio_mul ratio_add
-    v vec.z + derefp dup ratio_mul ratio_add
+    v vec.x + derefp copy_ratio dup ratio_mul
+    v vec.y + derefp copy_ratio dup ratio_mul ratio_add
+    v vec.z + derefp copy_ratio dup ratio_mul ratio_add
 
 def vec_len: ptr v -> ptr
     # Returns the length of a given vector as ratio
@@ -140,6 +149,42 @@ def output_color: ptr color -> void
     free_color
 
 
+# Camera
+
+buffer ASPECT_RATIO       8
+buffer VIEWPORT_HEIGHT    8
+buffer VIEWPORT_WIDTH     8
+buffer FOCAL_LENGTH       8
+buffer ORIGIN             8
+buffer HORIZONTAL         8
+buffer VERTICAL           8
+buffer LOWER_LEFT_CORNER  8
+
+def set_camera_constants: -> void
+    # Calculate the camera constants
+    WIDTH HEIGHT create_ratio                             ASPECT_RATIO setp       # 16/9
+    2 itor                                                VIEWPORT_HEIGHT setp    # 2
+    ASPECT_RATIO derefp copy_ratio
+    VIEWPORT_HEIGHT derefp copy_ratio ratio_mul           VIEWPORT_WIDTH setp     # 32/9
+    1 itor                                                FOCAL_LENGTH setp       # 1
+
+    0 itor 0 itor 0 itor create_vec                       ORIGIN setp             # (0, 0, 0)
+    VIEWPORT_WIDTH derefp 0 itor 0 itor create_vec        HORIZONTAL setp         # (32/9, 0, 0)
+    0 itor VIEWPORT_HEIGHT derefp 0 itor create_vec       VERTICAL setp
+
+    ORIGIN derefp copy_vec
+    HORIZONTAL derefp copy_vec 2 itor vec_shrink vec_sub
+    VERTICAL derefp copy_vec 2 itor vec_shrink   vec_sub
+    0 itor 0 itor FOCAL_LENGTH derefp create_vec vec_sub  LOWER_LEFT_CORNER setp
+
+    LOWER_LEFT_CORNER derefp vec.x + derefp ratio.numerator + derefi    16 + 0 =  "LLC.x.num" assert
+    LOWER_LEFT_CORNER derefp vec.x + derefp ratio.denumerator + derefi  9  =      "LLC.x.den" assert
+    LOWER_LEFT_CORNER derefp vec.y + derefp ratio.numerator + derefi    1 + 0 =   "LLC.y.num" assert
+    LOWER_LEFT_CORNER derefp vec.y + derefp ratio.denumerator + derefi  1 =       "LLC.y.den" assert
+    LOWER_LEFT_CORNER derefp vec.z + derefp ratio.numerator + derefi    1 + 0 =   "LLC.z.num" assert
+    LOWER_LEFT_CORNER derefp vec.z + derefp ratio.denumerator + derefi  1 =       "LLC.z.den" assert
+
+
 def main: ptr argv, int argc -> int
     # Print PPM metadata
     "P3 " puts
@@ -148,6 +193,8 @@ def main: ptr argv, int argc -> int
     COLOR_PRECISION itos puts "\n" puts
 
     # Render image
+    set_camera_constants
+
     0
     while dup HEIGHT <
         0

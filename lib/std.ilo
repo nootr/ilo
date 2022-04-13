@@ -600,6 +600,12 @@ def create_ratio: int num, int denum -> ptr
     ratio_simplify
 
 
+def copy_ratio: ptr r -> ptr
+    # Returns a copy of a given ratio
+    RATIO_SIZE malloc
+    r over RATIO_SIZE memcpy
+
+
 def ratio_add: ptr a, ptr b -> ptr
     # Returns the sum of two ratios
     # Note that the ratios are freed/altered.
@@ -627,6 +633,7 @@ def ratio_mul: ptr a, ptr b -> ptr
 
 def ratio_div: ptr a, ptr b -> ptr
     # Returns a / b
+    # TODO: Support negative numerators (note that denumerators cannot be negative)
     a ratio.numerator + dup derefi b ratio.denumerator + derefi * swap seti
     a ratio.denumerator + dup derefi b ratio.numerator + derefi * swap seti
     b free
