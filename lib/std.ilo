@@ -581,12 +581,11 @@ def gcd: int x, int y -> int
         x y - y gcd
 
 
-def ratio_simplify: ptr a -> ptr
-    # Simplifies a ratio and returns its pointer
-    a ratio.denumerator + derefi a ratio.numerator + derefi gcd
-    a ratio.numerator + derefi    over / a ratio.numerator + seti
-    a ratio.denumerator + derefi  swap / a ratio.denumerator + seti
-    a
+def ratio_simplify: ptr r -> void
+    # Simplifies a given ratio
+    r ratio.denumerator + derefi r ratio.numerator + derefi gcd
+    r ratio.numerator + derefi    over / r ratio.numerator + seti
+    r ratio.denumerator + derefi  swap / r ratio.denumerator + seti
 
 
 def create_ratio: int num, int denum -> ptr
@@ -597,7 +596,7 @@ def create_ratio: int num, int denum -> ptr
     RATIO_SIZE malloc
     num over ratio.numerator + seti
     denum over ratio.denumerator + seti
-    ratio_simplify
+    dup ratio_simplify
 
 
 def copy_ratio: ptr r -> ptr
@@ -608,45 +607,50 @@ def copy_ratio: ptr r -> ptr
 
 def ratio_add: ptr a, ptr b -> ptr
     # Returns the sum of two ratios
-    # Note that the ratios are freed/altered.
+    # Note that this malloc's a new ratio, so don't forget to free
+    RATIO_SIZE malloc
     a ratio.numerator + derefi b ratio.denumerator + derefi *
-    b ratio.numerator + derefi a ratio.denumerator + derefi * + a ratio.numerator + seti
-    a ratio.denumerator + derefi b ratio.denumerator + derefi * a ratio.denumerator + seti
-    b free
-    a ratio_simplify
+    b ratio.numerator + derefi a ratio.denumerator + derefi * + over ratio.numerator + seti
+    a ratio.denumerator + derefi b ratio.denumerator + derefi * over ratio.denumerator + seti
+    dup ratio_simplify
 
 
 def ratio_sub: ptr a, ptr b -> ptr
     # Returns a - b
-    # Note that the ratios are freed/altered.
-    b ratio.numerator + 0 over derefi - swap seti
-    a b ratio_add
+    # Note that this malloc's a new ratio, so don't forget to free
+    RATIO_SIZE malloc
+    a ratio.numerator + derefi b ratio.denumerator + derefi *
+    b ratio.numerator + derefi a ratio.denumerator + derefi * - over ratio.numerator + seti
+    a ratio.denumerator + derefi b ratio.denumerator + derefi * over ratio.denumerator + seti
+    dup ratio_simplify
 
 
 def ratio_mul: ptr a, ptr b -> ptr
     # Returns the multiple of two ratios
-    a ratio.numerator + dup derefi b ratio.numerator + derefi * swap seti
-    a ratio.denumerator + dup derefi b ratio.denumerator + derefi * swap seti
-    b free
-    a ratio_simplify
+    # Note that this malloc's a new ratio, so don't forget to free
+    RATIO_SIZE malloc
+    a ratio.numerator + derefi b ratio.numerator + derefi * over ratio.numerator + seti
+    a ratio.denumerator + derefi b ratio.denumerator + derefi * over ratio.denumerator + seti
+    dup ratio_simplify
 
 
 def ratio_div: ptr a, ptr b -> ptr
     # Returns a / b
+    # Note that this malloc's a new ratio, so don't forget to free
     # TODO: Support negative numerators (note that denumerators cannot be negative)
-    a ratio.numerator + dup derefi b ratio.denumerator + derefi * swap seti
-    a ratio.denumerator + dup derefi b ratio.numerator + derefi * swap seti
-    b free
-    a ratio_simplify
+    RATIO_SIZE malloc
+    a ratio.numerator + derefi b ratio.denumerator + derefi * over ratio.numerator + seti
+    a ratio.denumerator + derefi b ratio.numerator + derefi * over ratio.denumerator + seti
+    dup ratio_simplify
 
 
 def ratio_sqrt: ptr a -> ptr
     # Returns the square root of a given ratio
-    # Note that this modifies the ratio
-    a
-    dup ratio.numerator + dup derefi sqrt swap seti
-    dup ratio.denumerator + dup derefi sqrt swap seti
-    ratio_simplify
+    # Note that this malloc's a new ratio, so don't forget to free
+    RATIO_SIZE malloc
+    a ratio.numerator + derefi sqrt over ratio.numerator + seti
+    a ratio.denumerator + derefi sqrt over ratio.denumerator + seti
+    dup ratio_simplify
 
 
 def rtoi: ptr r -> int
