@@ -583,9 +583,17 @@ def gcd: int x, int y -> int
 
 def ratio_simplify: ptr r -> void
     # Simplifies a given ratio
-    r ratio.denumerator + derefi r ratio.numerator + derefi gcd
+    "a" puts
+    r ratio.denumerator + derefi
+    "b" puts
+    r ratio.numerator + derefi
+    "c" puts
+    gcd
+    "[gcd: " puts dup puti "]" puts
     r ratio.numerator + derefi    over / r ratio.numerator + seti
+    "[3]" puts
     r ratio.denumerator + derefi  swap / r ratio.denumerator + seti
+    "[4]" puts
 
 
 def create_ratio: int num, int denum -> ptr
@@ -608,11 +616,17 @@ def copy_ratio: ptr r -> ptr
 def ratio_add: ptr a, ptr b -> ptr
     # Returns the sum of two ratios
     # Note that this malloc's a new ratio, so don't forget to free
+    "_1_" puts
     RATIO_SIZE malloc
+    "_2_" puts
     a ratio.numerator + derefi b ratio.denumerator + derefi *
+    "_3_" puts
     b ratio.numerator + derefi a ratio.denumerator + derefi * + over ratio.numerator + seti
+    "_4_" puts
     a ratio.denumerator + derefi b ratio.denumerator + derefi * over ratio.denumerator + seti
+    "_5_" puts
     dup ratio_simplify
+    "_6_" puts
 
 
 def ratio_sub: ptr a, ptr b -> ptr
@@ -628,19 +642,75 @@ def ratio_sub: ptr a, ptr b -> ptr
 def ratio_mul: ptr a, ptr b -> ptr
     # Returns the multiple of two ratios
     # Note that this malloc's a new ratio, so don't forget to free
+    # TODO: Add tests for negative numbers
     RATIO_SIZE malloc
-    a ratio.numerator + derefi b ratio.numerator + derefi * over ratio.numerator + seti
-    a ratio.denumerator + derefi b ratio.denumerator + derefi * over ratio.denumerator + seti
+    a ratio.numerator + derefi b ratio.numerator + derefi
+    over 0 < over 0 < and if
+        0 swap -
+        swap 0 swap -
+        *
+    elif dup 0 <
+        0 swap -
+        * 0 swap -
+    elif over 0 <
+        swap 0 swap -
+        * 0 swap -
+    else
+        *
+
+    over ratio.numerator + seti
+    a ratio.denumerator + derefi b ratio.denumerator + derefi
+    over 0 < over 0 < and if
+        0 swap -
+        swap 0 swap -
+        *
+    elif dup 0 <
+        0 swap -
+        * 0 swap -
+    elif over 0 <
+        swap 0 swap -
+        * 0 swap -
+    else
+        *
+    over ratio.denumerator + seti
     dup ratio_simplify
 
 
 def ratio_div: ptr a, ptr b -> ptr
     # Returns a / b
     # Note that this malloc's a new ratio, so don't forget to free
-    # TODO: Support negative numerators (note that denumerators cannot be negative)
+    # TODO: Add tests for negative numbers
+    # TODO: Fix bug where resulting denumerator is negative
     RATIO_SIZE malloc
-    a ratio.numerator + derefi b ratio.denumerator + derefi * over ratio.numerator + seti
-    a ratio.denumerator + derefi b ratio.numerator + derefi * over ratio.denumerator + seti
+    a ratio.numerator + derefi b ratio.denumerator + derefi
+    over 0 < over 0 < and if
+        0 swap -
+        swap 0 swap -
+        *
+    elif dup 0 <
+        0 swap -
+        * 0 swap -
+    elif over 0 <
+        swap 0 swap -
+        * 0 swap -
+    else
+        *
+    over ratio.numerator + seti
+
+    a ratio.denumerator + derefi b ratio.numerator + derefi
+    over 0 < over 0 < and if
+        0 swap -
+        swap 0 swap -
+        *
+    elif dup 0 <
+        0 swap -
+        * 0 swap -
+    elif over 0 <
+        swap 0 swap -
+        * 0 swap -
+    else
+        *
+    over ratio.denumerator + seti
     dup ratio_simplify
 
 

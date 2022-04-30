@@ -44,6 +44,14 @@ def create_point: ptr x, ptr y, ptr z -> ptr
     y over point.y + setp
     z over point.z + setp
 
+def free_point: ptr point -> void
+    # Frees a point
+    point
+    dup point.x + derefp free
+    dup point.y + derefp free
+    dup point.z + derefp free
+    free
+
 
 # Vector struct
 
@@ -61,49 +69,72 @@ def create_vec: ptr x, ptr y, ptr z -> ptr
 
 def copy_vec: ptr v -> ptr
     # Returns a copy of a given vector
-    VEC_SIZE malloc
-    v over VEC_SIZE memcpy
+    v vec.x + derefp copy_ratio
+    v vec.y + derefp copy_ratio
+    v vec.z + derefp copy_ratio
+    create_vec
+
+def free_vec: ptr vec -> void
+    # Frees a vec
+    vec
+    dup vec.x + derefp free
+    dup vec.y + derefp free
+    dup vec.z + derefp free
+    free
 
 def vec_add: ptr a, ptr b -> ptr
     # Add two vectors
-    # Note that this frees or alters the given vectors!
-    a
-    dup vec.x + dup derefp b vec.x + derefp ratio_add swap setp
-    dup vec.y + dup derefp b vec.y + derefp ratio_add swap setp
-    dup vec.z + dup derefp b vec.z + derefp ratio_add swap setp
-    b free
+    # Note that this malloc's a new ratio, so don't forget to free
+    "A" puts
+    a vec.x + derefp
+    "B" puts
+    b vec.x + derefp
+    "C" puts
+    ratio_add
+    "D" puts
+    a vec.y + derefp b vec.y + derefp ratio_add
+    a vec.z + derefp b vec.z + derefp ratio_add
+    create_vec
 
 def vec_sub: ptr a, ptr b -> ptr
     # Subtract two vectors
-    # Note that this frees or alters the given vectors!
-    a
-    dup vec.x + dup derefp b vec.x + derefp ratio_sub swap setp
-    dup vec.y + dup derefp b vec.y + derefp ratio_sub swap setp
-    dup vec.z + dup derefp b vec.z + derefp ratio_sub swap setp
-    b free
+    # Note that this malloc's a new ratio, so don't forget to free
+    a vec.x + derefp b vec.x + derefp ratio_sub
+    a vec.y + derefp b vec.y + derefp ratio_sub
+    a vec.z + derefp b vec.z + derefp ratio_sub
+    create_vec
 
 def vec_scale: ptr v, ptr s -> ptr
     # Scale a vector up by ratio s
-    v
-    dup vec.x + dup derefp s copy_ratio ratio_mul swap setp
-    dup vec.y + dup derefp s copy_ratio ratio_mul swap setp
-    dup vec.z + dup derefp s copy_ratio ratio_mul swap setp
+    # Note that this malloc's a new ratio, so don't forget to free
+    v vec.x + derefp s ratio_mul
+    v vec.y + derefp s ratio_mul
+    v vec.z + derefp s ratio_mul
+    create_vec
 
 def vec_shrink: ptr v, ptr s -> ptr
     # Scale a vector down by ratio s
-    v
-    dup vec.x + dup derefp s copy_ratio ratio_div swap setp
-    dup vec.y + dup derefp s copy_ratio ratio_div swap setp
-    dup vec.z + dup derefp s copy_ratio ratio_div swap setp
+    # Note that this malloc's a new ratio, so don't forget to free
+    v vec.x + derefp s ratio_div
+    v vec.y + derefp s ratio_div
+    v vec.z + derefp s ratio_div
+    create_vec
 
 def vec_len_sqr: ptr v -> ptr
     # Returns the square of the length of a given vector as ratio
-    v vec.x + derefp copy_ratio dup ratio_mul
-    v vec.y + derefp copy_ratio dup ratio_mul ratio_add
-    v vec.z + derefp copy_ratio dup ratio_mul ratio_add
+    # Note that this malloc's a new ratio, so don't forget to free
+    # TODO: support negative numbers
+    v vec.x + derefp dup ratio_mul
+    v vec.y + derefp dup ratio_mul
+    over over ratio_add
+    swap free swap free
+    v vec.z + derefp dup ratio_mul
+    over over ratio_add
+    swap free swap free
 
 def vec_len: ptr v -> ptr
     # Returns the length of a given vector as ratio
+    # Note that this malloc's a new ratio, so don't forget to free
     v vec_len_sqr ratio_sqrt
 
 
@@ -128,20 +159,17 @@ def free_ray: ptr ray -> void
 
 def ray_at: ptr ray, ptr distance -> ptr
     # Returns the point of vector ray at a certain distance
-    ray ray.direction + derefp copy_vec distance vec_scale
-    ray ray.origin + derefp copy_vec vec_add
+    ray ray.direction + derefp distance vec_scale
+    dup ray ray.origin + derefp vec_add
+    swap free_vec
 
 
 # Pathtracer
 
-def render_pixel: int x, int y -> ptr
-    # Calculate a single pixel
-    x WIDTH create_ratio y HEIGHT create_ratio 1 4 create_ratio create_color
-
-
 def output_color: ptr color -> void
     # Prints a given color in PPM format
     # Note that the color is freed afterwards
+    # TODO: Fix memory leak
     color
     dup color.r + derefp COLOR_PRECISION itor ratio_mul rtoi itos puts " " puts
     dup color.g + derefp COLOR_PRECISION itor ratio_mul rtoi itos puts " " puts
@@ -164,25 +192,48 @@ def set_camera_constants: -> void
     # Calculate the camera constants
     WIDTH HEIGHT create_ratio                             ASPECT_RATIO setp       # 16/9
     2 itor                                                VIEWPORT_HEIGHT setp    # 2
-    ASPECT_RATIO derefp copy_ratio
-    VIEWPORT_HEIGHT derefp copy_ratio ratio_mul           VIEWPORT_WIDTH setp     # 32/9
+    ASPECT_RATIO derefp
+    VIEWPORT_HEIGHT derefp ratio_mul                      VIEWPORT_WIDTH setp     # 32/9
     1 itor                                                FOCAL_LENGTH setp       # 1
 
     0 itor 0 itor 0 itor create_vec                       ORIGIN setp             # (0, 0, 0)
     VIEWPORT_WIDTH derefp 0 itor 0 itor create_vec        HORIZONTAL setp         # (32/9, 0, 0)
     0 itor VIEWPORT_HEIGHT derefp 0 itor create_vec       VERTICAL setp
 
-    ORIGIN derefp copy_vec
-    HORIZONTAL derefp copy_vec 2 itor vec_shrink vec_sub
-    VERTICAL derefp copy_vec 2 itor vec_shrink   vec_sub
-    0 itor 0 itor FOCAL_LENGTH derefp create_vec vec_sub  LOWER_LEFT_CORNER setp
+    ORIGIN derefp
+    HORIZONTAL derefp 2 itor vec_shrink           vec_sub
+    VERTICAL derefp 2 itor vec_shrink             vec_sub
+    0 itor 0 itor FOCAL_LENGTH derefp create_vec  vec_sub LOWER_LEFT_CORNER setp
 
     LOWER_LEFT_CORNER derefp vec.x + derefp ratio.numerator + derefi    16 + 0 =  "LLC.x.num" assert
-    LOWER_LEFT_CORNER derefp vec.x + derefp ratio.denumerator + derefi  9  =      "LLC.x.den" assert
+    LOWER_LEFT_CORNER derefp vec.x + derefp ratio.denumerator + derefi  9 =       "LLC.x.den" assert
     LOWER_LEFT_CORNER derefp vec.y + derefp ratio.numerator + derefi    1 + 0 =   "LLC.y.num" assert
     LOWER_LEFT_CORNER derefp vec.y + derefp ratio.denumerator + derefi  1 =       "LLC.y.den" assert
     LOWER_LEFT_CORNER derefp vec.z + derefp ratio.numerator + derefi    1 + 0 =   "LLC.z.num" assert
     LOWER_LEFT_CORNER derefp vec.z + derefp ratio.denumerator + derefi  1 =       "LLC.z.den" assert
+
+
+def create_camera_ray: ptr u, ptr v -> ptr
+    # Takes two ratios and converts it to a ray
+    ORIGIN derefp
+    LOWER_LEFT_CORNER derefp
+    HORIZONTAL derefp u vec_scale vec_add
+    VERTICAL derefp v vec_scale
+    "q:" puts
+    vec_add
+    "r:" puts
+    ORIGIN derefp vec_sub
+    create_ray
+
+
+def render_pixel: ptr ray -> ptr
+    # Returns the color corresponding to a given ray
+    ray ray.direction + derefp
+    dup vec_len vec_shrink
+    vec.y + derefp 1 itor ratio_add
+    1 2 create_ratio ratio_mul
+    1 itor over ratio_sub 1 itor 1 itor 1 itor create_color swap vec_scale
+    swap 1 2 create_ratio 7 10 create_ratio 1 itor create_color swap vec_scale vec_add
 
 
 def main: ptr argv, int argc -> int
@@ -199,7 +250,15 @@ def main: ptr argv, int argc -> int
     while dup HEIGHT <
         0
         while dup WIDTH <
-            over over swap render_pixel output_color
+            over HEIGHT create_ratio # v
+            over WIDTH create_ratio # u
+            swap
+            "1." puts
+            create_camera_ray
+            "2." puts
+            render_pixel
+            "3." puts
+            output_color
             1 +
         drop
         1 +

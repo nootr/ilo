@@ -2,13 +2,10 @@
 
 [![CI/CD](https://github.com/nootr/ilo/actions/workflows/main.yml/badge.svg)](https://github.com/nootr/ilo/actions)
 
-A programming language.
+Stack-oriented like Forth, but without the interactive environment. Whitespace-specific
+like Python, but not as legible. And last, but not least: creating segfaults have never
+been easier.
 
-* Stack-oriented like Forth
-* Whitespace-specific like Python
-* Type checking like Tsoding's Porth
-
-This project has one clear goal: to write a self-hosted compiler!
 
 
 ## Building the Ilo compiler
