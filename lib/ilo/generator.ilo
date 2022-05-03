@@ -216,17 +216,17 @@ def generate_code_x86_64_linux: ptr opcodes -> void
             "" "imul rbx, rax"  _text _append
             "" "push rbx"       _text _append
         elif dup opcode.opcode + derefi OPCODE_DIVIDE =
-            "" "xor rdx, rdx"   _text _append
-            "" "pop rbx"        _text _append
-            "" "pop rax"        _text _append
-            "" "div rbx"        _text _append
-            "" "push rax"       _text _append
+            "" "pop rbx"      _text _append
+            "" "pop rax"      _text _append
+            "" "cqo"          _text _append
+            "" "idiv rbx"     _text _append
+            "" "push rax"     _text _append
         elif dup opcode.opcode + derefi OPCODE_MOD =
-            "" "xor rdx, rdx"   _text _append
-            "" "pop rbx"        _text _append
-            "" "pop rax"        _text _append
-            "" "div rbx"        _text _append
-            "" "push rdx"       _text _append
+            "" "pop rbx"      _text _append
+            "" "pop rax"      _text _append
+            "" "cqo"          _text _append
+            "" "idiv rbx"     _text _append
+            "" "push rdx"     _text _append
         elif dup opcode.opcode + derefi OPCODE_RESTORE_FRAME =
             "" "pop rax"      _text _append
             "" "mov rsp, rbp" _text _append
@@ -241,7 +241,7 @@ def generate_code_x86_64_linux: ptr opcodes -> void
         elif dup opcode.opcode + derefi OPCODE_BITWISE_OR =
             "" "pop rax"      _text _append
             "" "pop rbx"      _text _append
-            "" "or rbx, rax" _text _append
+            "" "or rbx, rax"  _text _append
             "" "push rbx"     _text _append
         elif dup opcode.opcode + derefi OPCODE_GET_BUFFER =
             _textbuffer derefp textbuffer_clear
