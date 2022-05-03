@@ -2,9 +2,11 @@
 
 ILO="./build/ilo"
 
+echo "[INFO] $(sha1sum $ILO)"
+
 for file in $(find tests/*.ilo -maxdepth 1 -not -type d); do
   # Compile
-  echo "[COMP] ${file}"
+  echo -n "[TEST] $(sha1sum $file).. "
   $ILO $file > test.asm
   nasm -felf64 test.asm -o test.o
   ld -o test test.o
@@ -45,7 +47,7 @@ for file in $(find tests/*.ilo -maxdepth 1 -not -type d); do
   fi
 
   if [[ "$SUCCESS" -eq 1 ]]; then
-    echo "[ OK ] $DESCRIPTION"
+    echo "OK"
   fi
 
   # Cleanup
