@@ -129,8 +129,10 @@ const block.next          0   # ptr
 const block.prev          8   # ptr
 const block.size          16  # integer
 const block.free          24  # boolean
-const block.data          25  # data
-const BLOCK_METADATA_SIZE 25
+const block.file          25  # ptr
+const block.line          33  # int
+const block.data          41  # data
+const BLOCK_METADATA_SIZE 41
 
 buffer current_page 8
 buffer root_page    8
@@ -183,21 +185,29 @@ def verify_memory: -> void
 
             while dup NULL !=
                 DUMP_MEMORY derefb if
-                    "  * block: "                       puts
-                    dup casti _vm_buf itohex _vm_buf  puts
-                    "\n"                                puts
+                    "  * block: "                                   puts
+                    dup casti _vm_buf itohex _vm_buf                puts
+                    "\n"                                            puts
 
-                    "    * size: "                                   puts
-                    dup block.size + derefi _vm_buf itohex _vm_buf puts
-                    "\n"                                             puts
+                    "    * file: "                                  puts
+                    dup block.file + derefp                         puts
+                    "\n"                                            puts
 
-                    "    * next: "                                   puts
-                    dup block.next + derefi _vm_buf itohex _vm_buf puts
-                    "\n"                                             puts
+                    "    * line: "                                  puts
+                    dup block.line + derefi itos                    puts
+                    "\n"                                            puts
 
-                    "    * prev: "                                   puts
-                    dup block.prev + derefi _vm_buf itohex _vm_buf puts
-                    "\n"                                             puts
+                    "    * size: "                                  puts
+                    dup block.size + derefi _vm_buf itohex _vm_buf  puts
+                    "\n"                                            puts
+
+                    "    * next: "                                  puts
+                    dup block.next + derefi _vm_buf itohex _vm_buf  puts
+                    "\n"                                            puts
+
+                    "    * prev: "                                  puts
+                    dup block.prev + derefi _vm_buf itohex _vm_buf  puts
+                    "\n"                                            puts
 
                     "    * free: " puts
                     dup block.free + derefb if
@@ -275,6 +285,8 @@ def _malloc_get_next_page: ptr page, int size -> ptr
         dup block.free +                              True swap setb
         dup block.next +                              NULL swap setp
         dup block.prev +                              NULL swap setp
+        dup block.file +                              ""   swap setp
+        dup block.line +                              0    swap seti
         dup block.size + size PAGE_METADATA_SIZE - \
                          BLOCK_METADATA_SIZE -             swap seti
         drop
@@ -309,6 +321,8 @@ def _malloc_split_block: ptr block, int old_size, int size -> ptr
         block    block block.next + derefp block.prev + setp
         dup      block block.next + derefp block.size + seti
         over     block block.next + derefp block.next + setp
+        ""       block block.next + derefp block.file + setp
+        0        block block.next + derefp block.line + seti
 
         block block.next + derefp block.next + derefp NULL != if
             block block.next + derefp dup block.next + derefp block.prev + setp
@@ -361,6 +375,16 @@ def malloc: int size -> ptr
 
     dup NULL != "Pointer to found block should be non-NULL\n" assert
     dup block.free + derefb "Found block should be free\n" assert
+
+    DUMP_MEMORY derefb if
+        __get_arg 16 bool if
+            # Save filename
+            __get_arg 40 ptr
+            over block.file + setp
+
+            # Save line number
+            __get_arg 32 int
+            over block.line + seti
 
     dup block.size + derefi size = if
         # The block is a perfect fit
