@@ -21,6 +21,9 @@ jobs:
       run: |
         ./configure
         ninja
+    - name: Memory test
+      run: |
+        ./build/ilo --verify-memory src/ilo.ilo > /dev/null
     - name: Functional tests
       run: |
         ./test.sh
