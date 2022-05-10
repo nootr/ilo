@@ -4,6 +4,4 @@
 # Stderr:
 
 def main: int argc, ptr argv -> int
-    0 5 -
-    3 /
-    0 swap -
+    5 3 /
