@@ -1,0 +1,13 @@
+# Description:Standard library - signed division
+# Exit code:0
+# Stdout:
+# Stderr:
+
+import lib.std
+
+def main: ptr argv, int argc -> int
+    0 30 - 0 6 - div 5 = "-30 / -6 = 5" assert
+    30 0 6 - div 0 5 - = "30 / -6 = -5" assert
+    0 30 - 6 div 0 5 - = "-30 / 6 = -5" assert
+    30 6 div 5 = "30 / 6 = 5" assert
+    0
