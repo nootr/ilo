@@ -7,7 +7,7 @@ echo "[INFO] $(sha1sum $ILO)"
 for file in $(find tests/*.ilo -maxdepth 1 -not -type d); do
   # Compile
   echo -n "[TEST] $(sha1sum $file).. "
-  $ILO $file > test.asm
+  $ILO --verify-memory $file > test.asm
   nasm -felf64 test.asm -o test.o
   ld -o test test.o
 
