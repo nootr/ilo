@@ -12,6 +12,20 @@ buffer ray_direction  24
 buffer ray_color      24
 
 
+buffer _sphere_dist_buffer 24
+
+def sphere_dist: int center_x, int center_y, int center_z, int radius -> int
+    # Returns the distance of the current ray to a given sphere
+    center_x _sphere_dist_buffer vec.x + seti
+    center_y _sphere_dist_buffer vec.y + seti
+    center_z _sphere_dist_buffer vec.z + seti
+
+    _sphere_dist_buffer ray_origin _sphere_dist_buffer vec_sub
+    _sphere_dist_buffer ray_direction _sphere_dist_buffer vec_sub
+
+    _sphere_dist_buffer vec_len radius -
+
+
 def generate_camera_ray: int x, int y -> void
     # Set ray origin to (0, 0, 0)
     0 ray_origin vec.x + seti
@@ -22,7 +36,7 @@ def generate_camera_ray: int x, int y -> void
     # ray_direction.x = x - WIDTH/2
     # ray_direction.y = HEIGHT/2 - y
     # ray_direction.z = -FOCAL_LENGTH
-    x WIDTH 2 div - ray_direction vec.x + seti
+    x WIDTH 2 div -  ray_direction vec.x + seti
     HEIGHT 2 div y - ray_direction vec.y + seti
     0 FOCAL_LENGTH - ray_direction vec.z + seti
 
@@ -37,7 +51,12 @@ def calculate_sky_color: int t -> void
 
 
 def calculate_ray_color: -> void
-    ray_direction vec.y + derefi 1000 + 2 div calculate_sky_color
+    0 0 0 1000 - 400 sphere_dist 0 < if
+        255 ray_color vec.x + seti
+        0 ray_color vec.y + seti
+        0 ray_color vec.z + seti
+    else
+        ray_direction vec.y + derefi 1000 + 2 div calculate_sky_color
 
 
 def print_ray_color: -> void
