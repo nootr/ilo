@@ -1,0 +1,73 @@
+import lib.std
+import lib.std.math
+
+
+const WIDTH   160
+const HEIGHT  90
+
+const FOCAL_LENGTH 90
+
+buffer ray_origin     24
+buffer ray_direction  24
+buffer ray_color      24
+
+
+def generate_camera_ray: int x, int y -> void
+    # Set ray origin to (0, 0, 0)
+    0 ray_origin vec.x + seti
+    0 ray_origin vec.y + seti
+    0 ray_origin vec.z + seti
+
+    # Set the ray direction:
+    # ray_direction.x = x - WIDTH/2
+    # ray_direction.y = HEIGHT/2 - y
+    # ray_direction.z = -FOCAL_LENGTH
+    x WIDTH 2 div - ray_direction vec.x + seti
+    HEIGHT 2 div y - ray_direction vec.y + seti
+    0 FOCAL_LENGTH - ray_direction vec.z + seti
+
+    # Normalize vector
+    ray_direction dup vec_unit
+
+
+def calculate_sky_color: int t -> void
+    1000 t - t 2 div + 256 * 1000 div ray_color vec.x + seti
+    1000 t - t 7 * 10 div + 256 * 1000 div ray_color vec.y + seti
+    256 ray_color vec.z + seti
+
+
+def calculate_ray_color: -> void
+    ray_direction vec.y + derefi 1000 + 2 div calculate_sky_color
+
+
+def print_ray_color: -> void
+    ray_color vec.x + derefi itos puts " " puts
+    ray_color vec.y + derefi itos puts " " puts
+    ray_color vec.z + derefi itos puts " " puts
+
+
+def draw_pixel: int x, int y -> void
+    x y generate_camera_ray
+    calculate_ray_color
+    print_ray_color
+
+
+def main: ptr argv, int argc -> int
+    # Print PPM metadata
+    "P3 " puts
+    WIDTH itos puts " " puts
+    HEIGHT itos puts " " puts
+    "256\n" puts
+
+    # Render image
+    0
+    while dup HEIGHT <
+        0
+        while dup WIDTH <
+            over over swap draw_pixel
+            1 +
+        drop
+        1 +
+
+        "\n" puts
+    0
