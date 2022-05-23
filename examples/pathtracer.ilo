@@ -52,19 +52,36 @@ def calculate_sky_color: int t -> void
 
 buffer closest_object_distance 8  # int
 buffer closest_object_material 8  # int
+buffer normal_vector 24
 
 const MATERIAL_SKY 0
 const MATERIAL_RED 1
+const MATERIAL_GREEN 2
+const MATERIAL_BLUE 3
+
+def check_sphere: int center_x, int center_y, int center_z, int radius, int material -> void
+    # Check if a given sphere is closest and update globals accordingly
+    center_x center_y center_z radius sphere_dist
+    dup closest_object_distance derefi < if
+        dup closest_object_distance seti
+        material closest_object_material seti
+
+        center_x 8 - center_y center_z radius sphere_dist
+        center_x 8 + center_y center_z radius sphere_dist - normal_vector vec.x + seti
+        center_x center_y 8 - center_z radius sphere_dist
+        center_x center_y 8 + center_z radius sphere_dist - normal_vector vec.y + seti
+        center_x center_y center_z 8 - radius sphere_dist
+        center_x center_y center_z 8 + radius sphere_dist - normal_vector vec.z + seti
+        normal_vector dup vec_unit
+
 
 def find_closest_object: -> void
     10000         closest_object_distance seti
     MATERIAL_SKY  closest_object_material seti
 
-    0 0 0 4200 - 690 sphere_dist
-    dup closest_object_distance derefi < if
-        dup closest_object_distance seti
-        MATERIAL_RED closest_object_material seti
-    drop
+    0 0 0 4200 - 1234 MATERIAL_RED check_sphere
+    1515 250 0 2989 - 420 MATERIAL_BLUE check_sphere
+    0 1234 - 0 400 - 0 2989 - 280 MATERIAL_GREEN check_sphere
 
 
 buffer hit 1
@@ -105,9 +122,17 @@ def calculate_ray_color: -> void
     hit derefb False = closest_object_material derefi MATERIAL_SKY = or if
         ray_direction vec.y + derefi 1000 + 2 div calculate_sky_color
     elif closest_object_material derefi MATERIAL_RED =
-        255 ray_color vec.x + seti
+        255 normal_vector vec.y + derefi 1000 + * 1500 div ray_color vec.x + seti
         0 ray_color vec.y + seti
         0 ray_color vec.z + seti
+    elif closest_object_material derefi MATERIAL_GREEN =
+        0 ray_color vec.x + seti
+        255 normal_vector vec.y + derefi 1000 + * 1500 div ray_color vec.y + seti
+        0 ray_color vec.z + seti
+    elif closest_object_material derefi MATERIAL_BLUE =
+        0 ray_color vec.x + seti
+        0 ray_color vec.y + seti
+        255 normal_vector vec.y + derefi 1000 + * 1500 div ray_color vec.z + seti
     else
         "Unknown material!" raise
 
