@@ -16,3 +16,19 @@ def div: int a, int b -> int
         0 a 0 b - / -
     else
         a b /
+
+
+def usqrt: int x -> int
+    # Returns the square root of a given unsigned integer
+    0 x
+    while over over - dup 1 > swap 0 swap - 1 > or
+        swap drop dup
+        x over / + 2 /
+
+
+def sqrt: int x -> int
+    # Returns the square root of a given signed integer
+    x 0 < if
+        0 0 x - usqrt -
+    else
+        x usqrt
