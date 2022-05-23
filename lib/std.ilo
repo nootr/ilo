@@ -574,20 +574,3 @@ def substring: ptr s, int n -> ptr
     n 1 + malloc
     s over n memcpy
     dup n + 0 castc swap setc
-
-
-def div: int a, int b -> int
-    # Returns a / b, where a and b are signed integers
-    # TODO: This should obviously be what `/` should be, but the previous
-    # implementation contained weird bugs which I was unable to fix. For more
-    # info, see commits `a70ed1a` and `9fcc313`.
-    b 0 != "Can't divide by zero" assert
-
-    a 0 < b 0 < and if
-        0 a - 0 b - /
-    elif a 0 < b 0 >= and
-        0 0 a - b / -
-    elif a 0 >= b 0 < and
-        0 a 0 b - / -
-    else
-        a b /
