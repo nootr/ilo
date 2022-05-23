@@ -45,6 +45,12 @@ def vec_add: ptr a, ptr b, ptr c -> void
     a vec.y + derefi b vec.y + derefi + c vec.y + seti
     a vec.z + derefi b vec.z + derefi + c vec.z + seti
 
+def vec_sub: ptr a, ptr b, ptr c -> void
+    # Subtracts vector a from vector b and saves the result to vector c
+    a vec.x + derefi b vec.x + derefi - c vec.x + seti
+    a vec.y + derefi b vec.y + derefi - c vec.y + seti
+    a vec.z + derefi b vec.z + derefi - c vec.z + seti
+
 def vec_negate: ptr src, ptr dest -> void
     # Inverts the vector at src and saves it to dest
     0 src vec.x + derefi - dest vec.x + seti

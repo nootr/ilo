@@ -25,6 +25,13 @@ def main: ptr argv, int argc -> int
     vec_c vec.y + derefi 10 = "c.y = 10" assert
     vec_c vec.z + derefi 15 = "c.z = 15" assert
 
+    # vec_sub
+    vec_a vec_b vec_c vec_sub
+
+    vec_c vec.x + derefi 1 = "c.x = 1" assert
+    vec_c vec.y + derefi 2 = "c.y = 2" assert
+    vec_c vec.z + derefi 3 = "c.z = 3" assert
+
     # vec_negate
     vec_a vec_c vec_negate
 
