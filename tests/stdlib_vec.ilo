@@ -66,4 +66,7 @@ def main: ptr argv, int argc -> int
     vec_c vec.y + derefi 545 = "u.y = 545" assert
     vec_c vec.z + derefi 818 = "u.z = 818" assert
 
+    # vec_dot
+    vec_a vec_b vec_dot 84 = "a dot b = 84" assert
+
     0

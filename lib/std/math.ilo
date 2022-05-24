@@ -85,3 +85,9 @@ def vec_unit: ptr src, ptr dest -> void
     # Takes a vector src and saves its "unit" vector with length 1000 into dest
     src 1000 _vec_unit_buffer vec_mul
     _vec_unit_buffer src vec_len dest vec_div
+
+def vec_dot: ptr a, ptr b -> int
+    # Returns a dot b
+    a vec.x + derefi b vec.x + derefi *
+    a vec.y + derefi b vec.y + derefi * +
+    a vec.z + derefi b vec.z + derefi * +
