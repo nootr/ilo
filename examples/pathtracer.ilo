@@ -33,21 +33,12 @@ def generate_camera_ray: int x, int y -> void
     0 ray_origin vec.z + seti
 
     # Set the ray direction:
-    # ray_direction.x = x - WIDTH/2
-    # ray_direction.y = HEIGHT/2 - y
-    # ray_direction.z = -FOCAL_LENGTH
     x WIDTH 2 div -  ray_direction vec.x + seti
     HEIGHT 2 div y - ray_direction vec.y + seti
     0 FOCAL_LENGTH - ray_direction vec.z + seti
 
     # Normalize vector
     ray_direction dup vec_unit
-
-
-def calculate_sky_color: int t -> void
-    1000 t - t 2 div + 256 * 1000 div ray_color vec.x + seti
-    1000 t - t 7 * 10 div + 256 * 1000 div ray_color vec.y + seti
-    256 ray_color vec.z + seti
 
 
 buffer closest_object_distance 8  # int
@@ -79,16 +70,50 @@ def find_closest_object: -> void
     10000         closest_object_distance seti
     MATERIAL_SKY  closest_object_material seti
 
-    0 0 0 4200 - 1234 MATERIAL_RED check_sphere
-    1515 250 0 2989 - 420 MATERIAL_BLUE check_sphere
-    0 1234 - 0 400 - 0 2989 - 280 MATERIAL_GREEN check_sphere
+    # x       y         z         radius  material
+    0         0 50000 - 0 4200 -  50000   MATERIAL_GREEN  check_sphere
+    0 1000 -  500       0 4200 -  500     MATERIAL_RED    check_sphere
+    1000      500       0 4200 -  500     MATERIAL_BLUE   check_sphere
 
 
 buffer hit 1
 buffer steps 8
 buffer _march_buffer 24
 
-def march: -> void
+def update_ray_color: -> void
+    hit derefb False = closest_object_material derefi MATERIAL_SKY = or if
+        ray_color vec.x + derefi 255 + 2 div ray_color vec.x + seti
+        ray_color vec.y + derefi 255 + 2 div ray_color vec.y + seti
+        ray_color vec.z + derefi 255 + 2 div ray_color vec.z + seti
+    elif closest_object_material derefi MATERIAL_RED =
+        ray_color vec.x + derefi 255 + 2 div ray_color vec.x + seti
+        ray_color vec.y + derefi 2 div ray_color vec.y + seti
+        ray_color vec.z + derefi 2 div ray_color vec.z + seti
+    elif closest_object_material derefi MATERIAL_GREEN =
+        ray_color vec.x + derefi 2 div ray_color vec.x + seti
+        ray_color vec.y + derefi 255 + 2 div ray_color vec.y + seti
+        ray_color vec.z + derefi 2 div ray_color vec.z + seti
+    elif closest_object_material derefi MATERIAL_BLUE =
+        ray_color vec.x + derefi 2 div ray_color vec.x + seti
+        ray_color vec.y + derefi 2 div ray_color vec.y + seti
+        ray_color vec.z + derefi 255 + 2 div ray_color vec.z + seti
+    else
+        "Unknown material!" raise
+
+
+buffer _reflect_ray_buffer 24
+
+def reflect_ray: -> void
+    normal_vector
+    dup ray_direction vec_dot 500 div
+    _reflect_ray_buffer
+    vec_mul
+
+    ray_direction _reflect_ray_buffer ray_direction vec_sub
+    ray_direction ray_direction vec_unit
+
+
+def march: int bounce -> void
     # Will raymarch until something is hit or z is less than -20000
     # Sets a new ray when something is hit.
 
@@ -107,45 +132,44 @@ def march: -> void
         # Check for hit
         closest_object_distance derefi 10 < if
             True hit setb
+        else
+            # Update ray origin
+            ray_direction closest_object_distance derefi _march_buffer vec_mul
+            _march_buffer 1000 _march_buffer vec_div
+            ray_origin _march_buffer ray_origin vec_add
 
-        # Update ray origin
-        ray_direction closest_object_distance derefi _march_buffer vec_mul
-        _march_buffer 1000 _march_buffer vec_div
-        ray_origin _march_buffer ray_origin vec_add
-
+    update_ray_color
     hit derefb if
-        # TODO: update ray on hit
+        reflect_ray
+
+        bounce 0 > if
+            bounce 1 - march
 
 
-def calculate_ray_color: -> void
-    march
-    hit derefb False = closest_object_material derefi MATERIAL_SKY = or if
-        ray_direction vec.y + derefi 1000 + 2 div calculate_sky_color
-    elif closest_object_material derefi MATERIAL_RED =
-        255 normal_vector vec.y + derefi 1000 + * 1500 div ray_color vec.x + seti
-        0 ray_color vec.y + seti
-        0 ray_color vec.z + seti
-    elif closest_object_material derefi MATERIAL_GREEN =
-        0 ray_color vec.x + seti
-        255 normal_vector vec.y + derefi 1000 + * 1500 div ray_color vec.y + seti
-        0 ray_color vec.z + seti
-    elif closest_object_material derefi MATERIAL_BLUE =
-        0 ray_color vec.x + seti
-        0 ray_color vec.y + seti
-        255 normal_vector vec.y + derefi 1000 + * 1500 div ray_color vec.z + seti
+def scale_color: int c -> int
+    c 0 < if
+        0
+    elif c 255 >
+        255
     else
-        "Unknown material!" raise
+        c
 
 
 def print_ray_color: -> void
-    ray_color vec.x + derefi itos puts " " puts
-    ray_color vec.y + derefi itos puts " " puts
-    ray_color vec.z + derefi itos puts " " puts
+    ray_color vec.x + derefi scale_color itos puts " " puts
+    ray_color vec.y + derefi scale_color itos puts " " puts
+    ray_color vec.z + derefi scale_color itos puts " " puts
 
 
 def draw_pixel: int x, int y -> void
     x y generate_camera_ray
-    calculate_ray_color
+
+    # Set initial color
+    0 ray_color vec.x + seti
+    0 ray_color vec.y + seti
+    0 ray_color vec.z + seti
+
+    1 march
     print_ray_color
 
 
